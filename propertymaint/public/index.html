@@ -107,7 +107,7 @@
   .badge-managing_agent { background: #eff6ff; color: var(--blue); }
   .badge-individual { background: #faf5ff; color: var(--purple); }
   .badge-admin { background: #fff7ed; color: var(--accent); }
-  .badge-readonly { background: #f3f4f6; color: #6b7280; }
+  .badge-user { background: #eff6ff; color: var(--blue); }
 
   /* ── Modal ── */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,10,30,0.55); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
@@ -415,7 +415,7 @@
         <div class="form-group"><label>Password *</label><input id="uf-password" type="password" placeholder="Minimum 8 characters"></div>
         <div class="form-group"><label>Role</label>
           <select id="uf-role">
-            <option value="readonly">Read Only — can view but not edit</option>
+            <option value="user">User — can view and edit, cannot manage users</option>
             <option value="admin">Admin — full access including user management</option>
           </select>
         </div>
@@ -477,7 +477,7 @@ function showApp() {
   document.getElementById('login-screen').classList.remove('active');
   document.getElementById('app').classList.add('active');
   document.getElementById('nav-username').textContent = currentUser.name;
-  document.getElementById('nav-role').textContent = currentUser.role === 'admin' ? 'Administrator' : 'Read Only';
+  document.getElementById('nav-role').textContent = currentUser.role === 'admin' ? 'Administrator' : 'User';
 
   // Show admin-only nav items
   if (currentUser.role === 'admin') {
@@ -520,13 +520,12 @@ function showPage(name) {
   if (navLink) navLink.classList.add('active');
   document.getElementById('page-title').textContent = pageTitles[name];
 
-  const isAdmin = currentUser && currentUser.role === 'admin';
   const actions = {
-    jobs: isAdmin ? '<button class="btn btn-primary" onclick="openJobModal()">+ New Job</button>' : '',
-    customers: isAdmin ? '<button class="btn btn-primary" onclick="openCustomerModal()">+ New Customer</button>' : '',
-    addresses: isAdmin ? '<button class="btn btn-primary" onclick="openAddressModal()">+ New Address</button>' : '',
-    trades: isAdmin ? '<button class="btn btn-primary" onclick="openTradeModal()">+ New Trade</button>' : '',
-    users: isAdmin ? '<button class="btn btn-primary" onclick="openUserModal()">+ New User</button>' : '',
+    jobs: '<button class="btn btn-primary" onclick="openJobModal()">+ New Job</button>',
+    customers: '<button class="btn btn-primary" onclick="openCustomerModal()">+ New Customer</button>',
+    addresses: '<button class="btn btn-primary" onclick="openAddressModal()">+ New Address</button>',
+    trades: '<button class="btn btn-primary" onclick="openTradeModal()">+ New Trade</button>',
+    users: isAdmin() ? '<button class="btn btn-primary" onclick="openUserModal()">+ New User</button>' : '',
     dashboard: ''
   };
   document.getElementById('topbar-action').innerHTML = actions[name] || '';
@@ -539,6 +538,7 @@ function customerName(id) { const c = state.customers.find(c=>c.id===id); return
 function addressLabel(id) { const a = state.addresses.find(a=>a.id===id); return a ? `${a.label ? a.label+' – ' : ''}${a.line1}, ${a.postcode}` : '—'; }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 const isAdmin = () => currentUser && currentUser.role === 'admin';
+  const canEdit = () => currentUser !== null;
 
 async function loadAll() {
   const [customers, addresses, jobs, trades] = await Promise.all([
@@ -587,7 +587,7 @@ function renderJobs() {
   });
   document.getElementById('jobs-tbody').innerHTML = jobs.length ? jobs.map(j => {
     const tnames = (j.tradeIds||[]).map(tid=>{ const t=state.trades.find(t=>t.id===tid); return t?t.companyName:''; }).filter(Boolean);
-    const editBtn = isAdmin() ? `<button class="btn btn-ghost btn-sm" onclick="openJobModal('${j.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteJob('${j.id}')">Delete</button>` : '';
+    const editBtn = `<button class="btn btn-ghost btn-sm" onclick="openJobModal('${j.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteJob('${j.id}')">Delete</button>`;
     return `<tr>
       <td><strong>${j.workOrderId}</strong></td>
       <td><button class="link-btn" onclick="openJobDetail('${j.id}')">${j.title}</button></td>
@@ -653,8 +653,8 @@ function openJobDetail(id) {
   document.getElementById('jd-title').textContent = j.title;
   document.getElementById('jd-workorder').textContent = 'Work Order: '+j.workOrderId;
   const editBtn = document.getElementById('jd-edit-btn');
-  if (isAdmin()) { editBtn.style.display=''; editBtn.onclick=()=>{ closeModal('job-detail-modal'); openJobModal(id); }; }
-  else editBtn.style.display='none';
+  editBtn.style.display='';
+  editBtn.onclick=()=>{ closeModal('job-detail-modal'); openJobModal(id); };
   const tnames = (j.tradeIds||[]).map(tid=>state.trades.find(t=>t.id===tid)).filter(Boolean);
   document.getElementById('job-detail-body').innerHTML = `
     <div class="detail-grid">
@@ -703,7 +703,7 @@ function renderCustomers() {
   const custs=state.customers.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q));
   document.getElementById('customers-tbody').innerHTML=custs.length?custs.map(c=>{
     const addrCount=state.addresses.filter(a=>a.customerId===c.id).length;
-    const editBtn=isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="openCustomerModal('${c.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.id}')">Delete</button>`:'';
+    const editBtn=`<button class="btn btn-ghost btn-sm" onclick="openCustomerModal('${c.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.id}')">Delete</button>`;
     return `<tr><td><strong>${c.name}</strong></td><td>${badge(c.type,c.type)}</td><td>${c.email||'—'}</td><td>${c.phone||'—'}</td><td>${addrCount} address${addrCount!==1?'es':''}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
   }).join(''):'<tr class="empty-row"><td colspan="6">No customers found</td></tr>';
 }
@@ -737,12 +737,11 @@ function renderAddresses() {
   const cf=document.getElementById('addr-cust-filter')?.value||'';
   const addrs=state.addresses.filter(a=>{ if(cf&&a.customerId!==cf) return false; const full=`${a.label} ${a.line1} ${a.city} ${a.postcode}`.toLowerCase(); return !q||full.includes(q); });
   document.getElementById('addresses-tbody').innerHTML=addrs.length?addrs.map(a=>{
-    const editBtn=isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="openAddressModal('${a.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteAddress('${a.id}')">Delete</button>`:'';
+    const editBtn=`<button class="btn btn-ghost btn-sm" onclick="openAddressModal('${a.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteAddress('${a.id}')">Delete</button>`;
     return `<tr><td><strong>${a.label||'—'}</strong></td><td>${a.line1}${a.line2?' '+a.line2:''}, ${a.city}, ${a.postcode}</td><td>${customerName(a.customerId)}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
   }).join(''):'<tr class="empty-row"><td colspan="4">No addresses found</td></tr>';
 }
 function openAddressModal(id=null) {
-  if(!isAdmin()) return;
   editingId.address=id;
   document.getElementById('addr-modal-title').textContent=id?'Edit Address':'New Address';
   ['label','line1','line2','city','postcode'].forEach(f=>document.getElementById('af-'+f).value='');
@@ -765,12 +764,11 @@ function renderTrades() {
   const q=(document.getElementById('trade-search')?.value||'').toLowerCase();
   const trades=state.trades.filter(t=>!q||t.companyName.toLowerCase().includes(q)||(t.contactName||'').toLowerCase().includes(q));
   document.getElementById('trades-tbody').innerHTML=trades.length?trades.map(t=>{
-    const editBtn=isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="openTradeModal('${t.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTrade('${t.id}')">Delete</button>`:'';
+    const editBtn=`<button class="btn btn-ghost btn-sm" onclick="openTradeModal('${t.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTrade('${t.id}')">Delete</button>`;
     return `<tr><td><strong>${t.companyName}</strong><br><small style="color:var(--mist)">${t.companyAddress||''}</small></td><td>${t.contactName||'—'}</td><td>${t.contactNumber||'—'}</td><td>${t.contactEmail?`<a href="mailto:${t.contactEmail}" style="color:var(--accent)">${t.contactEmail}</a>`:'—'}</td><td>${(t.services||[]).map(s=>`<span style="background:var(--surface);padding:2px 7px;border-radius:4px;font-size:0.78rem;display:inline-block;margin:1px">${s}</span>`).join('')||'—'}</td><td>${badge(t.status,t.status)}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
   }).join(''):'<tr class="empty-row"><td colspan="7">No trades found</td></tr>';
 }
 function openTradeModal(id=null) {
-  if(!isAdmin()) return;
   editingId.trade=id; serviceTagsArr=[];
   document.getElementById('trade-modal-title').textContent=id?'Edit Trade':'New Trade';
   ['companyName','companyAddress','contactName','contactNumber','contactEmail'].forEach(f=>document.getElementById('tf-'+f).value='');

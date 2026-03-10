@@ -58,10 +58,8 @@ app.post('/api/auth/login', async (req, res) => {
     if (!result.rows.length) return res.status(401).json({ error: 'Invalid email or password' });
     const user = result.rows[0];
     if (!user.active) return res.status(401).json({ error: 'Account disabled. Contact your administrator.' });
-
-const valid = await bcrypt.compare(password, user.password_hash);
-console.log('Password valid:', valid);
-if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
+    const valid = await bcrypt.compare(password, user.password_hash);
+    if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
     req.session.userId = user.id;
     req.session.role = user.role;
     req.session.name = user.name;
@@ -133,14 +131,14 @@ app.get('/api/customers', requireAuth, async (req, res) => {
   try { res.json((await query('SELECT * FROM customers ORDER BY name ASC')).rows.map(normaliseCustomer)); }
   catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/customers', requireAuth, requireAdmin, async (req, res) => {
+app.post('/api/customers', requireAuth, async (req, res) => {
   try {
     const { type, name, email, phone } = req.body;
     const result = await query('INSERT INTO customers (id,type,name,email,phone) VALUES ($1,$2,$3,$4,$5) RETURNING *', [uuidv4(),type,name,email,phone]);
     res.status(201).json(normaliseCustomer(result.rows[0]));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.put('/api/customers/:id', requireAuth, requireAdmin, async (req, res) => {
+app.put('/api/customers/:id', requireAuth, async (req, res) => {
   try {
     const { type, name, email, phone } = req.body;
     const result = await query('UPDATE customers SET type=$1,name=$2,email=$3,phone=$4 WHERE id=$5 RETURNING *', [type,name,email,phone,req.params.id]);
@@ -148,7 +146,7 @@ app.put('/api/customers/:id', requireAuth, requireAdmin, async (req, res) => {
     res.json(normaliseCustomer(result.rows[0]));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.delete('/api/customers/:id', requireAuth, requireAdmin, async (req, res) => {
+app.delete('/api/customers/:id', requireAuth, async (req, res) => {
   try { await query('DELETE FROM customers WHERE id=$1', [req.params.id]); res.json({ success: true }); }
   catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -163,14 +161,14 @@ app.get('/api/addresses', requireAuth, async (req, res) => {
     res.json(result.rows.map(normaliseAddress));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/addresses', requireAuth, requireAdmin, async (req, res) => {
+app.post('/api/addresses', requireAuth, async (req, res) => {
   try {
     const { customerId, label, line1, line2, city, postcode } = req.body;
     const result = await query('INSERT INTO addresses (id,customer_id,label,line1,line2,city,postcode) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *', [uuidv4(),customerId,label,line1,line2,city,postcode]);
     res.status(201).json(normaliseAddress(result.rows[0]));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.put('/api/addresses/:id', requireAuth, requireAdmin, async (req, res) => {
+app.put('/api/addresses/:id', requireAuth, async (req, res) => {
   try {
     const { customerId, label, line1, line2, city, postcode } = req.body;
     const result = await query('UPDATE addresses SET customer_id=$1,label=$2,line1=$3,line2=$4,city=$5,postcode=$6 WHERE id=$7 RETURNING *', [customerId,label,line1,line2,city,postcode,req.params.id]);
@@ -178,7 +176,7 @@ app.put('/api/addresses/:id', requireAuth, requireAdmin, async (req, res) => {
     res.json(normaliseAddress(result.rows[0]));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.delete('/api/addresses/:id', requireAuth, requireAdmin, async (req, res) => {
+app.delete('/api/addresses/:id', requireAuth, async (req, res) => {
   try { await query('DELETE FROM addresses WHERE id=$1', [req.params.id]); res.json({ success: true }); }
   catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -188,14 +186,14 @@ app.get('/api/trades', requireAuth, async (req, res) => {
   try { res.json((await query('SELECT * FROM trades ORDER BY company_name ASC')).rows.map(normaliseTrade)); }
   catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/trades', requireAuth, requireAdmin, async (req, res) => {
+app.post('/api/trades', requireAuth, async (req, res) => {
   try {
     const { status, companyName, companyAddress, contactName, contactNumber, contactEmail, services } = req.body;
     const result = await query('INSERT INTO trades (id,status,company_name,company_address,contact_name,contact_number,contact_email,services) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [uuidv4(),status,companyName,companyAddress,contactName,contactNumber,contactEmail,services]);
     res.status(201).json(normaliseTrade(result.rows[0]));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.put('/api/trades/:id', requireAuth, requireAdmin, async (req, res) => {
+app.put('/api/trades/:id', requireAuth, async (req, res) => {
   try {
     const { status, companyName, companyAddress, contactName, contactNumber, contactEmail, services } = req.body;
     const result = await query('UPDATE trades SET status=$1,company_name=$2,company_address=$3,contact_name=$4,contact_number=$5,contact_email=$6,services=$7 WHERE id=$8 RETURNING *', [status,companyName,companyAddress,contactName,contactNumber,contactEmail,services,req.params.id]);
@@ -203,7 +201,7 @@ app.put('/api/trades/:id', requireAuth, requireAdmin, async (req, res) => {
     res.json(normaliseTrade(result.rows[0]));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.delete('/api/trades/:id', requireAuth, requireAdmin, async (req, res) => {
+app.delete('/api/trades/:id', requireAuth, async (req, res) => {
   try { await query('DELETE FROM trades WHERE id=$1', [req.params.id]); res.json({ success: true }); }
   catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -223,7 +221,7 @@ app.get('/api/jobs', requireAuth, async (req, res) => {
     res.json(jobsResult.rows.map(j => normaliseJob(j, jobTradesMap[j.id] || [], commsMap[j.id] || [])));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/jobs', requireAuth, requireAdmin, async (req, res) => {
+app.post('/api/jobs', requireAuth, async (req, res) => {
   try {
     const { workOrderId, customerId, addressId, title, status, actionRequired, dateReceived, dateBooked, dateCompleted, dateInvoiced, datePaid, tradeIds } = req.body;
     const id = uuidv4();
@@ -235,7 +233,7 @@ app.post('/api/jobs', requireAuth, requireAdmin, async (req, res) => {
     res.status(201).json(normaliseJob(result.rows[0], tradeIds || [], []));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.put('/api/jobs/:id', requireAuth, requireAdmin, async (req, res) => {
+app.put('/api/jobs/:id', requireAuth, async (req, res) => {
   try {
     const { workOrderId, customerId, addressId, title, status, actionRequired, dateReceived, dateBooked, dateCompleted, dateInvoiced, datePaid, tradeIds } = req.body;
     const result = await query(
@@ -248,7 +246,7 @@ app.put('/api/jobs/:id', requireAuth, requireAdmin, async (req, res) => {
     res.json(normaliseJob(result.rows[0], tradeIds || [], []));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.delete('/api/jobs/:id', requireAuth, requireAdmin, async (req, res) => {
+app.delete('/api/jobs/:id', requireAuth, async (req, res) => {
   try { await query('DELETE FROM jobs WHERE id=$1', [req.params.id]); res.json({ success: true }); }
   catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -274,12 +272,6 @@ app.get('/api/stats', requireAuth, async (req, res) => {
     res.json({ totalJobs: jobs.rows.length, totalCustomers: parseInt(customers.rows[0].count), totalTrades: parseInt(trades.rows[0].count), totalAddresses: parseInt(addresses.rows[0].count), byStatus });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-
-app.get('/api/genhash/:password', async (req, res) => {
-  const hash = await bcrypt.hash(req.params.password, 12);
-  res.json({ hash });
-});
-
 
 // Catch-all
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
