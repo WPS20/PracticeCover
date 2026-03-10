@@ -1084,7 +1084,7 @@ function populateTaskUserFilter() {
   sel.innerHTML = '<option value="">All Users</option>' + state.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
 }
 
-function openTaskModal(id = null) {
+async function openTaskModal(id = null) {
   editingTaskId = id;
   taskLinks = { customerId: null, jobId: null, tradeId: null };
   document.getElementById('task-modal-title').textContent = id ? 'Edit Task' : 'New Task';
