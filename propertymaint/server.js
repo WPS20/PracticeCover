@@ -265,11 +265,27 @@ app.get('/api/jobs', requireAuth, async (req, res) => {
 });
 app.post('/api/jobs', requireAuth, async (req, res) => {
   try {
-    const { workOrderId, customerId, addressId, title, status, actionRequired, dateReceived, dateBooked, dateCompleted, dateInvoiced, datePaid, tradeIds } = req.body;
+    const { workOrderId, customerId, addressId, title, status, actionRequired,
+      dateReceived, deadlineForCompletion, dateWorkCompleted, dateInvoiced,
+      invoiceNumber, priceQuotedExclVat, priceQuotedInclVat, complianceStandard,
+      poSentSubcontractor, chasedSubcontractor, proposedDateTenant, bookedAdc,
+      bookedSubcontractor, tenantNotResponding, onHold, rejectedCancelled, poChasedDate,
+      dateBooked, datePaid, tradeIds } = req.body;
     const id = uuidv4();
     const result = await query(
-      `INSERT INTO jobs (id,work_order_id,customer_id,address_id,title,status,action_required,date_received,date_booked,date_completed,date_invoiced,date_paid) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
-      [id,workOrderId,customerId,addressId,title,status||'needs_to_be_booked_adc',actionRequired,orNull(dateReceived),orNull(dateBooked),orNull(dateCompleted),orNull(dateInvoiced),orNull(datePaid)]
+      `INSERT INTO jobs (id,work_order_id,customer_id,address_id,title,status,action_required,
+        date_received,deadline_for_completion,date_work_completed,date_invoiced,
+        invoice_number,price_quoted_excl_vat,price_quoted_incl_vat,compliance_standard,
+        po_sent_subcontractor,chased_subcontractor,proposed_date_tenant,booked_adc,
+        booked_subcontractor,tenant_not_responding,on_hold,rejected_cancelled,po_chased_date,
+        date_booked,date_paid)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26) RETURNING *`,
+      [id,workOrderId,customerId,addressId,title,status||'needs_to_be_booked_adc',actionRequired,
+        orNull(dateReceived),orNull(deadlineForCompletion),orNull(dateWorkCompleted),orNull(dateInvoiced),
+        invoiceNumber||null,priceQuotedExclVat||null,priceQuotedInclVat||null,complianceStandard||null,
+        orNull(poSentSubcontractor),orNull(chasedSubcontractor),orNull(proposedDateTenant),orNull(bookedAdc),
+        orNull(bookedSubcontractor),orNull(tenantNotResponding),orNull(onHold),orNull(rejectedCancelled),orNull(poChasedDate),
+        orNull(dateBooked),orNull(datePaid)]
     );
     if (tradeIds && tradeIds.length) await Promise.all(tradeIds.map(tid => query('INSERT INTO job_trades (job_id,trade_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [id,tid])));
     const j = result.rows[0];
@@ -279,10 +295,26 @@ app.post('/api/jobs', requireAuth, async (req, res) => {
 });
 app.put('/api/jobs/:id', requireAuth, async (req, res) => {
   try {
-    const { workOrderId, customerId, addressId, title, status, actionRequired, dateReceived, dateBooked, dateCompleted, dateInvoiced, datePaid, tradeIds } = req.body;
+    const { workOrderId, customerId, addressId, title, status, actionRequired,
+      dateReceived, deadlineForCompletion, dateWorkCompleted, dateInvoiced,
+      invoiceNumber, priceQuotedExclVat, priceQuotedInclVat, complianceStandard,
+      poSentSubcontractor, chasedSubcontractor, proposedDateTenant, bookedAdc,
+      bookedSubcontractor, tenantNotResponding, onHold, rejectedCancelled, poChasedDate,
+      dateBooked, datePaid, tradeIds } = req.body;
     const result = await query(
-      `UPDATE jobs SET work_order_id=$1,customer_id=$2,address_id=$3,title=$4,status=$5,action_required=$6,date_received=$7,date_booked=$8,date_completed=$9,date_invoiced=$10,date_paid=$11 WHERE id=$12 RETURNING *`,
-      [workOrderId,customerId,addressId,title,status,actionRequired,orNull(dateReceived),orNull(dateBooked),orNull(dateCompleted),orNull(dateInvoiced),orNull(datePaid),req.params.id]
+      `UPDATE jobs SET work_order_id=$1,customer_id=$2,address_id=$3,title=$4,status=$5,action_required=$6,
+        date_received=$7,deadline_for_completion=$8,date_work_completed=$9,date_invoiced=$10,
+        invoice_number=$11,price_quoted_excl_vat=$12,price_quoted_incl_vat=$13,compliance_standard=$14,
+        po_sent_subcontractor=$15,chased_subcontractor=$16,proposed_date_tenant=$17,booked_adc=$18,
+        booked_subcontractor=$19,tenant_not_responding=$20,on_hold=$21,rejected_cancelled=$22,po_chased_date=$23,
+        date_booked=$24,date_paid=$25
+       WHERE id=$26 RETURNING *`,
+      [workOrderId,customerId,addressId,title,status,actionRequired,
+        orNull(dateReceived),orNull(deadlineForCompletion),orNull(dateWorkCompleted),orNull(dateInvoiced),
+        invoiceNumber||null,priceQuotedExclVat||null,priceQuotedInclVat||null,complianceStandard||null,
+        orNull(poSentSubcontractor),orNull(chasedSubcontractor),orNull(proposedDateTenant),orNull(bookedAdc),
+        orNull(bookedSubcontractor),orNull(tenantNotResponding),orNull(onHold),orNull(rejectedCancelled),orNull(poChasedDate),
+        orNull(dateBooked),orNull(datePaid),req.params.id]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'Not found' });
     await query('DELETE FROM job_trades WHERE job_id=$1', [req.params.id]);
@@ -352,7 +384,29 @@ function normaliseCustomer(r) { return { id: r.id, type: r.type, name: r.name, e
 function normaliseAddress(r) { return { id: r.id, customerId: r.customer_id, label: r.label, line1: r.line1, line2: r.line2, city: r.city, postcode: r.postcode }; }
 function normaliseTrade(r) { return { id: r.id, status: r.status, companyName: r.company_name, companyAddress: r.company_address, contactName: r.contact_name, contactNumber: r.contact_number, contactEmail: r.contact_email, services: r.services || [] }; }
 function normaliseJob(r, tradeIds, communications) {
-  return { id: r.id, workOrderId: r.work_order_id, customerId: r.customer_id, addressId: r.address_id, title: r.title, status: r.status, actionRequired: r.action_required, dateReceived: fmtDate(r.date_received), dateBooked: fmtDate(r.date_booked), dateCompleted: fmtDate(r.date_completed), dateInvoiced: fmtDate(r.date_invoiced), datePaid: fmtDate(r.date_paid), createdAt: r.created_at, tradeIds, communications };
+  return {
+    id: r.id, workOrderId: r.work_order_id, customerId: r.customer_id, addressId: r.address_id,
+    title: r.title, status: r.status, actionRequired: r.action_required,
+    dateReceived: fmtDate(r.date_received),
+    deadlineForCompletion: fmtDate(r.deadline_for_completion),
+    dateWorkCompleted: fmtDate(r.date_work_completed),
+    dateInvoiced: fmtDate(r.date_invoiced),
+    invoiceNumber: r.invoice_number,
+    priceQuotedExclVat: r.price_quoted_excl_vat,
+    priceQuotedInclVat: r.price_quoted_incl_vat,
+    complianceStandard: r.compliance_standard,
+    poSentSubcontractor: fmtDate(r.po_sent_subcontractor),
+    chasedSubcontractor: fmtDate(r.chased_subcontractor),
+    proposedDateTenant: fmtDate(r.proposed_date_tenant),
+    bookedAdc: fmtDate(r.booked_adc),
+    bookedSubcontractor: fmtDate(r.booked_subcontractor),
+    tenantNotResponding: fmtDate(r.tenant_not_responding),
+    onHold: fmtDate(r.on_hold),
+    rejectedCancelled: fmtDate(r.rejected_cancelled),
+    poChasedDate: fmtDate(r.po_chased_date),
+    dateBooked: fmtDate(r.date_booked), datePaid: fmtDate(r.date_paid),
+    createdAt: r.created_at, tradeIds, communications
+  };
 }
 function normaliseComm(r) { return { id: r.id, jobId: r.job_id, note: r.note, author: r.author, date: r.date }; }
 function fmtDate(d) { return d ? d.toISOString().split('T')[0] : ''; }

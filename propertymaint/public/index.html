@@ -365,10 +365,26 @@
           <select id="jf-status"><option value="needs_to_be_booked_adc">1. Needs to be booked ADC</option><option value="needs_to_be_booked_sub">2. Needs to be booked Subcontractor</option><option value="needs_to_be_booked_adc_sub">3. Needs to be booked ADC & Subcontractor</option><option value="booked_adc">4. Booked ADC (ADC only job)</option><option value="booked_adc_need_sub">5. Booked ADC - Need to book Subcontractor</option><option value="chased_sub">6. Chased Subcontractor</option><option value="booked_sub_need_adc">7. Booked Subcontractor - Need to book ADC</option><option value="booked_sub_only">8. Booked Subcontractor (Subcontractor only job)</option><option value="booked_adc_and_sub">9. Booked ADC & Subcontractor</option><option value="date_allocated">10. Date allocated - to agree with tenant</option><option value="tenant_not_responding">11. Tenant not responding/Referred to client</option><option value="on_hold">12. On hold</option></select>
         </div>
         <div class="form-group full"><label>Action Required</label><textarea id="jf-actionRequired" rows="2"></textarea></div>
+        <div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:12px;margin-top:4px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:1px">Dates &amp; Financials</div>
         <div class="form-group"><label>Date Received</label><input type="date" id="jf-dateReceived"></div>
-        <div class="form-group"><label>Date Booked</label><input type="date" id="jf-dateBooked"></div>
-        <div class="form-group"><label>Date Completed</label><input type="date" id="jf-dateCompleted"></div>
+        <div class="form-group"><label>Deadline for Completion</label><input type="date" id="jf-deadlineForCompletion"></div>
+        <div class="form-group"><label>Date Work Completed</label><input type="date" id="jf-dateWorkCompleted"></div>
         <div class="form-group"><label>Date Invoiced</label><input type="date" id="jf-dateInvoiced"></div>
+        <div class="form-group"><label>Invoice Number</label><input id="jf-invoiceNumber" placeholder="INV-001"></div>
+        <div class="form-group"><label>Price Quoted Excl. VAT</label><input type="number" step="0.01" id="jf-priceQuotedExclVat" placeholder="0.00"></div>
+        <div class="form-group"><label>Price Quoted Incl. VAT</label><input type="number" step="0.01" id="jf-priceQuotedInclVat" placeholder="0.00"></div>
+        <div class="form-group"><label>Compliance Standard</label><input id="jf-complianceStandard"></div>
+        <div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:12px;margin-top:4px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:1px">Booking Dates</div>
+        <div class="form-group"><label>PO Sent Subcontractor</label><input type="date" id="jf-poSentSubcontractor"></div>
+        <div class="form-group"><label>Chased Subcontractor</label><input type="date" id="jf-chasedSubcontractor"></div>
+        <div class="form-group"><label>Proposed Date to be Agreed Tenant</label><input type="date" id="jf-proposedDateTenant"></div>
+        <div class="form-group"><label>Booked ADC</label><input type="date" id="jf-bookedAdc"></div>
+        <div class="form-group"><label>Booked Subcontractor</label><input type="date" id="jf-bookedSubcontractor"></div>
+        <div class="form-group"><label>Tenant Not Responding</label><input type="date" id="jf-tenantNotResponding"></div>
+        <div class="form-group"><label>On Hold</label><input type="date" id="jf-onHold"></div>
+        <div class="form-group"><label>Rejected/Cancelled</label><input type="date" id="jf-rejectedCancelled"></div>
+        <div class="form-group"><label>PO Chased Date</label><input type="date" id="jf-poChasedDate"></div>
+        <div class="form-group"><label>Date Booked</label><input type="date" id="jf-dateBooked"></div>
         <div class="form-group"><label>Date Paid</label><input type="date" id="jf-datePaid"></div>
         <div class="form-group full"><label>Assign Trades</label><div class="check-list" id="jf-trades-list"></div></div>
       </div>
@@ -650,7 +666,7 @@ function renderJobs() {
 function openJobModal(id=null) {
   editingId.job = id;
   document.getElementById('job-modal-title').textContent = id ? 'Edit Job' : 'New Job';
-  ['workOrderId','title','actionRequired','dateReceived','dateBooked','dateCompleted','dateInvoiced','datePaid'].forEach(f => document.getElementById('jf-'+f).value='');
+  ['workOrderId','title','actionRequired','dateReceived','deadlineForCompletion','dateWorkCompleted','dateInvoiced','invoiceNumber','priceQuotedExclVat','priceQuotedInclVat','complianceStandard','poSentSubcontractor','chasedSubcontractor','proposedDateTenant','bookedAdc','bookedSubcontractor','tenantNotResponding','onHold','rejectedCancelled','poChasedDate','dateBooked','datePaid'].forEach(f => document.getElementById('jf-'+f).value='');
   document.getElementById('jf-status').value='needs_to_be_booked_adc';
   const cs = document.getElementById('jf-customerId');
   cs.innerHTML = '<option value="">Select customer…</option>' + state.customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
@@ -660,7 +676,7 @@ function openJobModal(id=null) {
   if (id) {
     const j = state.jobs.find(j=>j.id===id);
     if (j) {
-      ['workOrderId','title','actionRequired','dateReceived','dateBooked','dateCompleted','dateInvoiced','datePaid'].forEach(f=>{ document.getElementById('jf-'+f).value=j[f]||''; });
+      ['workOrderId','title','actionRequired','dateReceived','deadlineForCompletion','dateWorkCompleted','dateInvoiced','invoiceNumber','priceQuotedExclVat','priceQuotedInclVat','complianceStandard','poSentSubcontractor','chasedSubcontractor','proposedDateTenant','bookedAdc','bookedSubcontractor','tenantNotResponding','onHold','rejectedCancelled','poChasedDate','dateBooked','datePaid'].forEach(f=>{ document.getElementById('jf-'+f).value=j[f]||''; });
       document.getElementById('jf-status').value=j.status;
       cs.value=j.customerId;
       loadAddressesForJob(()=>{ document.getElementById('jf-addressId').value=j.addressId; });
@@ -680,7 +696,23 @@ function loadAddressesForJob(cb) {
 
 async function saveJob() {
   const tradeIds = [...document.querySelectorAll('#jf-trades-list input:checked')].map(cb=>cb.value);
-  const body = { workOrderId:document.getElementById('jf-workOrderId').value.trim(), title:document.getElementById('jf-title').value.trim(), customerId:document.getElementById('jf-customerId').value, addressId:document.getElementById('jf-addressId').value, status:document.getElementById('jf-status').value, actionRequired:document.getElementById('jf-actionRequired').value.trim(), dateReceived:document.getElementById('jf-dateReceived').value, dateBooked:document.getElementById('jf-dateBooked').value, dateCompleted:document.getElementById('jf-dateCompleted').value, dateInvoiced:document.getElementById('jf-dateInvoiced').value, datePaid:document.getElementById('jf-datePaid').value, tradeIds };
+  const gv = id => document.getElementById(id).value;
+  const body = {
+    workOrderId: gv('jf-workOrderId').trim(), title: gv('jf-title').trim(),
+    customerId: gv('jf-customerId'), addressId: gv('jf-addressId'),
+    status: gv('jf-status'), actionRequired: gv('jf-actionRequired').trim(),
+    dateReceived: gv('jf-dateReceived'), deadlineForCompletion: gv('jf-deadlineForCompletion'),
+    dateWorkCompleted: gv('jf-dateWorkCompleted'), dateInvoiced: gv('jf-dateInvoiced'),
+    invoiceNumber: gv('jf-invoiceNumber').trim(),
+    priceQuotedExclVat: gv('jf-priceQuotedExclVat'), priceQuotedInclVat: gv('jf-priceQuotedInclVat'),
+    complianceStandard: gv('jf-complianceStandard').trim(),
+    poSentSubcontractor: gv('jf-poSentSubcontractor'), chasedSubcontractor: gv('jf-chasedSubcontractor'),
+    proposedDateTenant: gv('jf-proposedDateTenant'), bookedAdc: gv('jf-bookedAdc'),
+    bookedSubcontractor: gv('jf-bookedSubcontractor'), tenantNotResponding: gv('jf-tenantNotResponding'),
+    onHold: gv('jf-onHold'), rejectedCancelled: gv('jf-rejectedCancelled'),
+    poChasedDate: gv('jf-poChasedDate'), dateBooked: gv('jf-dateBooked'), datePaid: gv('jf-datePaid'),
+    tradeIds
+  };
   if (!body.workOrderId||!body.title||!body.customerId||!body.addressId) return alert('Please fill in Work Order ID, Title, Customer and Address.');
   if (editingId.job) await api('PUT','/api/jobs/'+editingId.job,body);
   else await api('POST','/api/jobs',body);
@@ -709,14 +741,35 @@ function openJobDetail(id) {
         <div class="detail-row"><span class="key">Address</span><span style="text-align:right">${addressLabel(j.addressId)}</span></div>
         ${j.actionRequired?`<div class="detail-row" style="flex-direction:column;gap:4px"><span class="key">Action Required</span><span style="font-size:0.87rem;margin-top:4px">${j.actionRequired}</span></div>`:''}
       </div>
-      <div class="detail-section"><h4>Key Dates</h4>
+      <div class="detail-section"><h4>Dates &amp; Financials</h4>
         <div class="dates-strip">
-          <div class="date-box"><div class="dlabel">Received</div><div class="dval ${!j.dateReceived?'empty':''}">${fmtDateVal(j.dateReceived)||'Not set'}</div></div>
-          <div class="date-box"><div class="dlabel">Booked</div><div class="dval ${!j.dateBooked?'empty':''}">${fmtDateVal(j.dateBooked)||'Not set'}</div></div>
-          <div class="date-box"><div class="dlabel">Completed</div><div class="dval ${!j.dateCompleted?'empty':''}">${fmtDateVal(j.dateCompleted)||'Not set'}</div></div>
-          <div class="date-box"><div class="dlabel">Invoiced</div><div class="dval ${!j.dateInvoiced?'empty':''}">${fmtDateVal(j.dateInvoiced)||'Not set'}</div></div>
+          <div class="date-box"><div class="dlabel">Received</div><div class="dval ${!j.dateReceived?'empty':''}">${fmtDateVal(j.dateReceived)||'—'}</div></div>
+          <div class="date-box"><div class="dlabel">Deadline for Completion</div><div class="dval ${!j.deadlineForCompletion?'empty':''}">${fmtDateVal(j.deadlineForCompletion)||'—'}</div></div>
+          <div class="date-box"><div class="dlabel">Work Completed</div><div class="dval ${!j.dateWorkCompleted?'empty':''}">${fmtDateVal(j.dateWorkCompleted)||'—'}</div></div>
+          <div class="date-box"><div class="dlabel">Invoiced</div><div class="dval ${!j.dateInvoiced?'empty':''}">${fmtDateVal(j.dateInvoiced)||'—'}</div></div>
         </div>
-        <div style="margin-top:8px"><div class="date-box" style="max-width:25%"><div class="dlabel">Paid</div><div class="dval ${!j.datePaid?'empty':''}">${fmtDateVal(j.datePaid)||'Not set'}</div></div></div>
+        <div class="dates-strip" style="margin-top:8px">
+          ${j.invoiceNumber?`<div class="date-box"><div class="dlabel">Invoice No.</div><div class="dval">${j.invoiceNumber}</div></div>`:''}
+          ${j.priceQuotedExclVat?`<div class="date-box"><div class="dlabel">Price Excl. VAT</div><div class="dval">£${parseFloat(j.priceQuotedExclVat).toLocaleString('en-GB',{minimumFractionDigits:2})}</div></div>`:''}
+          ${j.priceQuotedInclVat?`<div class="date-box"><div class="dlabel">Price Incl. VAT</div><div class="dval">£${parseFloat(j.priceQuotedInclVat).toLocaleString('en-GB',{minimumFractionDigits:2})}</div></div>`:''}
+          ${j.complianceStandard?`<div class="date-box"><div class="dlabel">Compliance Std.</div><div class="dval">${j.complianceStandard}</div></div>`:''}
+          ${j.datePaid?`<div class="date-box"><div class="dlabel">Paid</div><div class="dval">${fmtDateVal(j.datePaid)}</div></div>`:''}
+        </div>
+      </div>
+      <div class="detail-section" style="margin-top:16px"><h4>Booking Dates</h4>
+        <div class="dates-strip">
+          <div class="date-box"><div class="dlabel">PO Sent Sub.</div><div class="dval ${!j.poSentSubcontractor?'empty':''}">${fmtDateVal(j.poSentSubcontractor)||'—'}</div></div>
+          <div class="date-box"><div class="dlabel">Chased Sub.</div><div class="dval ${!j.chasedSubcontractor?'empty':''}">${fmtDateVal(j.chasedSubcontractor)||'—'}</div></div>
+          <div class="date-box"><div class="dlabel">Proposed Date (Tenant)</div><div class="dval ${!j.proposedDateTenant?'empty':''}">${fmtDateVal(j.proposedDateTenant)||'—'}</div></div>
+          <div class="date-box"><div class="dlabel">Booked ADC</div><div class="dval ${!j.bookedAdc?'empty':''}">${fmtDateVal(j.bookedAdc)||'—'}</div></div>
+        </div>
+        <div class="dates-strip" style="margin-top:8px">
+          <div class="date-box"><div class="dlabel">Booked Sub.</div><div class="dval ${!j.bookedSubcontractor?'empty':''}">${fmtDateVal(j.bookedSubcontractor)||'—'}</div></div>
+          <div class="date-box"><div class="dlabel">Tenant Not Resp.</div><div class="dval ${!j.tenantNotResponding?'empty':''}">${fmtDateVal(j.tenantNotResponding)||'—'}</div></div>
+          <div class="date-box"><div class="dlabel">On Hold</div><div class="dval ${!j.onHold?'empty':''}">${fmtDateVal(j.onHold)||'—'}</div></div>
+          <div class="date-box"><div class="dlabel">Rejected/Cancelled</div><div class="dval ${!j.rejectedCancelled?'empty':''}">${fmtDateVal(j.rejectedCancelled)||'—'}</div></div>
+        </div>
+        ${j.poChasedDate?`<div class="dates-strip" style="margin-top:8px"><div class="date-box"><div class="dlabel">PO Chased Date</div><div class="dval">${fmtDateVal(j.poChasedDate)}</div></div></div>`:''}
       </div>
     </div>
     ${tnames.length?`<div class="detail-section" style="margin-bottom:16px"><h4>Assigned Trades</h4>
