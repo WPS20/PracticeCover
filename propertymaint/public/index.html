@@ -196,6 +196,11 @@
   .selected-link { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 0.85rem; margin-top: 4px; }
   .selected-link .remove-link { cursor: pointer; color: var(--mist); margin-left: auto; }
   .selected-link .remove-link:hover { color: var(--red); }
+
+  /* ── Audit Log ── */
+  .badge-created { background: #f0fdf4; color: var(--green); }
+  .badge-updated { background: #eff6ff; color: var(--blue); }
+  .badge-deleted { background: #fef2f2; color: var(--red); }
 </style>
 </head>
 <body>
@@ -238,6 +243,7 @@
       <a onclick="showPage('addresses')" data-page="addresses"><span class="icon">📍</span> Addresses</a>
       <a onclick="showPage('trades')" data-page="trades"><span class="icon">🏗️</span> Trades</a>
       <a onclick="showPage('tasks')" data-page="tasks"><span class="icon">✅</span> All Tasks</a>
+      <a onclick="showPage('log')" data-page="log"><span class="icon">📋</span> Audit Log</a>
       <div class="nav-section admin-only" style="display:none">Admin</div>
       <a onclick="showPage('users')" data-page="users" class="admin-only" style="display:none"><span class="icon">🔑</span> Users</a>
     </nav>
@@ -348,6 +354,33 @@
       </div>
 
 
+      <!-- AUDIT LOG -->
+      <div class="page" id="page-log">
+        <div class="card">
+          <div class="card-header">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <div class="search-bar"><input type="text" placeholder="Search log…" id="log-search" oninput="renderLog()"></div>
+              <select id="log-entity-filter" onchange="renderLog()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
+                <option value="all">All Types</option>
+                <option value="Customer">Customers</option>
+                <option value="Address">Addresses</option>
+                <option value="Job">Jobs</option>
+                <option value="Trade">Trades</option>
+              </select>
+              <select id="log-action-filter" onchange="renderLog()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
+                <option value="">All Actions</option>
+                <option value="created">Created</option>
+                <option value="updated">Updated</option>
+                <option value="deleted">Deleted</option>
+              </select>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>When</th><th>User</th><th>Action</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody id="log-tbody"></tbody>
+          </table>
+        </div>
+      </div>
       <!-- ALL TASKS -->
       <div class="page" id="page-tasks">
         <div class="card">
@@ -575,7 +608,7 @@ async function doLogout() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const pageTitles = { dashboard: 'My Tasks', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Trades', users: 'User Management', tasks: 'All Tasks' };
+const pageTitles = { dashboard: 'My Tasks', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Trades', users: 'User Management', tasks: 'All Tasks', log: 'Audit Log' };
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -594,6 +627,7 @@ function showPage(name) {
   };
   document.getElementById('topbar-action').innerHTML = actions[name] || '';
   if (name === 'tasks') { loadAllTasks(); }
+  if (name === 'log') { loadLog(); }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -1146,6 +1180,51 @@ const _origShowPage = showPage;
 // Patch loadAll to also load tasks
 const _origLoadAll = loadAll;
 
+
+// ── Audit Log ─────────────────────────────────────────────────────────────────
+let logData = [];
+
+async function loadLog() {
+  const entity = document.getElementById('log-entity-filter')?.value || 'all';
+  const search = document.getElementById('log-search')?.value || '';
+  const params = new URLSearchParams({ entity, limit: 500 });
+  if (search) params.set('search', search);
+  const data = await api('GET', '/api/audit-log?' + params.toString());
+  if (!data) return;
+  logData = data;
+  renderLog();
+}
+
+function renderLog() {
+  const q = (document.getElementById('log-search')?.value || '').toLowerCase();
+  const ef = document.getElementById('log-entity-filter')?.value || 'all';
+  const af = document.getElementById('log-action-filter')?.value || '';
+
+  let rows = logData.filter(r => {
+    if (ef !== 'all' && r.entity_type !== ef) return false;
+    if (af && r.action !== af) return false;
+    if (q && !r.description.toLowerCase().includes(q) && !(r.user_name||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('log-tbody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No log entries found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const dt = new Date(r.created_at);
+    const dateStr = dt.toLocaleDateString('en-GB') + ' ' + dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    return `<tr>
+      <td style="white-space:nowrap;color:var(--mist);font-size:0.82rem">${dateStr}</td>
+      <td><strong style="font-size:0.87rem">${r.user_name || '—'}</strong></td>
+      <td>${badge(r.action, r.action)}</td>
+      <td><span style="font-size:0.82rem;color:var(--slate);font-weight:500">${r.entity_type}</span></td>
+      <td style="font-size:0.87rem">${r.description}</td>
+    </tr>`;
+  }).join('');
+}
 // ── Init ──────────────────────────────────────────────────────────────────────
 init();
 </script>

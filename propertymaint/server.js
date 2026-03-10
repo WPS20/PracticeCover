@@ -49,6 +49,18 @@ const requireAdmin = (req, res, next) => {
 // ─── Static files (login page served before auth) ────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+// ─── Audit log helper ─────────────────────────────────────────────────────────
+async function auditLog(userId, userName, action, entityType, entityId, description) {
+  try {
+    await query(
+      'INSERT INTO audit_log (id, user_id, user_name, action, entity_type, entity_id, description) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+      [uuidv4(), userId, userName, action, entityType, entityId, description]
+    );
+  } catch (e) {
+    console.error('Audit log error:', e.message);
+  }
+}
 // ─── Auth routes ──────────────────────────────────────────────────────────────
 app.post('/api/auth/login', async (req, res) => {
   try {
@@ -135,7 +147,9 @@ app.post('/api/customers', requireAuth, async (req, res) => {
   try {
     const { type, name, email, phone } = req.body;
     const result = await query('INSERT INTO customers (id,type,name,email,phone) VALUES ($1,$2,$3,$4,$5) RETURNING *', [uuidv4(),type,name,email,phone]);
-    res.status(201).json(normaliseCustomer(result.rows[0]));
+    const c = result.rows[0];
+    await auditLog(req.session.userId, req.session.name, 'created', 'Customer', c.id, `Created customer "${c.name}"`);
+    res.status(201).json(normaliseCustomer(c));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.put('/api/customers/:id', requireAuth, async (req, res) => {
@@ -143,12 +157,19 @@ app.put('/api/customers/:id', requireAuth, async (req, res) => {
     const { type, name, email, phone } = req.body;
     const result = await query('UPDATE customers SET type=$1,name=$2,email=$3,phone=$4 WHERE id=$5 RETURNING *', [type,name,email,phone,req.params.id]);
     if (!result.rows.length) return res.status(404).json({ error: 'Not found' });
-    res.json(normaliseCustomer(result.rows[0]));
+    const c = result.rows[0];
+    await auditLog(req.session.userId, req.session.name, 'updated', 'Customer', c.id, `Updated customer "${c.name}"`);
+    res.json(normaliseCustomer(c));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.delete('/api/customers/:id', requireAuth, async (req, res) => {
-  try { await query('DELETE FROM customers WHERE id=$1', [req.params.id]); res.json({ success: true }); }
-  catch (e) { res.status(500).json({ error: e.message }); }
+  try {
+    const existing = await query('SELECT name FROM customers WHERE id=$1', [req.params.id]);
+    const name = existing.rows[0]?.name || req.params.id;
+    await query('DELETE FROM customers WHERE id=$1', [req.params.id]);
+    await auditLog(req.session.userId, req.session.name, 'deleted', 'Customer', req.params.id, `Deleted customer "${name}"`);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // Addresses
@@ -165,7 +186,10 @@ app.post('/api/addresses', requireAuth, async (req, res) => {
   try {
     const { customerId, label, line1, line2, city, postcode } = req.body;
     const result = await query('INSERT INTO addresses (id,customer_id,label,line1,line2,city,postcode) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *', [uuidv4(),customerId,label,line1,line2,city,postcode]);
-    res.status(201).json(normaliseAddress(result.rows[0]));
+    const a = result.rows[0];
+    const desc = `Created address "${[a.label, a.line1, a.postcode].filter(Boolean).join(', ')}"`;
+    await auditLog(req.session.userId, req.session.name, 'created', 'Address', a.id, desc);
+    res.status(201).json(normaliseAddress(a));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.put('/api/addresses/:id', requireAuth, async (req, res) => {
@@ -173,12 +197,21 @@ app.put('/api/addresses/:id', requireAuth, async (req, res) => {
     const { customerId, label, line1, line2, city, postcode } = req.body;
     const result = await query('UPDATE addresses SET customer_id=$1,label=$2,line1=$3,line2=$4,city=$5,postcode=$6 WHERE id=$7 RETURNING *', [customerId,label,line1,line2,city,postcode,req.params.id]);
     if (!result.rows.length) return res.status(404).json({ error: 'Not found' });
-    res.json(normaliseAddress(result.rows[0]));
+    const a = result.rows[0];
+    const desc = `Updated address "${[a.label, a.line1, a.postcode].filter(Boolean).join(', ')}"`;
+    await auditLog(req.session.userId, req.session.name, 'updated', 'Address', a.id, desc);
+    res.json(normaliseAddress(a));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.delete('/api/addresses/:id', requireAuth, async (req, res) => {
-  try { await query('DELETE FROM addresses WHERE id=$1', [req.params.id]); res.json({ success: true }); }
-  catch (e) { res.status(500).json({ error: e.message }); }
+  try {
+    const existing = await query('SELECT label, line1, postcode FROM addresses WHERE id=$1', [req.params.id]);
+    const a = existing.rows[0];
+    const desc = a ? `Deleted address "${[a.label, a.line1, a.postcode].filter(Boolean).join(', ')}"` : `Deleted address ${req.params.id}`;
+    await query('DELETE FROM addresses WHERE id=$1', [req.params.id]);
+    await auditLog(req.session.userId, req.session.name, 'deleted', 'Address', req.params.id, desc);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // Trades
@@ -190,7 +223,9 @@ app.post('/api/trades', requireAuth, async (req, res) => {
   try {
     const { status, companyName, companyAddress, contactName, contactNumber, contactEmail, services } = req.body;
     const result = await query('INSERT INTO trades (id,status,company_name,company_address,contact_name,contact_number,contact_email,services) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [uuidv4(),status,companyName,companyAddress,contactName,contactNumber,contactEmail,services]);
-    res.status(201).json(normaliseTrade(result.rows[0]));
+    const t = result.rows[0];
+    await auditLog(req.session.userId, req.session.name, 'created', 'Trade', t.id, `Created trade "${t.company_name}"`);
+    res.status(201).json(normaliseTrade(t));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.put('/api/trades/:id', requireAuth, async (req, res) => {
@@ -198,12 +233,19 @@ app.put('/api/trades/:id', requireAuth, async (req, res) => {
     const { status, companyName, companyAddress, contactName, contactNumber, contactEmail, services } = req.body;
     const result = await query('UPDATE trades SET status=$1,company_name=$2,company_address=$3,contact_name=$4,contact_number=$5,contact_email=$6,services=$7 WHERE id=$8 RETURNING *', [status,companyName,companyAddress,contactName,contactNumber,contactEmail,services,req.params.id]);
     if (!result.rows.length) return res.status(404).json({ error: 'Not found' });
-    res.json(normaliseTrade(result.rows[0]));
+    const t = result.rows[0];
+    await auditLog(req.session.userId, req.session.name, 'updated', 'Trade', t.id, `Updated trade "${t.company_name}"`);
+    res.json(normaliseTrade(t));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.delete('/api/trades/:id', requireAuth, async (req, res) => {
-  try { await query('DELETE FROM trades WHERE id=$1', [req.params.id]); res.json({ success: true }); }
-  catch (e) { res.status(500).json({ error: e.message }); }
+  try {
+    const existing = await query('SELECT company_name FROM trades WHERE id=$1', [req.params.id]);
+    const name = existing.rows[0]?.company_name || req.params.id;
+    await query('DELETE FROM trades WHERE id=$1', [req.params.id]);
+    await auditLog(req.session.userId, req.session.name, 'deleted', 'Trade', req.params.id, `Deleted trade "${name}"`);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // Jobs
@@ -230,7 +272,9 @@ app.post('/api/jobs', requireAuth, async (req, res) => {
       [id,workOrderId,customerId,addressId,title,status||'new',actionRequired,orNull(dateReceived),orNull(dateBooked),orNull(dateCompleted),orNull(dateInvoiced),orNull(datePaid)]
     );
     if (tradeIds && tradeIds.length) await Promise.all(tradeIds.map(tid => query('INSERT INTO job_trades (job_id,trade_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [id,tid])));
-    res.status(201).json(normaliseJob(result.rows[0], tradeIds || [], []));
+    const j = result.rows[0];
+    await auditLog(req.session.userId, req.session.name, 'created', 'Job', j.id, `Created job "${j.title}" (${j.work_order_id})`);
+    res.status(201).json(normaliseJob(j, tradeIds || [], []));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.put('/api/jobs/:id', requireAuth, async (req, res) => {
@@ -243,12 +287,20 @@ app.put('/api/jobs/:id', requireAuth, async (req, res) => {
     if (!result.rows.length) return res.status(404).json({ error: 'Not found' });
     await query('DELETE FROM job_trades WHERE job_id=$1', [req.params.id]);
     if (tradeIds && tradeIds.length) await Promise.all(tradeIds.map(tid => query('INSERT INTO job_trades (job_id,trade_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [req.params.id,tid])));
-    res.json(normaliseJob(result.rows[0], tradeIds || [], []));
+    const j = result.rows[0];
+    await auditLog(req.session.userId, req.session.name, 'updated', 'Job', j.id, `Updated job "${j.title}" (${j.work_order_id}) — status: ${j.status}`);
+    res.json(normaliseJob(j, tradeIds || [], []));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.delete('/api/jobs/:id', requireAuth, async (req, res) => {
-  try { await query('DELETE FROM jobs WHERE id=$1', [req.params.id]); res.json({ success: true }); }
-  catch (e) { res.status(500).json({ error: e.message }); }
+  try {
+    const existing = await query('SELECT title, work_order_id FROM jobs WHERE id=$1', [req.params.id]);
+    const j = existing.rows[0];
+    const desc = j ? `Deleted job "${j.title}" (${j.work_order_id})` : `Deleted job ${req.params.id}`;
+    await query('DELETE FROM jobs WHERE id=$1', [req.params.id]);
+    await auditLog(req.session.userId, req.session.name, 'deleted', 'Job', req.params.id, desc);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/jobs/:id/communications', requireAuth, async (req, res) => {
   try {
@@ -273,6 +325,23 @@ app.get('/api/stats', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// Audit log
+app.get('/api/audit-log', requireAuth, async (req, res) => {
+  try {
+    const { entity, search, limit } = req.query;
+    let q = 'SELECT * FROM audit_log';
+    const params = [];
+    const conditions = [];
+    if (entity && entity !== 'all') { conditions.push(`entity_type = $${params.length+1}`); params.push(entity); }
+    if (search) { conditions.push(`(description ILIKE $${params.length+1} OR user_name ILIKE $${params.length+1})`); params.push('%'+search+'%'); }
+    if (conditions.length) q += ' WHERE ' + conditions.join(' AND ');
+    q += ' ORDER BY created_at DESC';
+    q += ` LIMIT ${parseInt(limit) || 200}`;
+    const result = await query(q, params);
+    res.json(result.rows);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
 // Catch-all
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
