@@ -10,12 +10,37 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── Database connection ──────────────────────────────────────────────────────
+const dbUrl = (process.env.DATABASE_URL || '').replace(/^postgres:\/\//, 'postgresql://');
+
+if (!dbUrl) {
+  console.error('ERROR: DATABASE_URL environment variable is not set!');
+  process.exit(1);
+}
+
+console.log('Connecting to database...');
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: dbUrl,
   ssl: { rejectUnauthorized: false }
 });
 
-const query = (text, params) => pool.query(text, params);
+pool.connect((err, client, release) => {
+  if (err) {
+    console.error('ERROR: Failed to connect to database:', err.message);
+  } else {
+    console.log('SUCCESS: Database connected!');
+    release();
+  }
+});
+
+const query = async (text, params) => {
+  try {
+    return await pool.query(text, params);
+  } catch (err) {
+    console.error('DB Query Error:', err.message, '| Query:', text);
+    throw err;
+  }
+};
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
 
