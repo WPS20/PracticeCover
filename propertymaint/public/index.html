@@ -626,7 +626,7 @@ function showPage(name) {
     dashboard: ''
   };
   document.getElementById('topbar-action').innerHTML = actions[name] || '';
-  if (name === 'tasks') { loadAllTasks(); }
+  if (name === 'tasks') { renderAllTasks(); populateTaskUserFilter(); }
   if (name === 'log') { loadLog(); }
 }
 
@@ -652,7 +652,8 @@ async function loadAll() {
   if (isAdmin()) renderUsers();
   populateAddrFilter();
   populateTaskUserFilter();
-  loadMyTasks();
+  // Load both task sets in parallel so dashboard and All Tasks page always have data
+  await Promise.all([loadMyTasks(), loadAllTasks()]);
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
@@ -808,7 +809,6 @@ function renderCustomers() {
 }
 
 function openCustomerModal(id=null) {
-  if (!isAdmin()) return;
   editingId.customer=id;
   document.getElementById('cust-modal-title').textContent=id?'Edit Customer':'New Customer';
   ['name','email','phone'].forEach(f=>document.getElementById('cf-'+f).value='');
@@ -1093,14 +1093,14 @@ function openTaskModal(id = null) {
   document.getElementById('tf2-trade-selected').innerHTML = '';
   ['tf2-customer-list','tf2-job-list','tf2-trade-list'].forEach(id => document.getElementById(id).style.display = 'none');
 
-  // Populate user dropdown
-  const allUsers = state.users && state.users.length ? state.users : [];
+  // Populate user dropdown — fetch fresh if not yet loaded
+  if (!state.users || !state.users.length) {
+    const users = await api('GET', '/api/users');
+    if (users) state.users = users;
+  }
+  const allUsers = state.users || [];
   const userSel = document.getElementById('tf2-assignedTo');
   userSel.innerHTML = '<option value="">Select user…</option>' + allUsers.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
-  // Add self if not in users list (non-admin)
-  if (!allUsers.find(u => u.id === currentUser.id)) {
-    userSel.innerHTML += `<option value="${currentUser.id}">${currentUser.name} (me)</option>`;
-  }
 
   if (id) {
     const t = [...(state.myTasks||[]), ...(state.allTasks||[])].find(t => t.id === id);
