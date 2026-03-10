@@ -628,7 +628,7 @@ function showPage(name) {
     dashboard: ''
   };
   document.getElementById('topbar-action').innerHTML = actions[name] || '';
-  if (name === 'tasks') { populateTaskUserFilter(); if (state.allTasks) renderAllTasks(); else loadAllTasks(); }
+  if (name === 'tasks') { populateTaskUserFilter(); loadAllTasks(); }
   if (name === 'log') { loadLog(); }
 }
 
