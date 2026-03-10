@@ -243,7 +243,7 @@
       <a onclick="showPage('addresses')" data-page="addresses"><span class="icon">📍</span> Addresses</a>
       <a onclick="showPage('trades')" data-page="trades"><span class="icon">🏗️</span> Trades</a>
       <a onclick="showPage('tasks')" data-page="tasks"><span class="icon">✅</span> All Tasks</a>
-      <a onclick="showPage('log')" data-page="log"><span class="icon">📋</span> Audit Log</a>
+      <a onclick="showPage('log')" data-page="log" class="admin-only" style="display:none"><span class="icon">📋</span> Audit Log</a>
       <div class="nav-section admin-only" style="display:none">Admin</div>
       <a onclick="showPage('users')" data-page="users" class="admin-only" style="display:none"><span class="icon">🔑</span> Users</a>
     </nav>
@@ -579,6 +579,7 @@ function showApp() {
   // Show admin-only nav items
   if (currentUser.role === 'admin') {
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+    document.querySelectorAll('a.admin-only').forEach(el => el.style.display = 'flex');
   }
   loadAll();
 }
@@ -626,7 +627,7 @@ function showPage(name) {
     dashboard: ''
   };
   document.getElementById('topbar-action').innerHTML = actions[name] || '';
-  if (name === 'tasks') { renderAllTasks(); populateTaskUserFilter(); }
+  if (name === 'tasks') { populateTaskUserFilter(); if (state.allTasks) renderAllTasks(); else loadAllTasks(); }
   if (name === 'log') { loadLog(); }
 }
 
@@ -652,8 +653,9 @@ async function loadAll() {
   if (isAdmin()) renderUsers();
   populateAddrFilter();
   populateTaskUserFilter();
-  // Load both task sets in parallel so dashboard and All Tasks page always have data
-  await Promise.all([loadMyTasks(), loadAllTasks()]);
+  // Load tasks after everything else - sequential to avoid race on DOM elements
+  await loadMyTasks();
+  await loadAllTasks();
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
@@ -975,6 +977,7 @@ function renderMyTasks(tasks) {
   const el = document.getElementById('my-tasks-list');
   const greeting = document.getElementById('dashboard-greeting');
   const subtext = document.getElementById('dashboard-subtext');
+  if (!el || !greeting || !subtext) return;
   const hour = new Date().getHours();
   const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   greeting.textContent = greet + ', ' + currentUser.name;
@@ -1069,7 +1072,9 @@ async function loadAllTasks() {
   const tasks = await api('GET', '/api/tasks');
   if (!tasks) return;
   state.allTasks = tasks;
-  renderAllTasks();
+  // Only render if the element exists and is visible
+  const el = document.getElementById('all-tasks-list');
+  if (el) renderAllTasks();
 }
 
 function populateTaskUserFilter() {
