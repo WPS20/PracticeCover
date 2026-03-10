@@ -544,7 +544,7 @@
 
 <script>
 // ── State ─────────────────────────────────────────────────────────────────────
-let state = { customers: [], addresses: [], jobs: [], trades: [], users: [] };
+let state = { customers: [], addresses: [], jobs: [], trades: [], users: [], myTasks: [], allTasks: [] };
 let currentUser = null;
 let editingId = { job: null, customer: null, address: null, trade: null, user: null };
 let currentJobForComm = null;
@@ -605,7 +605,7 @@ async function doLogin() {
 async function doLogout() {
   await fetch('/api/auth/logout', { method: 'POST' });
   currentUser = null;
-  state = { customers: [], addresses: [], jobs: [], trades: [], users: [] };
+  state = { customers: [], addresses: [], jobs: [], trades: [], users: [], myTasks: [], allTasks: [] };
   showLogin();
 }
 
@@ -649,8 +649,7 @@ async function loadAll() {
   if (!customers) return;
   state = { ...state, customers, addresses, jobs, trades };
   const users = await api('GET', '/api/users');
-  if (users) state.users = users;
-  renderDashboard(); renderJobs(); renderCustomers(); renderAddresses(); renderTrades();
+  if (users) state.users = users; renderJobs(); renderCustomers(); renderAddresses(); renderTrades();
   if (isAdmin()) renderUsers();
   populateAddrFilter();
   populateTaskUserFilter();
@@ -705,7 +704,6 @@ function renderJobs() {
 }
 
 function openJobModal(id=null) {
-  if (!isAdmin()) return;
   editingId.job = id;
   document.getElementById('job-modal-title').textContent = id ? 'Edit Job' : 'New Job';
   ['workOrderId','title','actionRequired','dateReceived','dateBooked','dateCompleted','dateInvoiced','datePaid'].forEach(f => document.getElementById('jf-'+f).value='');
@@ -968,8 +966,9 @@ let editingTaskId = null;
 let taskLinks = { customerId: null, jobId: null, tradeId: null };
 
 async function loadMyTasks() {
+  if (!currentUser || !currentUser.id) return;
   const tasks = await api('GET', '/api/tasks?userId=' + currentUser.id);
-  if (!tasks) return;
+  if (!tasks || !Array.isArray(tasks)) return;
   state.myTasks = tasks;
   renderMyTasks(tasks);
 }
@@ -1071,9 +1070,8 @@ async function toggleTaskComplete(id, checked) {
 
 async function loadAllTasks() {
   const tasks = await api('GET', '/api/tasks');
-  if (!tasks) return;
+  if (!tasks || !Array.isArray(tasks)) return;
   state.allTasks = tasks;
-  // Only render if the element exists and is visible
   const el = document.getElementById('all-tasks-list');
   if (el) renderAllTasks();
 }
