@@ -278,6 +278,12 @@ app.get('/api/stats', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.get('/api/genhash/:password', async (req, res) => {
+  const hash = await bcrypt.hash(req.params.password, 12);
+  res.json({ hash });
+});
+
+
 // Catch-all
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
