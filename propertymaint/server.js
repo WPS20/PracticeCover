@@ -58,8 +58,13 @@ app.post('/api/auth/login', async (req, res) => {
     if (!result.rows.length) return res.status(401).json({ error: 'Invalid email or password' });
     const user = result.rows[0];
     if (!user.active) return res.status(401).json({ error: 'Account disabled. Contact your administrator.' });
-    const valid = await bcrypt.compare(password, user.password_hash);
-    if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
+    console.log('Attempting login for:', email);
+console.log('Password entered length:', password.length);
+console.log('Hash from DB:', user.password_hash);
+console.log('Hash length:', user.password_hash.length);
+const valid = await bcrypt.compare(password, user.password_hash);
+console.log('Password valid:', valid);
+if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
     req.session.userId = user.id;
     req.session.role = user.role;
     req.session.name = user.name;
