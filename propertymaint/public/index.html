@@ -164,6 +164,38 @@
   .status-item .sname { font-size: 0.87rem; font-weight: 500; }
   .status-item .scount { font-family: 'DM Serif Display', serif; font-size: 1.4rem; }
   .readonly-notice { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 16px; font-size: 0.85rem; color: #92400e; margin-bottom: 16px; }
+
+  /* ── Tasks ── */
+  .task-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-bottom: 10px; display: flex; align-items: flex-start; gap: 14px; transition: box-shadow 0.15s; }
+  .task-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+  .task-card.overdue { border-left: 3px solid var(--red); }
+  .task-card.due-today { border-left: 3px solid var(--amber); }
+  .task-card.completed { opacity: 0.6; }
+  .task-checkbox { width: 20px; height: 20px; accent-color: var(--accent); flex-shrink: 0; margin-top: 2px; cursor: pointer; }
+  .task-body { flex: 1; }
+  .task-desc { font-size: 0.92rem; font-weight: 500; color: var(--ink); margin-bottom: 6px; }
+  .task-desc.done { text-decoration: line-through; color: var(--mist); }
+  .task-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.78rem; color: var(--mist); align-items: center; }
+  .task-meta .tmeta-item { display: flex; align-items: center; gap: 3px; }
+  .task-date { font-weight: 600; }
+  .task-date.overdue { color: var(--red); }
+  .task-date.due-today { color: var(--amber); }
+  .task-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .tasks-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .tasks-header h3 { font-family: 'DM Serif Display', serif; font-size: 1.3rem; }
+  .tasks-greeting { font-size: 0.85rem; color: var(--mist); margin-top: 2px; }
+  .task-section-label { font-size: 0.72rem; color: var(--mist); text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; margin: 20px 0 8px; }
+  .badge-open { background: #eff6ff; color: var(--blue); }
+  .badge-in_progress { background: #fef3c7; color: #92400e; }
+  .badge-complete { background: #f0fdf4; color: var(--green); }
+  .search-dropdown { position: relative; }
+  .search-dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--white); border: 1.5px solid var(--accent); border-top: none; border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto; z-index: 100; }
+  .search-dropdown-item { padding: 9px 12px; font-size: 0.87rem; cursor: pointer; border-bottom: 1px solid var(--surface); }
+  .search-dropdown-item:hover { background: var(--surface); }
+  .search-dropdown-item:last-child { border-bottom: none; }
+  .selected-link { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 0.85rem; margin-top: 4px; }
+  .selected-link .remove-link { cursor: pointer; color: var(--mist); margin-left: auto; }
+  .selected-link .remove-link:hover { color: var(--red); }
 </style>
 </head>
 <body>
@@ -205,6 +237,7 @@
       <a onclick="showPage('customers')" data-page="customers"><span class="icon">👥</span> Customers</a>
       <a onclick="showPage('addresses')" data-page="addresses"><span class="icon">📍</span> Addresses</a>
       <a onclick="showPage('trades')" data-page="trades"><span class="icon">🏗️</span> Trades</a>
+      <a onclick="showPage('tasks')" data-page="tasks"><span class="icon">✅</span> All Tasks</a>
       <div class="nav-section admin-only" style="display:none">Admin</div>
       <a onclick="showPage('users')" data-page="users" class="admin-only" style="display:none"><span class="icon">🔑</span> Users</a>
     </nav>
@@ -224,16 +257,26 @@
 
       <!-- DASHBOARD -->
       <div class="page active" id="page-dashboard">
-        <div class="stats-grid" id="stats-grid"></div>
-        <div class="dashboard-grid">
-          <div class="card">
-            <div class="card-header"><h3>Recent Jobs</h3><button class="btn btn-secondary btn-sm" onclick="showPage('jobs')">View All</button></div>
-            <table><thead><tr><th>Work Order</th><th>Title</th><th>Customer</th><th>Status</th></tr></thead>
-            <tbody id="recent-jobs"></tbody></table>
+        <div class="tasks-header">
+          <div>
+            <h3 id="dashboard-greeting">My Tasks</h3>
+            <div class="tasks-greeting" id="dashboard-subtext"></div>
           </div>
-          <div class="card">
-            <div class="card-header"><h3>Jobs by Status</h3></div>
-            <div style="padding:16px"><div class="status-list" id="status-breakdown"></div></div>
+          <button class="btn btn-primary" onclick="openTaskModal()">+ New Task</button>
+        </div>
+        <div id="my-tasks-list"></div>
+        <div style="margin-top:32px">
+          <div class="stats-grid" id="stats-grid"></div>
+          <div class="dashboard-grid">
+            <div class="card">
+              <div class="card-header"><h3>Recent Jobs</h3><button class="btn btn-secondary btn-sm" onclick="showPage('jobs')">View All</button></div>
+              <table><thead><tr><th>Work Order</th><th>Title</th><th>Customer</th><th>Status</th></tr></thead>
+              <tbody id="recent-jobs"></tbody></table>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Jobs by Status</h3></div>
+              <div style="padding:16px"><div class="status-list" id="status-breakdown"></div></div>
+            </div>
           </div>
         </div>
       </div>
@@ -304,6 +347,27 @@
         </div>
       </div>
 
+
+      <!-- ALL TASKS -->
+      <div class="page" id="page-tasks">
+        <div class="card">
+          <div class="card-header">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <div class="search-bar"><input type="text" placeholder="Search tasks…" id="task-search" oninput="renderAllTasks()"></div>
+              <select id="task-user-filter" onchange="renderAllTasks()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
+                <option value="">All Users</option>
+              </select>
+              <select id="task-status-filter" onchange="renderAllTasks()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
+                <option value="">All Statuses</option>
+                <option value="open">Open</option>
+                <option value="in_progress">In Progress</option>
+                <option value="complete">Complete</option>
+              </select>
+            </div>
+          </div>
+          <div style="padding:16px" id="all-tasks-list"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -511,7 +575,7 @@ async function doLogout() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const pageTitles = { dashboard: 'Dashboard', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Trades', users: 'User Management' };
+const pageTitles = { dashboard: 'My Tasks', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Trades', users: 'User Management', tasks: 'All Tasks' };
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -529,6 +593,7 @@ function showPage(name) {
     dashboard: ''
   };
   document.getElementById('topbar-action').innerHTML = actions[name] || '';
+  if (name === 'tasks') { loadAllTasks(); }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -547,13 +612,13 @@ async function loadAll() {
   ]);
   if (!customers) return;
   state = { ...state, customers, addresses, jobs, trades };
-  if (isAdmin()) {
-    const users = await api('GET', '/api/users');
-    if (users) state.users = users;
-  }
+  const users = await api('GET', '/api/users');
+  if (users) state.users = users;
   renderDashboard(); renderJobs(); renderCustomers(); renderAddresses(); renderTrades();
   if (isAdmin()) renderUsers();
   populateAddrFilter();
+  populateTaskUserFilter();
+  loadMyTasks();
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
@@ -860,8 +925,284 @@ async function deleteUser(id) {
   await loadAll();
 }
 
+
+// ── Tasks ─────────────────────────────────────────────────────────────────────
+let editingTaskId = null;
+let taskLinks = { customerId: null, jobId: null, tradeId: null };
+
+async function loadMyTasks() {
+  const tasks = await api('GET', '/api/tasks?userId=' + currentUser.id);
+  if (!tasks) return;
+  state.myTasks = tasks;
+  renderMyTasks(tasks);
+}
+
+function renderMyTasks(tasks) {
+  const el = document.getElementById('my-tasks-list');
+  const greeting = document.getElementById('dashboard-greeting');
+  const subtext = document.getElementById('dashboard-subtext');
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  greeting.textContent = greet + ', ' + currentUser.name;
+
+  const open = tasks.filter(t => t.status !== 'complete');
+  const done = tasks.filter(t => t.status === 'complete');
+  const overdue = open.filter(t => t.targetDate && t.targetDate < today());
+  subtext.textContent = open.length + ' task' + (open.length !== 1 ? 's' : '') + ' open' + (overdue.length ? ' · ' + overdue.length + ' overdue' : '');
+
+  if (!tasks.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--mist)">No tasks assigned to you yet</div>';
+    return;
+  }
+
+  let html = '';
+  if (open.length) {
+    html += '<div class="task-section-label">Open Tasks</div>';
+    html += open.map(t => taskCardHtml(t)).join('');
+  }
+  if (done.length) {
+    html += '<div class="task-section-label">Completed</div>';
+    html += done.map(t => taskCardHtml(t)).join('');
+  }
+  el.innerHTML = html;
+}
+
+function renderAllTasks() {
+  const q = (document.getElementById('task-search')?.value || '').toLowerCase();
+  const uf = document.getElementById('task-user-filter')?.value || '';
+  const sf = document.getElementById('task-status-filter')?.value || '';
+  const tasks = (state.allTasks || []).filter(t => {
+    if (uf && t.assignedTo !== uf) return false;
+    if (sf && t.status !== sf) return false;
+    if (q && !t.description.toLowerCase().includes(q) &&
+        !(t.assignedToName||'').toLowerCase().includes(q) &&
+        !(t.customerName||'').toLowerCase().includes(q) &&
+        !(t.jobTitle||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const el = document.getElementById('all-tasks-list');
+  if (!tasks.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--mist)">No tasks found</div>'; return; }
+  el.innerHTML = tasks.map(t => taskCardHtml(t, true)).join('');
+}
+
+function taskCardHtml(t, showUser) {
+  const td = t.targetDate;
+  const isOverdue = td && td < today() && t.status !== 'complete';
+  const isToday = td === today();
+  let cardClass = 'task-card';
+  if (t.status === 'complete') cardClass += ' completed';
+  else if (isOverdue) cardClass += ' overdue';
+  else if (isToday) cardClass += ' due-today';
+
+  let dateClass = 'task-date';
+  if (isOverdue) dateClass += ' overdue';
+  else if (isToday) dateClass += ' due-today';
+
+  const links = [
+    t.customerName ? '👥 ' + t.customerName : '',
+    t.jobTitle ? '🔧 ' + (t.workOrderId ? t.workOrderId + ' – ' : '') + t.jobTitle : '',
+    t.tradeName ? '🏗️ ' + t.tradeName : ''
+  ].filter(Boolean);
+
+  return `<div class="${cardClass}">
+    <input type="checkbox" class="task-checkbox" ${t.status==='complete'?'checked':''} onchange="toggleTaskComplete('${t.id}', this.checked)">
+    <div class="task-body">
+      <div class="task-desc ${t.status==='complete'?'done':''}">${t.description}</div>
+      <div class="task-meta">
+        <span class="tmeta-item ${dateClass}">📅 ${fmtDateVal(td)||'No date'}</span>
+        ${showUser && t.assignedToName ? `<span class="tmeta-item">👤 ${t.assignedToName}</span>` : ''}
+        ${t.assignedByName ? `<span class="tmeta-item" style="color:var(--mist)">assigned by ${t.assignedByName}</span>` : ''}
+        ${links.map(l => `<span class="tmeta-item">${l}</span>`).join('')}
+        ${badge(t.status, t.status)}
+      </div>
+    </div>
+    <div class="task-actions">
+      <button class="btn btn-ghost btn-sm" onclick="openTaskModal('${t.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteTask('${t.id}')">Delete</button>
+    </div>
+  </div>`;
+}
+
+async function toggleTaskComplete(id, checked) {
+  const task = [...(state.myTasks||[]), ...(state.allTasks||[])].find(t => t.id === id);
+  if (!task) return;
+  await api('PUT', '/api/tasks/' + id, { ...task, status: checked ? 'complete' : 'open' });
+  await loadMyTasks();
+  if (state.allTasks) await loadAllTasks();
+}
+
+async function loadAllTasks() {
+  const tasks = await api('GET', '/api/tasks');
+  if (!tasks) return;
+  state.allTasks = tasks;
+  renderAllTasks();
+}
+
+function populateTaskUserFilter() {
+  const sel = document.getElementById('task-user-filter');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">All Users</option>' + state.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+}
+
+function openTaskModal(id = null) {
+  editingTaskId = id;
+  taskLinks = { customerId: null, jobId: null, tradeId: null };
+  document.getElementById('task-modal-title').textContent = id ? 'Edit Task' : 'New Task';
+  document.getElementById('tf2-description').value = '';
+  document.getElementById('tf2-targetDate').value = '';
+  document.getElementById('tf2-status').value = 'open';
+  document.getElementById('tf2-customer-search').value = '';
+  document.getElementById('tf2-job-search').value = '';
+  document.getElementById('tf2-trade-search').value = '';
+  document.getElementById('tf2-customer-selected').innerHTML = '';
+  document.getElementById('tf2-job-selected').innerHTML = '';
+  document.getElementById('tf2-trade-selected').innerHTML = '';
+  ['tf2-customer-list','tf2-job-list','tf2-trade-list'].forEach(id => document.getElementById(id).style.display = 'none');
+
+  // Populate user dropdown
+  const allUsers = state.users && state.users.length ? state.users : [];
+  const userSel = document.getElementById('tf2-assignedTo');
+  userSel.innerHTML = '<option value="">Select user…</option>' + allUsers.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+  // Add self if not in users list (non-admin)
+  if (!allUsers.find(u => u.id === currentUser.id)) {
+    userSel.innerHTML += `<option value="${currentUser.id}">${currentUser.name} (me)</option>`;
+  }
+
+  if (id) {
+    const t = [...(state.myTasks||[]), ...(state.allTasks||[])].find(t => t.id === id);
+    if (t) {
+      document.getElementById('tf2-description').value = t.description || '';
+      document.getElementById('tf2-targetDate').value = t.targetDate || '';
+      document.getElementById('tf2-status').value = t.status || 'open';
+      userSel.value = t.assignedTo;
+      if (t.customerId) { taskLinks.customerId = t.customerId; document.getElementById('tf2-customer-selected').innerHTML = selectedLinkHtml('customer', t.customerName); }
+      if (t.jobId) { taskLinks.jobId = t.jobId; document.getElementById('tf2-job-selected').innerHTML = selectedLinkHtml('job', (t.workOrderId ? t.workOrderId + ' – ' : '') + t.jobTitle); }
+      if (t.tradeId) { taskLinks.tradeId = t.tradeId; document.getElementById('tf2-trade-selected').innerHTML = selectedLinkHtml('trade', t.tradeName); }
+    }
+  } else {
+    // Default assign to self
+    userSel.value = currentUser.id;
+  }
+  document.getElementById('task-modal').classList.add('open');
+}
+
+function selectedLinkHtml(type, name) {
+  return `<div class="selected-link"><span>${name}</span><span class="remove-link" onclick="clearTaskLink('${type}')">×</span></div>`;
+}
+
+function clearTaskLink(type) {
+  taskLinks[type + 'Id'] = null;
+  document.getElementById('tf2-' + type + '-selected').innerHTML = '';
+  document.getElementById('tf2-' + type + '-search').value = '';
+}
+
+function searchDropdown(type) {
+  const q = document.getElementById('tf2-' + type + '-search').value.toLowerCase();
+  const listEl = document.getElementById('tf2-' + type + '-list');
+  if (!q) { listEl.style.display = 'none'; return; }
+
+  let items = [];
+  if (type === 'customer') items = state.customers.filter(c => c.name.toLowerCase().includes(q)).map(c => ({ id: c.id, label: c.name }));
+  if (type === 'job') items = state.jobs.filter(j => j.title.toLowerCase().includes(q) || (j.workOrderId||'').toLowerCase().includes(q)).map(j => ({ id: j.id, label: (j.workOrderId ? j.workOrderId + ' – ' : '') + j.title }));
+  if (type === 'trade') items = state.trades.filter(t => t.companyName.toLowerCase().includes(q)).map(t => ({ id: t.id, label: t.companyName }));
+
+  if (!items.length) { listEl.style.display = 'none'; return; }
+  listEl.innerHTML = items.slice(0, 8).map(i => `<div class="search-dropdown-item" onclick="selectTaskLink('${type}','${i.id}','${i.label.replace(/'/g,"\'")}')">${i.label}</div>`).join('');
+  listEl.style.display = 'block';
+}
+
+function selectTaskLink(type, id, label) {
+  taskLinks[type + 'Id'] = id;
+  document.getElementById('tf2-' + type + '-selected').innerHTML = selectedLinkHtml(type, label);
+  document.getElementById('tf2-' + type + '-search').value = '';
+  document.getElementById('tf2-' + type + '-list').style.display = 'none';
+}
+
+async function saveTask() {
+  const description = document.getElementById('tf2-description').value.trim();
+  const targetDate = document.getElementById('tf2-targetDate').value;
+  const assignedTo = document.getElementById('tf2-assignedTo').value;
+  const status = document.getElementById('tf2-status').value;
+  if (!description || !targetDate || !assignedTo) return alert('Description, target date and assigned user are required.');
+  const body = { description, targetDate, assignedTo, status, customerId: taskLinks.customerId, jobId: taskLinks.jobId, tradeId: taskLinks.tradeId };
+  if (editingTaskId) await api('PUT', '/api/tasks/' + editingTaskId, body);
+  else await api('POST', '/api/tasks', body);
+  closeModal('task-modal');
+  await loadMyTasks();
+  if (state.allTasks) await loadAllTasks();
+}
+
+async function deleteTask(id) {
+  if (!confirm('Delete this task?')) return;
+  await api('DELETE', '/api/tasks/' + id);
+  await loadMyTasks();
+  if (state.allTasks) await loadAllTasks();
+}
+
+function today() { return new Date().toISOString().split('T')[0]; }
+
+// ── Override showPage to load tasks when needed ────────────────────────────────
+const _origShowPage = showPage;
+// Patch loadAll to also load tasks
+const _origLoadAll = loadAll;
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 init();
 </script>
+
+<!-- ── TASK MODAL ── -->
+<div class="modal-overlay" id="task-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header"><h3 id="task-modal-title">New Task</h3><button class="modal-close" onclick="closeModal('task-modal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid cols-1">
+        <div class="form-group"><label>Description *</label><textarea id="tf2-description" rows="3" placeholder="What needs to be done?"></textarea></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Assign To *</label>
+            <select id="tf2-assignedTo"><option value="">Select user…</option></select>
+          </div>
+          <div class="form-group"><label>Target Date *</label><input type="date" id="tf2-targetDate"></div>
+          <div class="form-group"><label>Status</label>
+            <select id="tf2-status">
+              <option value="open">Open</option>
+              <option value="in_progress">In Progress</option>
+              <option value="complete">Complete</option>
+            </select>
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+          <div style="font-size:0.8rem;font-weight:600;color:var(--slate);margin-bottom:10px">Link to (optional)</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Customer</label>
+              <div class="search-dropdown">
+                <input type="text" id="tf2-customer-search" placeholder="Search customers…" oninput="searchDropdown('customer')">
+                <div class="search-dropdown-list" id="tf2-customer-list" style="display:none"></div>
+              </div>
+              <div id="tf2-customer-selected"></div>
+            </div>
+            <div class="form-group">
+              <label>Job</label>
+              <div class="search-dropdown">
+                <input type="text" id="tf2-job-search" placeholder="Search jobs…" oninput="searchDropdown('job')">
+                <div class="search-dropdown-list" id="tf2-job-list" style="display:none"></div>
+              </div>
+              <div id="tf2-job-selected"></div>
+            </div>
+            <div class="form-group full">
+              <label>Trade</label>
+              <div class="search-dropdown">
+                <input type="text" id="tf2-trade-search" placeholder="Search trades…" oninput="searchDropdown('trade')">
+                <div class="search-dropdown-list" id="tf2-trade-list" style="display:none"></div>
+              </div>
+              <div id="tf2-trade-selected"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('task-modal')">Cancel</button><button class="btn btn-primary" onclick="saveTask()">Save Task</button></div>
+  </div>
+</div>
 </body>
 </html>

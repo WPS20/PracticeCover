@@ -77,7 +77,7 @@ app.get('/api/auth/me', (req, res) => {
 });
 
 // ─── User management (admin only) ────────────────────────────────────────────
-app.get('/api/users', requireAuth, requireAdmin, async (req, res) => {
+app.get('/api/users', requireAuth, async (req, res) => {
   try {
     const result = await query('SELECT id, name, email, role, active, created_at FROM users ORDER BY name ASC');
     res.json(result.rows);
@@ -288,3 +288,105 @@ function normaliseJob(r, tradeIds, communications) {
 function normaliseComm(r) { return { id: r.id, jobId: r.job_id, note: r.note, author: r.author, date: r.date }; }
 function fmtDate(d) { return d ? d.toISOString().split('T')[0] : ''; }
 function orNull(v) { return v && v.trim() !== '' ? v : null; }
+
+// ─── Tasks ────────────────────────────────────────────────────────────────────
+app.get('/api/tasks', requireAuth, async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const result = userId
+      ? await query(`SELECT t.*, 
+          u.name as assigned_to_name,
+          ab.name as assigned_by_name,
+          c.name as customer_name,
+          j.title as job_title, j.work_order_id,
+          tr.company_name as trade_name
+         FROM tasks t
+         LEFT JOIN users u ON t.assigned_to = u.id
+         LEFT JOIN users ab ON t.assigned_by = ab.id
+         LEFT JOIN customers c ON t.customer_id = c.id
+         LEFT JOIN jobs j ON t.job_id = j.id
+         LEFT JOIN trades tr ON t.trade_id = tr.id
+         WHERE t.assigned_to = $1
+         ORDER BY t.target_date ASC, t.created_at ASC`, [userId])
+      : await query(`SELECT t.*,
+          u.name as assigned_to_name,
+          ab.name as assigned_by_name,
+          c.name as customer_name,
+          j.title as job_title, j.work_order_id,
+          tr.company_name as trade_name
+         FROM tasks t
+         LEFT JOIN users u ON t.assigned_to = u.id
+         LEFT JOIN users ab ON t.assigned_by = ab.id
+         LEFT JOIN customers c ON t.customer_id = c.id
+         LEFT JOIN jobs j ON t.job_id = j.id
+         LEFT JOIN trades tr ON t.trade_id = tr.id
+         ORDER BY t.target_date ASC, t.created_at ASC`);
+    res.json(result.rows.map(normaliseTask));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/tasks', requireAuth, async (req, res) => {
+  try {
+    const { description, targetDate, assignedTo, customerId, jobId, tradeId, status } = req.body;
+    if (!description || !targetDate || !assignedTo) return res.status(400).json({ error: 'Description, target date and assigned user are required' });
+    const id = uuidv4();
+    const result = await query(
+      `INSERT INTO tasks (id, description, target_date, assigned_to, assigned_by, customer_id, job_id, trade_id, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      [id, description, targetDate, assignedTo, req.session.userId, orNull2(customerId), orNull2(jobId), orNull2(tradeId), status || 'open']
+    );
+    // fetch full row with joins
+    const full = await query(`SELECT t.*,
+        u.name as assigned_to_name, ab.name as assigned_by_name,
+        c.name as customer_name, j.title as job_title, j.work_order_id, tr.company_name as trade_name
+       FROM tasks t
+       LEFT JOIN users u ON t.assigned_to = u.id
+       LEFT JOIN users ab ON t.assigned_by = ab.id
+       LEFT JOIN customers c ON t.customer_id = c.id
+       LEFT JOIN jobs j ON t.job_id = j.id
+       LEFT JOIN trades tr ON t.trade_id = tr.id
+       WHERE t.id = $1`, [id]);
+    res.status(201).json(normaliseTask(full.rows[0]));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/tasks/:id', requireAuth, async (req, res) => {
+  try {
+    const { description, targetDate, assignedTo, customerId, jobId, tradeId, status } = req.body;
+    await query(
+      `UPDATE tasks SET description=$1, target_date=$2, assigned_to=$3, customer_id=$4, job_id=$5, trade_id=$6, status=$7 WHERE id=$8`,
+      [description, targetDate, assignedTo, orNull2(customerId), orNull2(jobId), orNull2(tradeId), status, req.params.id]
+    );
+    const full = await query(`SELECT t.*,
+        u.name as assigned_to_name, ab.name as assigned_by_name,
+        c.name as customer_name, j.title as job_title, j.work_order_id, tr.company_name as trade_name
+       FROM tasks t
+       LEFT JOIN users u ON t.assigned_to = u.id
+       LEFT JOIN users ab ON t.assigned_by = ab.id
+       LEFT JOIN customers c ON t.customer_id = c.id
+       LEFT JOIN jobs j ON t.job_id = j.id
+       LEFT JOIN trades tr ON t.trade_id = tr.id
+       WHERE t.id = $1`, [req.params.id]);
+    if (!full.rows.length) return res.status(404).json({ error: 'Not found' });
+    res.json(normaliseTask(full.rows[0]));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/tasks/:id', requireAuth, async (req, res) => {
+  try { await query('DELETE FROM tasks WHERE id=$1', [req.params.id]); res.json({ success: true }); }
+  catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+function normaliseTask(r) {
+  return {
+    id: r.id, description: r.description,
+    targetDate: fmtDate(r.target_date),
+    assignedTo: r.assigned_to, assignedToName: r.assigned_to_name,
+    assignedBy: r.assigned_by, assignedByName: r.assigned_by_name,
+    customerId: r.customer_id, customerName: r.customer_name,
+    jobId: r.job_id, jobTitle: r.job_title, workOrderId: r.work_order_id,
+    tradeId: r.trade_id, tradeName: r.trade_name,
+    status: r.status, createdAt: r.created_at
+  };
+}
+function orNull2(v) { return v && v !== '' ? v : null; }
