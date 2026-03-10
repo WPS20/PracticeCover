@@ -94,14 +94,18 @@
 
   /* ── Badges ── */
   .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
-  .badge-new { background: #eff6ff; color: var(--blue); }
-  .badge-in_progress { background: #fef3c7; color: #92400e; }
-  .badge-booked { background: #f0fdf4; color: var(--green); }
-  .badge-completed { background: #f0fdf4; color: var(--green); }
-  .badge-invoiced { background: #faf5ff; color: var(--purple); }
-  .badge-paid { background: #f0fdf4; color: var(--green); border: 1px solid #bbf7d0; }
-  .badge-on_hold { background: #fef2f2; color: var(--red); }
-  .badge-cancelled { background: #f3f4f6; color: #6b7280; }
+  .badge-needs_to_be_booked_adc { background: #fef3c7; color: #92400e; }
+  .badge-needs_to_be_booked_sub { background: #fef3c7; color: #92400e; }
+  .badge-needs_to_be_booked_adc_sub { background: #fef3c7; color: #92400e; }
+  .badge-booked_adc { background: #eff6ff; color: var(--blue); }
+  .badge-booked_adc_need_sub { background: #eff6ff; color: var(--blue); }
+  .badge-chased_sub { background: #faf5ff; color: var(--purple); }
+  .badge-booked_sub_need_adc { background: #eff6ff; color: var(--blue); }
+  .badge-booked_sub_only { background: #eff6ff; color: var(--blue); }
+  .badge-booked_adc_and_sub { background: #f0fdf4; color: var(--green); }
+  .badge-date_allocated { background: #f0fdf4; color: var(--green); }
+  .badge-tenant_not_responding { background: #fef2f2; color: var(--red); }
+  .badge-on_hold { background: #f3f4f6; color: #6b7280; }
   .badge-active { background: #f0fdf4; color: var(--green); }
   .badge-inactive { background: #f3f4f6; color: #6b7280; }
   .badge-managing_agent { background: #eff6ff; color: var(--blue); }
@@ -186,7 +190,6 @@
   .tasks-greeting { font-size: 0.85rem; color: var(--mist); margin-top: 2px; }
   .task-section-label { font-size: 0.72rem; color: var(--mist); text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; margin: 20px 0 8px; }
   .badge-open { background: #eff6ff; color: var(--blue); }
-  .badge-in_progress { background: #fef3c7; color: #92400e; }
   .badge-complete { background: #f0fdf4; color: var(--green); }
   .search-dropdown { position: relative; }
   .search-dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--white); border: 1.5px solid var(--accent); border-top: none; border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto; z-index: 100; }
@@ -295,9 +298,7 @@
             <div style="display:flex;gap:8px">
               <select id="job-status-filter" onchange="renderJobs()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
                 <option value="">All Statuses</option>
-                <option>new</option><option>booked</option><option>in_progress</option>
-                <option>completed</option><option>invoiced</option><option>paid</option>
-                <option>on_hold</option><option>cancelled</option>
+                <option value="needs_to_be_booked_adc">1. Needs to be booked ADC</option><option value="needs_to_be_booked_sub">2. Needs to be booked Subcontractor</option><option value="needs_to_be_booked_adc_sub">3. Needs to be booked ADC & Subcontractor</option><option value="booked_adc">4. Booked ADC (ADC only job)</option><option value="booked_adc_need_sub">5. Booked ADC - Need to book Subcontractor</option><option value="chased_sub">6. Chased Subcontractor</option><option value="booked_sub_need_adc">7. Booked Subcontractor - Need to book ADC</option><option value="booked_sub_only">8. Booked Subcontractor (Subcontractor only job)</option><option value="booked_adc_and_sub">9. Booked ADC & Subcontractor</option><option value="date_allocated">10. Date allocated - to agree with tenant</option><option value="tenant_not_responding">11. Tenant not responding/Referred to client</option><option value="on_hold">12. On hold</option>
               </select>
             </div>
           </div>
@@ -416,7 +417,7 @@
         <div class="form-group"><label>Customer *</label><select id="jf-customerId" onchange="loadAddressesForJob()"><option value="">Select customer…</option></select></div>
         <div class="form-group"><label>Address *</label><select id="jf-addressId"><option value="">Select address…</option></select></div>
         <div class="form-group"><label>Status</label>
-          <select id="jf-status"><option value="new">New</option><option value="booked">Booked</option><option value="in_progress">In Progress</option><option value="completed">Completed</option><option value="invoiced">Invoiced</option><option value="paid">Paid</option><option value="on_hold">On Hold</option><option value="cancelled">Cancelled</option></select>
+          <select id="jf-status"><option value="needs_to_be_booked_adc">1. Needs to be booked ADC</option><option value="needs_to_be_booked_sub">2. Needs to be booked Subcontractor</option><option value="needs_to_be_booked_adc_sub">3. Needs to be booked ADC & Subcontractor</option><option value="booked_adc">4. Booked ADC (ADC only job)</option><option value="booked_adc_need_sub">5. Booked ADC - Need to book Subcontractor</option><option value="chased_sub">6. Chased Subcontractor</option><option value="booked_sub_need_adc">7. Booked Subcontractor - Need to book ADC</option><option value="booked_sub_only">8. Booked Subcontractor (Subcontractor only job)</option><option value="booked_adc_and_sub">9. Booked ADC & Subcontractor</option><option value="date_allocated">10. Date allocated - to agree with tenant</option><option value="tenant_not_responding">11. Tenant not responding/Referred to client</option><option value="on_hold">12. On hold</option></select>
         </div>
         <div class="form-group full"><label>Action Required</label><textarea id="jf-actionRequired" rows="2"></textarea></div>
         <div class="form-group"><label>Date Received</label><input type="date" id="jf-dateReceived"></div>
@@ -668,7 +669,7 @@ async function renderDashboard() {
     <div class="stat-card"><div class="label">Addresses</div><div class="value">${stats.totalAddresses}</div></div>
     <div class="stat-card"><div class="label">Trades</div><div class="value">${stats.totalTrades}</div></div>
   `;
-  const colors = { new:'var(--blue)',booked:'var(--green)',in_progress:'var(--amber)',completed:'var(--green)',invoiced:'var(--purple)',paid:'var(--green)',on_hold:'var(--red)',cancelled:'#9ca3af' };
+  const colors = { needs_to_be_booked_adc:'var(--amber)',needs_to_be_booked_sub:'var(--amber)',needs_to_be_booked_adc_sub:'var(--amber)',booked_adc:'var(--blue)',booked_adc_need_sub:'var(--blue)',chased_sub:'var(--purple)',booked_sub_need_adc:'var(--blue)',booked_sub_only:'var(--blue)',booked_adc_and_sub:'var(--green)',date_allocated:'var(--green)',tenant_not_responding:'var(--red)',on_hold:'#9ca3af' };
   document.getElementById('status-breakdown').innerHTML = Object.entries(stats.byStatus).map(([s,n])=>
     `<div class="status-item"><span class="sname">${s.replace(/_/g,' ')}</span><span class="scount" style="color:${colors[s]||'var(--ink)'}">${n}</span></div>`
   ).join('') || '<p style="color:var(--mist);font-size:0.87rem;padding:8px">No jobs yet</p>';
@@ -708,7 +709,7 @@ function openJobModal(id=null) {
   editingId.job = id;
   document.getElementById('job-modal-title').textContent = id ? 'Edit Job' : 'New Job';
   ['workOrderId','title','actionRequired','dateReceived','dateBooked','dateCompleted','dateInvoiced','datePaid'].forEach(f => document.getElementById('jf-'+f).value='');
-  document.getElementById('jf-status').value='new';
+  document.getElementById('jf-status').value='needs_to_be_booked_adc';
   const cs = document.getElementById('jf-customerId');
   cs.innerHTML = '<option value="">Select customer…</option>' + state.customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
   document.getElementById('jf-addressId').innerHTML = '<option value="">Select address…</option>';

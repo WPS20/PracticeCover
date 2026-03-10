@@ -269,7 +269,7 @@ app.post('/api/jobs', requireAuth, async (req, res) => {
     const id = uuidv4();
     const result = await query(
       `INSERT INTO jobs (id,work_order_id,customer_id,address_id,title,status,action_required,date_received,date_booked,date_completed,date_invoiced,date_paid) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
-      [id,workOrderId,customerId,addressId,title,status||'new',actionRequired,orNull(dateReceived),orNull(dateBooked),orNull(dateCompleted),orNull(dateInvoiced),orNull(datePaid)]
+      [id,workOrderId,customerId,addressId,title,status||'needs_to_be_booked_adc',actionRequired,orNull(dateReceived),orNull(dateBooked),orNull(dateCompleted),orNull(dateInvoiced),orNull(datePaid)]
     );
     if (tradeIds && tradeIds.length) await Promise.all(tradeIds.map(tid => query('INSERT INTO job_trades (job_id,trade_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [id,tid])));
     const j = result.rows[0];
