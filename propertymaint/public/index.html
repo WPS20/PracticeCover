@@ -8,56 +8,56 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #1a1a2e;
-    --ink2: #2d2d44;
-    --slate: #4a4a6a;
-    --mist: #8888aa;
-    --border: #e2e2ee;
-    --surface: #f7f7fc;
-    --white: #ffffff;
-    --accent: #e85d26;
-    --accent2: #f4874b;
-    --green: #1a9467;
-    --amber: #d97706;
-    --red: #dc2626;
-    --blue: #2563eb;
-    --purple: #7c3aed;
+    --ink: #1a1a2e; --ink2: #2d2d44; --slate: #4a4a6a; --mist: #8888aa;
+    --border: #e2e2ee; --surface: #f7f7fc; --white: #ffffff;
+    --accent: #e85d26; --accent2: #f4874b;
+    --green: #1a9467; --amber: #d97706; --red: #dc2626; --blue: #2563eb; --purple: #7c3aed;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'DM Sans', sans-serif; background: var(--surface); color: var(--ink); min-height: 100vh; display: flex; }
 
-  /* ── Sidebar ── */
-  #sidebar {
-    width: 240px; min-height: 100vh; background: var(--ink); color: #fff;
-    display: flex; flex-direction: column; flex-shrink: 0; position: sticky; top: 0; height: 100vh;
+  /* ── Login ── */
+  #login-screen {
+    display: none; position: fixed; inset: 0; background: var(--ink);
+    align-items: center; justify-content: center; z-index: 9999;
   }
+  #login-screen.active { display: flex; }
+  .login-box {
+    background: var(--white); border-radius: 20px; padding: 44px 40px; width: 100%; max-width: 420px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+  }
+  .login-logo { text-align: center; margin-bottom: 32px; }
+  .login-logo h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--ink); }
+  .login-logo h1 span { color: var(--accent); font-style: italic; }
+  .login-logo p { color: var(--mist); font-size: 0.85rem; margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
+  .login-error { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; margin-bottom: 16px; display: none; }
+  .login-error.show { display: block; }
+
+  /* ── Sidebar ── */
+  #app { display: none; width: 100%; }
+  #app.active { display: flex; min-height: 100vh; }
+  #sidebar { width: 240px; min-height: 100vh; background: var(--ink); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; position: sticky; top: 0; height: 100vh; }
   .logo { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
   .logo h1 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: #fff; letter-spacing: -0.5px; }
   .logo span { color: var(--accent2); font-style: italic; }
   .logo small { display: block; font-size: 0.7rem; color: var(--mist); margin-top: 2px; letter-spacing: 1px; text-transform: uppercase; }
-  nav { flex: 1; padding: 16px 0; }
-  nav a {
-    display: flex; align-items: center; gap: 10px; padding: 11px 24px;
-    color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.88rem; font-weight: 500;
-    transition: all 0.15s; cursor: pointer; border-left: 3px solid transparent;
-  }
+  nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+  nav a { display: flex; align-items: center; gap: 10px; padding: 11px 24px; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: all 0.15s; cursor: pointer; border-left: 3px solid transparent; }
   nav a:hover { color: #fff; background: rgba(255,255,255,0.06); }
   nav a.active { color: #fff; background: rgba(232,93,38,0.15); border-left-color: var(--accent2); }
   nav a .icon { width: 18px; text-align: center; font-size: 1rem; }
   .nav-section { padding: 16px 24px 6px; font-size: 0.68rem; color: rgba(255,255,255,0.3); letter-spacing: 1.5px; text-transform: uppercase; }
+  .nav-user { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+  .nav-user .uname { font-size: 0.85rem; font-weight: 600; color: #fff; }
+  .nav-user .urole { font-size: 0.72rem; color: var(--mist); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .nav-user .logout-btn { margin-top: 10px; width: 100%; padding: 7px; background: rgba(255,255,255,0.08); border: none; border-radius: 6px; color: rgba(255,255,255,0.6); font-size: 0.82rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+  .nav-user .logout-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
 
   /* ── Main ── */
   #main { flex: 1; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
-  #topbar {
-    padding: 18px 32px; background: var(--white); border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10;
-  }
+  #topbar { padding: 18px 32px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
   #topbar h2 { font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: var(--ink); }
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px;
-    border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
-    border: none; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
-  }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
   .btn-primary { background: var(--accent); color: #fff; }
   .btn-primary:hover { background: #c94d1a; }
   .btn-secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--border); }
@@ -75,18 +75,15 @@
 
   /* ── Stats ── */
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
-  .stat-card {
-    background: var(--white); border-radius: 12px; padding: 20px; border: 1px solid var(--border);
-  }
+  .stat-card { background: var(--white); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
   .stat-card .label { font-size: 0.75rem; color: var(--mist); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
   .stat-card .value { font-family: 'DM Serif Display', serif; font-size: 2.2rem; color: var(--ink); line-height: 1; }
-  .stat-card .sub { font-size: 0.78rem; color: var(--slate); margin-top: 4px; }
   .stat-card.accent { background: var(--accent); border-color: var(--accent); }
-  .stat-card.accent .label, .stat-card.accent .value, .stat-card.accent .sub { color: #fff; }
+  .stat-card.accent .label, .stat-card.accent .value { color: #fff; }
 
   /* ── Table ── */
   .card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
-  .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: gap; gap: 10px; }
   .card-header h3 { font-size: 0.95rem; font-weight: 600; }
   table { width: 100%; border-collapse: collapse; }
   th { text-align: left; padding: 12px 16px; font-size: 0.75rem; font-weight: 600; color: var(--mist); text-transform: uppercase; letter-spacing: 0.8px; background: #fafafa; border-bottom: 1px solid var(--border); }
@@ -96,10 +93,7 @@
   .empty-row td { text-align: center; color: var(--mist); padding: 40px; font-size: 0.9rem; }
 
   /* ── Badges ── */
-  .badge {
-    display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px;
-    font-size: 0.75rem; font-weight: 600; white-space: nowrap;
-  }
+  .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
   .badge-new { background: #eff6ff; color: var(--blue); }
   .badge-in_progress { background: #fef3c7; color: #92400e; }
   .badge-booked { background: #f0fdf4; color: var(--green); }
@@ -112,17 +106,13 @@
   .badge-inactive { background: #f3f4f6; color: #6b7280; }
   .badge-managing_agent { background: #eff6ff; color: var(--blue); }
   .badge-individual { background: #faf5ff; color: var(--purple); }
+  .badge-admin { background: #fff7ed; color: var(--accent); }
+  .badge-readonly { background: #f3f4f6; color: #6b7280; }
 
   /* ── Modal ── */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(10,10,30,0.55);
-    z-index: 1000; align-items: center; justify-content: center; padding: 20px;
-  }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,10,30,0.55); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
   .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--white); border-radius: 16px; width: 100%; max-width: 680px;
-    max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.2);
-  }
+  .modal { background: var(--white); border-radius: 16px; width: 100%; max-width: 680px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.2); }
   .modal-header { padding: 22px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--white); z-index: 1; }
   .modal-header h3 { font-family: 'DM Serif Display', serif; font-size: 1.25rem; }
   .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--mist); line-height: 1; padding: 4px; }
@@ -135,11 +125,7 @@
   .form-group { display: flex; flex-direction: column; gap: 5px; }
   .form-group.full { grid-column: 1 / -1; }
   label { font-size: 0.8rem; font-weight: 600; color: var(--slate); }
-  input, select, textarea {
-    padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
-    font-size: 0.88rem; font-family: 'DM Sans', sans-serif; color: var(--ink);
-    background: var(--white); transition: border-color 0.15s; outline: none;
-  }
+  input, select, textarea { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.88rem; font-family: 'DM Sans', sans-serif; color: var(--ink); background: var(--white); transition: border-color 0.15s; outline: none; }
   input:focus, select:focus, textarea:focus { border-color: var(--accent); }
   textarea { resize: vertical; min-height: 80px; }
 
@@ -150,182 +136,190 @@
   .detail-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--surface); font-size: 0.87rem; }
   .detail-row:last-child { border-bottom: none; }
   .detail-row .key { color: var(--slate); font-weight: 500; }
-  .detail-row .val { color: var(--ink); font-weight: 500; text-align: right; }
   .comm-item { padding: 10px 14px; border-radius: 8px; background: var(--surface); margin-bottom: 8px; font-size: 0.87rem; }
   .comm-item .comm-meta { font-size: 0.75rem; color: var(--mist); margin-bottom: 4px; }
-
-  /* ── Search ── */
-  .search-bar { position: relative; }
-  .search-bar input { padding-left: 36px; min-width: 260px; }
-  .search-bar::before { content: '🔍'; position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; pointer-events: none; }
-
-  /* ── Tabs ── */
-  .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--surface); padding: 4px; border-radius: 10px; width: fit-content; }
-  .tab { padding: 7px 16px; border-radius: 7px; font-size: 0.85rem; font-weight: 500; cursor: pointer; color: var(--slate); transition: all 0.15s; }
-  .tab.active { background: var(--white); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-
-  /* ── Dates strip ── */
   .dates-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
   .date-box { background: var(--surface); border-radius: 8px; padding: 10px 12px; }
   .date-box .dlabel { font-size: 0.72rem; color: var(--mist); text-transform: uppercase; letter-spacing: 0.8px; }
   .date-box .dval { font-size: 0.88rem; font-weight: 600; margin-top: 2px; color: var(--ink); }
   .date-box .dval.empty { color: var(--mist); font-weight: 400; font-style: italic; }
 
-  /* ── Tag input ── */
+  /* ── Misc ── */
+  .search-bar { position: relative; }
+  .search-bar input { padding-left: 36px; min-width: 220px; }
+  .search-bar::before { content: '🔍'; position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; pointer-events: none; }
   .tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px; border: 1.5px solid var(--border); border-radius: 8px; min-height: 42px; cursor: text; }
   .tag { background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 20px; font-size: 0.78rem; display: flex; align-items: center; gap: 4px; }
   .tag-remove { cursor: pointer; opacity: 0.7; }
   .tag-input { border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; min-width: 100px; flex: 1; }
-
-  /* ── Checkbox list ── */
   .check-list { display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; }
   .check-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 0.87rem; }
   .check-item:hover { background: var(--surface); }
   .check-item input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); }
-
   .actions-col { display: flex; gap: 6px; }
   .link-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.85rem; font-weight: 600; padding: 0; text-decoration: underline; }
-
-  /* ── Dashboard recent ── */
   .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
   .status-list { display: flex; flex-direction: column; gap: 8px; }
   .status-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--surface); border-radius: 8px; }
   .status-item .sname { font-size: 0.87rem; font-weight: 500; }
   .status-item .scount { font-family: 'DM Serif Display', serif; font-size: 1.4rem; }
-
-  @media (max-width: 768px) {
-    #sidebar { display: none; }
-    #content { padding: 16px; }
-    .form-grid { grid-template-columns: 1fr; }
-    .detail-grid { grid-template-columns: 1fr; }
-    .dates-strip { grid-template-columns: 1fr 1fr; }
-    .dashboard-grid { grid-template-columns: 1fr; }
-  }
+  .readonly-notice { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 16px; font-size: 0.85rem; color: #92400e; margin-bottom: 16px; }
 </style>
 </head>
 <body>
 
-<div id="sidebar">
-  <div class="logo">
-    <h1>Maintenance<span>Desk</span></h1>
-    <small>Job Booking System</small>
+<!-- ── LOGIN SCREEN ── -->
+<div id="login-screen" class="active">
+  <div class="login-box">
+    <div class="login-logo">
+      <h1>Maintenance<span>Desk</span></h1>
+      <p>Job Booking System</p>
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <div class="form-grid cols-1" style="gap:12px">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="login-email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" onclick="doLogin()" id="login-btn">Sign In</button>
+    </div>
   </div>
-  <nav>
-    <div class="nav-section">Overview</div>
-    <a class="active" onclick="showPage('dashboard')" data-page="dashboard"><span class="icon">📊</span> Dashboard</a>
-    <div class="nav-section">Management</div>
-    <a onclick="showPage('jobs')" data-page="jobs"><span class="icon">🔧</span> Jobs</a>
-    <a onclick="showPage('customers')" data-page="customers"><span class="icon">👥</span> Customers</a>
-    <a onclick="showPage('addresses')" data-page="addresses"><span class="icon">📍</span> Addresses</a>
-    <a onclick="showPage('trades')" data-page="trades"><span class="icon">🏗️</span> Trades</a>
-  </nav>
 </div>
 
-<div id="main">
-  <div id="topbar">
-    <h2 id="page-title">Dashboard</h2>
-    <div id="topbar-action"></div>
-  </div>
-  <div id="content">
-
-    <!-- DASHBOARD -->
-    <div class="page active" id="page-dashboard">
-      <div class="stats-grid" id="stats-grid"></div>
-      <div class="dashboard-grid">
-        <div class="card">
-          <div class="card-header"><h3>Recent Jobs</h3><button class="btn btn-secondary btn-sm" onclick="showPage('jobs')">View All</button></div>
-          <table><thead><tr><th>Work Order</th><th>Title</th><th>Customer</th><th>Status</th></tr></thead>
-          <tbody id="recent-jobs"></tbody></table>
-        </div>
-        <div class="card">
-          <div class="card-header"><h3>Jobs by Status</h3></div>
-          <div style="padding:16px"><div class="status-list" id="status-breakdown"></div></div>
-        </div>
-      </div>
+<!-- ── APP ── -->
+<div id="app">
+  <div id="sidebar">
+    <div class="logo">
+      <h1>Maintenance<span>Desk</span></h1>
+      <small>Job Booking System</small>
     </div>
+    <nav>
+      <div class="nav-section">Overview</div>
+      <a class="active" onclick="showPage('dashboard')" data-page="dashboard"><span class="icon">📊</span> Dashboard</a>
+      <div class="nav-section">Management</div>
+      <a onclick="showPage('jobs')" data-page="jobs"><span class="icon">🔧</span> Jobs</a>
+      <a onclick="showPage('customers')" data-page="customers"><span class="icon">👥</span> Customers</a>
+      <a onclick="showPage('addresses')" data-page="addresses"><span class="icon">📍</span> Addresses</a>
+      <a onclick="showPage('trades')" data-page="trades"><span class="icon">🏗️</span> Trades</a>
+      <div class="nav-section admin-only" style="display:none">Admin</div>
+      <a onclick="showPage('users')" data-page="users" class="admin-only" style="display:none"><span class="icon">🔑</span> Users</a>
+    </nav>
+    <div class="nav-user">
+      <div class="uname" id="nav-username">—</div>
+      <div class="urole" id="nav-role">—</div>
+      <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
 
-    <!-- JOBS -->
-    <div class="page" id="page-jobs">
-      <div class="card">
-        <div class="card-header">
-          <div class="search-bar"><input type="text" placeholder="Search jobs…" id="job-search" oninput="renderJobs()"></div>
-          <div style="display:flex;gap:8px">
-            <select id="job-status-filter" onchange="renderJobs()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
-              <option value="">All Statuses</option>
-              <option>new</option><option>booked</option><option>in_progress</option>
-              <option>completed</option><option>invoiced</option><option>paid</option>
-              <option>on_hold</option><option>cancelled</option>
-            </select>
+  <div id="main">
+    <div id="topbar">
+      <h2 id="page-title">Dashboard</h2>
+      <div id="topbar-action"></div>
+    </div>
+    <div id="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-header"><h3>Recent Jobs</h3><button class="btn btn-secondary btn-sm" onclick="showPage('jobs')">View All</button></div>
+            <table><thead><tr><th>Work Order</th><th>Title</th><th>Customer</th><th>Status</th></tr></thead>
+            <tbody id="recent-jobs"></tbody></table>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Jobs by Status</h3></div>
+            <div style="padding:16px"><div class="status-list" id="status-breakdown"></div></div>
           </div>
         </div>
-        <table><thead><tr><th>Work Order</th><th>Title</th><th>Customer</th><th>Address</th><th>Status</th><th>Date Received</th><th>Trades</th><th></th></tr></thead>
-        <tbody id="jobs-tbody"></tbody></table>
       </div>
-    </div>
 
-    <!-- CUSTOMERS -->
-    <div class="page" id="page-customers">
-      <div class="card">
-        <div class="card-header">
-          <div class="search-bar"><input type="text" placeholder="Search customers…" id="cust-search" oninput="renderCustomers()"></div>
+      <!-- JOBS -->
+      <div class="page" id="page-jobs">
+        <div class="card">
+          <div class="card-header">
+            <div class="search-bar"><input type="text" placeholder="Search jobs…" id="job-search" oninput="renderJobs()"></div>
+            <div style="display:flex;gap:8px">
+              <select id="job-status-filter" onchange="renderJobs()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
+                <option value="">All Statuses</option>
+                <option>new</option><option>booked</option><option>in_progress</option>
+                <option>completed</option><option>invoiced</option><option>paid</option>
+                <option>on_hold</option><option>cancelled</option>
+              </select>
+            </div>
+          </div>
+          <table><thead><tr><th>Work Order</th><th>Title</th><th>Customer</th><th>Address</th><th>Status</th><th>Received</th><th>Trades</th><th></th></tr></thead>
+          <tbody id="jobs-tbody"></tbody></table>
         </div>
-        <table><thead><tr><th>Name</th><th>Type</th><th>Email</th><th>Phone</th><th>Addresses</th><th></th></tr></thead>
-        <tbody id="customers-tbody"></tbody></table>
       </div>
-    </div>
 
-    <!-- ADDRESSES -->
-    <div class="page" id="page-addresses">
-      <div class="card">
-        <div class="card-header">
-          <div class="search-bar"><input type="text" placeholder="Search addresses…" id="addr-search" oninput="renderAddresses()"></div>
-          <select id="addr-cust-filter" onchange="renderAddresses()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
-            <option value="">All Customers</option>
-          </select>
+      <!-- CUSTOMERS -->
+      <div class="page" id="page-customers">
+        <div class="card">
+          <div class="card-header">
+            <div class="search-bar"><input type="text" placeholder="Search customers…" id="cust-search" oninput="renderCustomers()"></div>
+          </div>
+          <table><thead><tr><th>Name</th><th>Type</th><th>Email</th><th>Phone</th><th>Addresses</th><th></th></tr></thead>
+          <tbody id="customers-tbody"></tbody></table>
         </div>
-        <table><thead><tr><th>Label</th><th>Address</th><th>Customer</th><th></th></tr></thead>
-        <tbody id="addresses-tbody"></tbody></table>
       </div>
-    </div>
 
-    <!-- TRADES -->
-    <div class="page" id="page-trades">
-      <div class="card">
-        <div class="card-header">
-          <div class="search-bar"><input type="text" placeholder="Search trades…" id="trade-search" oninput="renderTrades()"></div>
+      <!-- ADDRESSES -->
+      <div class="page" id="page-addresses">
+        <div class="card">
+          <div class="card-header">
+            <div class="search-bar"><input type="text" placeholder="Search addresses…" id="addr-search" oninput="renderAddresses()"></div>
+            <select id="addr-cust-filter" onchange="renderAddresses()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
+              <option value="">All Customers</option>
+            </select>
+          </div>
+          <table><thead><tr><th>Label</th><th>Address</th><th>Customer</th><th></th></tr></thead>
+          <tbody id="addresses-tbody"></tbody></table>
         </div>
-        <table><thead><tr><th>Company</th><th>Contact</th><th>Phone</th><th>Email</th><th>Services</th><th>Status</th><th></th></tr></thead>
-        <tbody id="trades-tbody"></tbody></table>
       </div>
-    </div>
 
+      <!-- TRADES -->
+      <div class="page" id="page-trades">
+        <div class="card">
+          <div class="card-header">
+            <div class="search-bar"><input type="text" placeholder="Search trades…" id="trade-search" oninput="renderTrades()"></div>
+          </div>
+          <table><thead><tr><th>Company</th><th>Contact</th><th>Phone</th><th>Email</th><th>Services</th><th>Status</th><th></th></tr></thead>
+          <tbody id="trades-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- USERS (admin only) -->
+      <div class="page" id="page-users">
+        <div class="card">
+          <div class="card-header">
+            <div class="search-bar"><input type="text" placeholder="Search users…" id="user-search" oninput="renderUsers()"></div>
+          </div>
+          <table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Created</th><th></th></tr></thead>
+          <tbody id="users-tbody"></tbody></table>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
 
 <!-- ── JOB MODAL ── -->
 <div class="modal-overlay" id="job-modal">
   <div class="modal">
-    <div class="modal-header">
-      <h3 id="job-modal-title">New Job</h3>
-      <button class="modal-close" onclick="closeModal('job-modal')">×</button>
-    </div>
+    <div class="modal-header"><h3 id="job-modal-title">New Job</h3><button class="modal-close" onclick="closeModal('job-modal')">×</button></div>
     <div class="modal-body">
       <div class="form-grid">
         <div class="form-group"><label>Work Order ID *</label><input id="jf-workOrderId" placeholder="WO-001"></div>
-        <div class="form-group"><label>Job Title *</label><input id="jf-title" placeholder="e.g. Boiler Repair"></div>
-        <div class="form-group"><label>Customer *</label>
-          <select id="jf-customerId" onchange="loadAddressesForJob()"><option value="">Select customer…</option></select>
-        </div>
-        <div class="form-group"><label>Address *</label>
-          <select id="jf-addressId"><option value="">Select address…</option></select>
-        </div>
+        <div class="form-group"><label>Job Title *</label><input id="jf-title"></div>
+        <div class="form-group"><label>Customer *</label><select id="jf-customerId" onchange="loadAddressesForJob()"><option value="">Select customer…</option></select></div>
+        <div class="form-group"><label>Address *</label><select id="jf-addressId"><option value="">Select address…</option></select></div>
         <div class="form-group"><label>Status</label>
-          <select id="jf-status">
-            <option value="new">New</option><option value="booked">Booked</option>
-            <option value="in_progress">In Progress</option><option value="completed">Completed</option>
-            <option value="invoiced">Invoiced</option><option value="paid">Paid</option>
-            <option value="on_hold">On Hold</option><option value="cancelled">Cancelled</option>
-          </select>
+          <select id="jf-status"><option value="new">New</option><option value="booked">Booked</option><option value="in_progress">In Progress</option><option value="completed">Completed</option><option value="invoiced">Invoiced</option><option value="paid">Paid</option><option value="on_hold">On Hold</option><option value="cancelled">Cancelled</option></select>
         </div>
         <div class="form-group full"><label>Action Required</label><textarea id="jf-actionRequired" rows="2"></textarea></div>
         <div class="form-group"><label>Date Received</label><input type="date" id="jf-dateReceived"></div>
@@ -336,10 +330,7 @@
         <div class="form-group full"><label>Assign Trades</label><div class="check-list" id="jf-trades-list"></div></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('job-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveJob()">Save Job</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('job-modal')">Cancel</button><button class="btn btn-primary" onclick="saveJob()">Save Job</button></div>
   </div>
 </div>
 
@@ -347,82 +338,55 @@
 <div class="modal-overlay" id="job-detail-modal">
   <div class="modal" style="max-width:780px">
     <div class="modal-header">
-      <div>
-        <h3 id="jd-title">Job Detail</h3>
-        <div style="font-size:0.8rem;color:var(--mist);margin-top:2px" id="jd-workorder"></div>
-      </div>
+      <div><h3 id="jd-title">Job Detail</h3><div style="font-size:0.8rem;color:var(--mist);margin-top:2px" id="jd-workorder"></div></div>
       <button class="modal-close" onclick="closeModal('job-detail-modal')">×</button>
     </div>
     <div class="modal-body" id="job-detail-body"></div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('job-detail-modal')">Close</button>
-      <button class="btn btn-primary" id="jd-edit-btn">Edit Job</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('job-detail-modal')">Close</button><button class="btn btn-primary" id="jd-edit-btn" style="display:none">Edit Job</button></div>
   </div>
 </div>
 
 <!-- ── CUSTOMER MODAL ── -->
 <div class="modal-overlay" id="customer-modal">
   <div class="modal">
-    <div class="modal-header">
-      <h3 id="cust-modal-title">New Customer</h3>
-      <button class="modal-close" onclick="closeModal('customer-modal')">×</button>
-    </div>
+    <div class="modal-header"><h3 id="cust-modal-title">New Customer</h3><button class="modal-close" onclick="closeModal('customer-modal')">×</button></div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group"><label>Type *</label>
-          <select id="cf-type"><option value="managing_agent">Managing Agent</option><option value="individual">Individual</option></select>
-        </div>
-        <div class="form-group"><label>Name *</label><input id="cf-name" placeholder="Customer / company name"></div>
+        <div class="form-group"><label>Type *</label><select id="cf-type"><option value="managing_agent">Managing Agent</option><option value="individual">Individual</option></select></div>
+        <div class="form-group"><label>Name *</label><input id="cf-name"></div>
         <div class="form-group"><label>Email</label><input id="cf-email" type="email"></div>
         <div class="form-group"><label>Phone</label><input id="cf-phone" type="tel"></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('customer-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveCustomer()">Save</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('customer-modal')">Cancel</button><button class="btn btn-primary" onclick="saveCustomer()">Save</button></div>
   </div>
 </div>
 
 <!-- ── ADDRESS MODAL ── -->
 <div class="modal-overlay" id="address-modal">
   <div class="modal">
-    <div class="modal-header">
-      <h3 id="addr-modal-title">New Address</h3>
-      <button class="modal-close" onclick="closeModal('address-modal')">×</button>
-    </div>
+    <div class="modal-header"><h3 id="addr-modal-title">New Address</h3><button class="modal-close" onclick="closeModal('address-modal')">×</button></div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group"><label>Customer *</label>
-          <select id="af-customerId"><option value="">Select customer…</option></select>
-        </div>
-        <div class="form-group"><label>Label</label><input id="af-label" placeholder="e.g. Flat A, Main Property"></div>
+        <div class="form-group"><label>Customer *</label><select id="af-customerId"><option value="">Select customer…</option></select></div>
+        <div class="form-group"><label>Label</label><input id="af-label" placeholder="e.g. Flat A"></div>
         <div class="form-group full"><label>Address Line 1 *</label><input id="af-line1"></div>
         <div class="form-group full"><label>Address Line 2</label><input id="af-line2"></div>
         <div class="form-group"><label>City</label><input id="af-city"></div>
         <div class="form-group"><label>Postcode</label><input id="af-postcode"></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('address-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveAddress()">Save</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('address-modal')">Cancel</button><button class="btn btn-primary" onclick="saveAddress()">Save</button></div>
   </div>
 </div>
 
 <!-- ── TRADE MODAL ── -->
 <div class="modal-overlay" id="trade-modal">
   <div class="modal">
-    <div class="modal-header">
-      <h3 id="trade-modal-title">New Trade</h3>
-      <button class="modal-close" onclick="closeModal('trade-modal')">×</button>
-    </div>
+    <div class="modal-header"><h3 id="trade-modal-title">New Trade</h3><button class="modal-close" onclick="closeModal('trade-modal')">×</button></div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group"><label>Status</label>
-          <select id="tf-status"><option value="active">Active</option><option value="inactive">Inactive</option></select>
-        </div>
+        <div class="form-group"><label>Status</label><select id="tf-status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
         <div class="form-group"><label>Company Name *</label><input id="tf-companyName"></div>
         <div class="form-group full"><label>Company Address</label><input id="tf-companyAddress"></div>
         <div class="form-group"><label>Contact Name</label><input id="tf-contactName"></div>
@@ -436,69 +400,133 @@
         </div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('trade-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveTrade()">Save</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('trade-modal')">Cancel</button><button class="btn btn-primary" onclick="saveTrade()">Save</button></div>
   </div>
 </div>
 
-<!-- ── COMMUNICATION MODAL ── -->
+<!-- ── USER MODAL ── -->
+<div class="modal-overlay" id="user-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header"><h3 id="user-modal-title">New User</h3><button class="modal-close" onclick="closeModal('user-modal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid cols-1">
+        <div class="form-group"><label>Full Name *</label><input id="uf-name" placeholder="Jane Smith"></div>
+        <div class="form-group"><label>Email Address *</label><input id="uf-email" type="email" placeholder="jane@example.com"></div>
+        <div class="form-group"><label>Password *</label><input id="uf-password" type="password" placeholder="Minimum 8 characters"></div>
+        <div class="form-group"><label>Role</label>
+          <select id="uf-role">
+            <option value="readonly">Read Only — can view but not edit</option>
+            <option value="admin">Admin — full access including user management</option>
+          </select>
+        </div>
+        <div class="form-group" id="uf-active-group" style="display:none">
+          <label>Account Status</label>
+          <select id="uf-active"><option value="true">Active</option><option value="false">Disabled</option></select>
+        </div>
+        <div id="uf-password-hint" style="font-size:0.8rem;color:var(--mist)"></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('user-modal')">Cancel</button><button class="btn btn-primary" onclick="saveUser()">Save User</button></div>
+  </div>
+</div>
+
+<!-- ── COMM MODAL ── -->
 <div class="modal-overlay" id="comm-modal">
   <div class="modal" style="max-width:460px">
-    <div class="modal-header">
-      <h3>Add Communication</h3>
-      <button class="modal-close" onclick="closeModal('comm-modal')">×</button>
-    </div>
+    <div class="modal-header"><h3>Add Communication</h3><button class="modal-close" onclick="closeModal('comm-modal')">×</button></div>
     <div class="modal-body">
       <div class="form-grid cols-1">
         <div class="form-group"><label>Author / From</label><input id="comm-author" placeholder="Name or team"></div>
-        <div class="form-group"><label>Note *</label><textarea id="comm-note" rows="4" placeholder="Enter communication details…"></textarea></div>
+        <div class="form-group"><label>Note *</label><textarea id="comm-note" rows="4"></textarea></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('comm-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveComm()">Add Note</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('comm-modal')">Cancel</button><button class="btn btn-primary" onclick="saveComm()">Add Note</button></div>
   </div>
 </div>
 
 <script>
-// ── State ────────────────────────────────────────────────────────────────────
-let state = { customers: [], addresses: [], jobs: [], trades: [] };
-let editingId = { job: null, customer: null, address: null, trade: null };
+// ── State ─────────────────────────────────────────────────────────────────────
+let state = { customers: [], addresses: [], jobs: [], trades: [], users: [] };
+let currentUser = null;
+let editingId = { job: null, customer: null, address: null, trade: null, user: null };
 let currentJobForComm = null;
 let serviceTagsArr = [];
 
 // ── API ───────────────────────────────────────────────────────────────────────
 const api = async (method, path, body) => {
   const r = await fetch(path, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  if (r.status === 401) { showLogin(); return null; }
   return r.json();
 };
 
-async function loadAll() {
-  const [customers, addresses, jobs, trades] = await Promise.all([
-    api('GET', '/api/customers'), api('GET', '/api/addresses'),
-    api('GET', '/api/jobs'), api('GET', '/api/trades')
-  ]);
-  state = { customers, addresses, jobs, trades };
-  renderDashboard(); renderJobs(); renderCustomers(); renderAddresses(); renderTrades();
-  populateAddrFilter();
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function init() {
+  const me = await fetch('/api/auth/me');
+  if (me.status === 401) { showLogin(); return; }
+  const user = await me.json();
+  currentUser = user;
+  showApp();
+}
+
+function showLogin() {
+  document.getElementById('login-screen').classList.add('active');
+  document.getElementById('app').classList.remove('active');
+}
+
+function showApp() {
+  document.getElementById('login-screen').classList.remove('active');
+  document.getElementById('app').classList.add('active');
+  document.getElementById('nav-username').textContent = currentUser.name;
+  document.getElementById('nav-role').textContent = currentUser.role === 'admin' ? 'Administrator' : 'Read Only';
+
+  // Show admin-only nav items
+  if (currentUser.role === 'admin') {
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+  }
+  loadAll();
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+  errEl.classList.remove('show');
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+  const result = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+  const data = await result.json();
+  btn.textContent = 'Sign In';
+  btn.disabled = false;
+  if (!result.ok) { errEl.textContent = data.error || 'Login failed'; errEl.classList.add('show'); return; }
+  currentUser = data.user;
+  showApp();
+}
+
+async function doLogout() {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  currentUser = null;
+  state = { customers: [], addresses: [], jobs: [], trades: [], users: [] };
+  showLogin();
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const pageTitles = { dashboard: 'Dashboard', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Trades' };
+const pageTitles = { dashboard: 'Dashboard', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Trades', users: 'User Management' };
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-  document.querySelector(`nav a[data-page="${name}"]`).classList.add('active');
+  const navLink = document.querySelector(`nav a[data-page="${name}"]`);
+  if (navLink) navLink.classList.add('active');
   document.getElementById('page-title').textContent = pageTitles[name];
+
+  const isAdmin = currentUser && currentUser.role === 'admin';
   const actions = {
-    jobs: '<button class="btn btn-primary" onclick="openJobModal()">+ New Job</button>',
-    customers: '<button class="btn btn-primary" onclick="openCustomerModal()">+ New Customer</button>',
-    addresses: '<button class="btn btn-primary" onclick="openAddressModal()">+ New Address</button>',
-    trades: '<button class="btn btn-primary" onclick="openTradeModal()">+ New Trade</button>',
+    jobs: isAdmin ? '<button class="btn btn-primary" onclick="openJobModal()">+ New Job</button>' : '',
+    customers: isAdmin ? '<button class="btn btn-primary" onclick="openCustomerModal()">+ New Customer</button>' : '',
+    addresses: isAdmin ? '<button class="btn btn-primary" onclick="openAddressModal()">+ New Address</button>' : '',
+    trades: isAdmin ? '<button class="btn btn-primary" onclick="openTradeModal()">+ New Trade</button>' : '',
+    users: isAdmin ? '<button class="btn btn-primary" onclick="openUserModal()">+ New User</button>' : '',
     dashboard: ''
   };
   document.getElementById('topbar-action').innerHTML = actions[name] || '';
@@ -506,29 +534,45 @@ function showPage(name) {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function badge(cls, text) { return `<span class="badge badge-${cls}">${text.replace(/_/g,' ')}</span>`; }
-function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-GB') : '<span style="color:var(--mist)">—</span>'; }
 function fmtDateVal(d) { if (!d) return '—'; return new Date(d+'T00:00:00').toLocaleDateString('en-GB'); }
 function customerName(id) { const c = state.customers.find(c=>c.id===id); return c ? c.name : '—'; }
 function addressLabel(id) { const a = state.addresses.find(a=>a.id===id); return a ? `${a.label ? a.label+' – ' : ''}${a.line1}, ${a.postcode}` : '—'; }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+const isAdmin = () => currentUser && currentUser.role === 'admin';
+
+async function loadAll() {
+  const [customers, addresses, jobs, trades] = await Promise.all([
+    api('GET', '/api/customers'), api('GET', '/api/addresses'),
+    api('GET', '/api/jobs'), api('GET', '/api/trades')
+  ]);
+  if (!customers) return;
+  state = { ...state, customers, addresses, jobs, trades };
+  if (isAdmin()) {
+    const users = await api('GET', '/api/users');
+    if (users) state.users = users;
+  }
+  renderDashboard(); renderJobs(); renderCustomers(); renderAddresses(); renderTrades();
+  if (isAdmin()) renderUsers();
+  populateAddrFilter();
+}
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 async function renderDashboard() {
   const stats = await api('GET', '/api/stats');
+  if (!stats) return;
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card accent"><div class="label">Total Jobs</div><div class="value">${stats.totalJobs}</div></div>
     <div class="stat-card"><div class="label">Customers</div><div class="value">${stats.totalCustomers}</div></div>
     <div class="stat-card"><div class="label">Addresses</div><div class="value">${stats.totalAddresses}</div></div>
     <div class="stat-card"><div class="label">Trades</div><div class="value">${stats.totalTrades}</div></div>
   `;
-  const colors = { new: 'var(--blue)', booked: 'var(--green)', in_progress: 'var(--amber)', completed: 'var(--green)', invoiced: 'var(--purple)', paid: 'var(--green)', on_hold: 'var(--red)', cancelled: '#9ca3af' };
+  const colors = { new:'var(--blue)',booked:'var(--green)',in_progress:'var(--amber)',completed:'var(--green)',invoiced:'var(--purple)',paid:'var(--green)',on_hold:'var(--red)',cancelled:'#9ca3af' };
   document.getElementById('status-breakdown').innerHTML = Object.entries(stats.byStatus).map(([s,n])=>
     `<div class="status-item"><span class="sname">${s.replace(/_/g,' ')}</span><span class="scount" style="color:${colors[s]||'var(--ink)'}">${n}</span></div>`
   ).join('') || '<p style="color:var(--mist);font-size:0.87rem;padding:8px">No jobs yet</p>';
-
-  const recent = [...state.jobs].sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt)).slice(0,5);
+  const recent = [...state.jobs].slice(0, 5);
   document.getElementById('recent-jobs').innerHTML = recent.length ? recent.map(j=>`
-    <tr><td><strong>${j.workOrderId}</strong></td><td>${j.title}</td><td>${customerName(j.customerId)}</td><td>${badge(j.status, j.status)}</td></tr>
+    <tr><td><strong>${j.workOrderId}</strong></td><td>${j.title}</td><td>${customerName(j.customerId)}</td><td>${badge(j.status,j.status)}</td></tr>
   `).join('') : '<tr class="empty-row"><td colspan="4">No jobs yet</td></tr>';
 }
 
@@ -536,54 +580,46 @@ async function renderDashboard() {
 function renderJobs() {
   const q = (document.getElementById('job-search')?.value||'').toLowerCase();
   const sf = document.getElementById('job-status-filter')?.value||'';
-  let jobs = state.jobs.filter(j => {
+  const jobs = state.jobs.filter(j => {
     if (sf && j.status !== sf) return false;
     if (q && !j.title.toLowerCase().includes(q) && !j.workOrderId.toLowerCase().includes(q) && !customerName(j.customerId).toLowerCase().includes(q)) return false;
     return true;
   });
   document.getElementById('jobs-tbody').innerHTML = jobs.length ? jobs.map(j => {
-    const tnames = (j.tradeIds||[]).map(tid => { const t = state.trades.find(t=>t.id===tid); return t ? t.companyName : ''; }).filter(Boolean);
+    const tnames = (j.tradeIds||[]).map(tid=>{ const t=state.trades.find(t=>t.id===tid); return t?t.companyName:''; }).filter(Boolean);
+    const editBtn = isAdmin() ? `<button class="btn btn-ghost btn-sm" onclick="openJobModal('${j.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteJob('${j.id}')">Delete</button>` : '';
     return `<tr>
       <td><strong>${j.workOrderId}</strong></td>
       <td><button class="link-btn" onclick="openJobDetail('${j.id}')">${j.title}</button></td>
       <td>${customerName(j.customerId)}</td>
       <td style="font-size:0.82rem;color:var(--slate)">${addressLabel(j.addressId)}</td>
-      <td>${badge(j.status, j.status)}</td>
-      <td>${j.dateReceived ? fmtDateVal(j.dateReceived) : '<span style="color:var(--mist)">—</span>'}</td>
+      <td>${badge(j.status,j.status)}</td>
+      <td>${j.dateReceived?fmtDateVal(j.dateReceived):'<span style="color:var(--mist)">—</span>'}</td>
       <td style="font-size:0.8rem;color:var(--slate)">${tnames.join(', ')||'—'}</td>
-      <td><div class="actions-col">
-        <button class="btn btn-ghost btn-sm" onclick="openJobModal('${j.id}')">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteJob('${j.id}')">Delete</button>
-      </div></td>
+      <td><div class="actions-col">${editBtn}</div></td>
     </tr>`;
   }).join('') : '<tr class="empty-row"><td colspan="8">No jobs found</td></tr>';
 }
 
-function openJobModal(id = null) {
+function openJobModal(id=null) {
+  if (!isAdmin()) return;
   editingId.job = id;
   document.getElementById('job-modal-title').textContent = id ? 'Edit Job' : 'New Job';
-  const fields = ['workOrderId','title','status','actionRequired','dateReceived','dateBooked','dateCompleted','dateInvoiced','datePaid'];
-  fields.forEach(f => document.getElementById('jf-'+f).value = '');
-  document.getElementById('jf-status').value = 'new';
-
-  // Populate customers
+  ['workOrderId','title','actionRequired','dateReceived','dateBooked','dateCompleted','dateInvoiced','datePaid'].forEach(f => document.getElementById('jf-'+f).value='');
+  document.getElementById('jf-status').value='new';
   const cs = document.getElementById('jf-customerId');
   cs.innerHTML = '<option value="">Select customer…</option>' + state.customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
   document.getElementById('jf-addressId').innerHTML = '<option value="">Select address…</option>';
-
-  // Populate trades checklist
   const tl = document.getElementById('jf-trades-list');
-  tl.innerHTML = state.trades.map(t=>`
-    <label class="check-item"><input type="checkbox" value="${t.id}" id="jtc-${t.id}"> ${t.companyName} <small style="color:var(--mist)">(${(t.services||[]).join(', ')})</small></label>
-  `).join('');
-
+  tl.innerHTML = state.trades.map(t=>`<label class="check-item"><input type="checkbox" value="${t.id}" id="jtc-${t.id}"> ${t.companyName} <small style="color:var(--mist)">(${(t.services||[]).join(', ')})</small></label>`).join('');
   if (id) {
     const j = state.jobs.find(j=>j.id===id);
     if (j) {
-      fields.forEach(f => { document.getElementById('jf-'+f).value = j[f]||''; });
-      cs.value = j.customerId;
-      loadAddressesForJob(() => { document.getElementById('jf-addressId').value = j.addressId; });
-      (j.tradeIds||[]).forEach(tid => { const cb = document.getElementById('jtc-'+tid); if(cb) cb.checked=true; });
+      ['workOrderId','title','actionRequired','dateReceived','dateBooked','dateCompleted','dateInvoiced','datePaid'].forEach(f=>{ document.getElementById('jf-'+f).value=j[f]||''; });
+      document.getElementById('jf-status').value=j.status;
+      cs.value=j.customerId;
+      loadAddressesForJob(()=>{ document.getElementById('jf-addressId').value=j.addressId; });
+      (j.tradeIds||[]).forEach(tid=>{ const cb=document.getElementById('jtc-'+tid); if(cb) cb.checked=true; });
     }
   }
   document.getElementById('job-modal').classList.add('open');
@@ -591,39 +627,24 @@ function openJobModal(id = null) {
 
 function loadAddressesForJob(cb) {
   const custId = document.getElementById('jf-customerId').value;
-  const addrs = state.addresses.filter(a => a.customerId === custId);
+  const addrs = state.addresses.filter(a=>a.customerId===custId);
   const sel = document.getElementById('jf-addressId');
-  sel.innerHTML = '<option value="">Select address…</option>' + addrs.map(a=>`<option value="${a.id}">${a.label ? a.label+' – ' : ''}${a.line1}, ${a.postcode}</option>`).join('');
+  sel.innerHTML = '<option value="">Select address…</option>' + addrs.map(a=>`<option value="${a.id}">${a.label?a.label+' – ':''}${a.line1}, ${a.postcode}</option>`).join('');
   if (cb) cb();
 }
 
 async function saveJob() {
   const tradeIds = [...document.querySelectorAll('#jf-trades-list input:checked')].map(cb=>cb.value);
-  const body = {
-    workOrderId: document.getElementById('jf-workOrderId').value.trim(),
-    title: document.getElementById('jf-title').value.trim(),
-    customerId: document.getElementById('jf-customerId').value,
-    addressId: document.getElementById('jf-addressId').value,
-    status: document.getElementById('jf-status').value,
-    actionRequired: document.getElementById('jf-actionRequired').value.trim(),
-    dateReceived: document.getElementById('jf-dateReceived').value,
-    dateBooked: document.getElementById('jf-dateBooked').value,
-    dateCompleted: document.getElementById('jf-dateCompleted').value,
-    dateInvoiced: document.getElementById('jf-dateInvoiced').value,
-    datePaid: document.getElementById('jf-datePaid').value,
-    tradeIds
-  };
-  if (!body.workOrderId || !body.title || !body.customerId || !body.addressId) return alert('Please fill in Work Order ID, Title, Customer and Address.');
-  if (editingId.job) await api('PUT', '/api/jobs/'+editingId.job, body);
-  else await api('POST', '/api/jobs', body);
-  closeModal('job-modal');
-  await loadAll();
+  const body = { workOrderId:document.getElementById('jf-workOrderId').value.trim(), title:document.getElementById('jf-title').value.trim(), customerId:document.getElementById('jf-customerId').value, addressId:document.getElementById('jf-addressId').value, status:document.getElementById('jf-status').value, actionRequired:document.getElementById('jf-actionRequired').value.trim(), dateReceived:document.getElementById('jf-dateReceived').value, dateBooked:document.getElementById('jf-dateBooked').value, dateCompleted:document.getElementById('jf-dateCompleted').value, dateInvoiced:document.getElementById('jf-dateInvoiced').value, datePaid:document.getElementById('jf-datePaid').value, tradeIds };
+  if (!body.workOrderId||!body.title||!body.customerId||!body.addressId) return alert('Please fill in Work Order ID, Title, Customer and Address.');
+  if (editingId.job) await api('PUT','/api/jobs/'+editingId.job,body);
+  else await api('POST','/api/jobs',body);
+  closeModal('job-modal'); await loadAll();
 }
 
 async function deleteJob(id) {
   if (!confirm('Delete this job?')) return;
-  await api('DELETE', '/api/jobs/'+id);
-  await loadAll();
+  await api('DELETE','/api/jobs/'+id); await loadAll();
 }
 
 function openJobDetail(id) {
@@ -631,251 +652,218 @@ function openJobDetail(id) {
   if (!j) return;
   document.getElementById('jd-title').textContent = j.title;
   document.getElementById('jd-workorder').textContent = 'Work Order: '+j.workOrderId;
-  document.getElementById('jd-edit-btn').onclick = () => { closeModal('job-detail-modal'); openJobModal(id); };
-
-  const tnames = (j.tradeIds||[]).map(tid => state.trades.find(t=>t.id===tid)).filter(Boolean);
-
+  const editBtn = document.getElementById('jd-edit-btn');
+  if (isAdmin()) { editBtn.style.display=''; editBtn.onclick=()=>{ closeModal('job-detail-modal'); openJobModal(id); }; }
+  else editBtn.style.display='none';
+  const tnames = (j.tradeIds||[]).map(tid=>state.trades.find(t=>t.id===tid)).filter(Boolean);
   document.getElementById('job-detail-body').innerHTML = `
     <div class="detail-grid">
-      <div class="detail-section">
-        <h4>Job Info</h4>
-        <div class="detail-row"><span class="key">Status</span><span class="val">${badge(j.status, j.status)}</span></div>
-        <div class="detail-row"><span class="key">Customer</span><span class="val">${customerName(j.customerId)}</span></div>
-        <div class="detail-row"><span class="key">Address</span><span class="val">${addressLabel(j.addressId)}</span></div>
-        ${j.actionRequired ? `<div class="detail-row" style="flex-direction:column;gap:4px"><span class="key">Action Required</span><span style="font-size:0.87rem;margin-top:4px">${j.actionRequired}</span></div>` : ''}
+      <div class="detail-section"><h4>Job Info</h4>
+        <div class="detail-row"><span class="key">Status</span><span>${badge(j.status,j.status)}</span></div>
+        <div class="detail-row"><span class="key">Customer</span><span>${customerName(j.customerId)}</span></div>
+        <div class="detail-row"><span class="key">Address</span><span style="text-align:right">${addressLabel(j.addressId)}</span></div>
+        ${j.actionRequired?`<div class="detail-row" style="flex-direction:column;gap:4px"><span class="key">Action Required</span><span style="font-size:0.87rem;margin-top:4px">${j.actionRequired}</span></div>`:''}
       </div>
-      <div class="detail-section">
-        <h4>Key Dates</h4>
+      <div class="detail-section"><h4>Key Dates</h4>
         <div class="dates-strip">
           <div class="date-box"><div class="dlabel">Received</div><div class="dval ${!j.dateReceived?'empty':''}">${fmtDateVal(j.dateReceived)||'Not set'}</div></div>
           <div class="date-box"><div class="dlabel">Booked</div><div class="dval ${!j.dateBooked?'empty':''}">${fmtDateVal(j.dateBooked)||'Not set'}</div></div>
           <div class="date-box"><div class="dlabel">Completed</div><div class="dval ${!j.dateCompleted?'empty':''}">${fmtDateVal(j.dateCompleted)||'Not set'}</div></div>
           <div class="date-box"><div class="dlabel">Invoiced</div><div class="dval ${!j.dateInvoiced?'empty':''}">${fmtDateVal(j.dateInvoiced)||'Not set'}</div></div>
         </div>
-        <div style="margin-top:8px" class="dates-strip">
-          <div class="date-box"><div class="dlabel">Paid</div><div class="dval ${!j.datePaid?'empty':''}">${fmtDateVal(j.datePaid)||'Not set'}</div></div>
-        </div>
+        <div style="margin-top:8px"><div class="date-box" style="max-width:25%"><div class="dlabel">Paid</div><div class="dval ${!j.datePaid?'empty':''}">${fmtDateVal(j.datePaid)||'Not set'}</div></div></div>
       </div>
     </div>
-    ${tnames.length ? `<div class="detail-section" style="margin-bottom:16px">
-      <h4>Assigned Trades</h4>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        ${tnames.map(t=>`<div style="display:flex;justify-content:space-between;align-items:center;font-size:0.87rem">
-          <strong>${t.companyName}</strong>
-          <span style="color:var(--slate)">${t.contactName} · ${t.contactNumber}</span>
-          <span style="color:var(--mist)">${(t.services||[]).join(', ')}</span>
-        </div>`).join('')}
-      </div>
-    </div>` : ''}
-    <div class="detail-section">
-      <h4 style="display:flex;justify-content:space-between;align-items:center">
-        Communications
-        <button class="btn btn-secondary btn-sm" onclick="openCommModal('${j.id}')">+ Add Note</button>
-      </h4>
+    ${tnames.length?`<div class="detail-section" style="margin-bottom:16px"><h4>Assigned Trades</h4>
+      ${tnames.map(t=>`<div style="display:flex;justify-content:space-between;align-items:center;font-size:0.87rem;padding:6px 0;border-bottom:1px solid var(--surface)">
+        <strong>${t.companyName}</strong><span style="color:var(--slate)">${t.contactName} · ${t.contactNumber}</span><span style="color:var(--mist)">${(t.services||[]).join(', ')}</span></div>`).join('')}
+    </div>`:''}
+    <div class="detail-section"><h4 style="display:flex;justify-content:space-between;align-items:center">Communications
+      <button class="btn btn-secondary btn-sm" onclick="openCommModal('${j.id}')">+ Add Note</button></h4>
       <div id="comms-list">
-        ${(j.communications||[]).length ? (j.communications).map(c=>`
-          <div class="comm-item">
-            <div class="comm-meta">${new Date(c.date).toLocaleString('en-GB')} ${c.author ? '· '+c.author : ''}</div>
-            <div>${c.note}</div>
-          </div>
-        `).join('') : '<p style="color:var(--mist);font-size:0.87rem;text-align:center;padding:16px">No communications yet</p>'}
+        ${(j.communications||[]).length?(j.communications).map(c=>`<div class="comm-item"><div class="comm-meta">${new Date(c.date).toLocaleString('en-GB')}${c.author?' · '+c.author:''}</div><div>${c.note}</div></div>`).join(''):'<p style="color:var(--mist);font-size:0.87rem;text-align:center;padding:16px">No communications yet</p>'}
       </div>
     </div>
   `;
   document.getElementById('job-detail-modal').classList.add('open');
 }
 
-function openCommModal(jobId) {
-  currentJobForComm = jobId;
-  document.getElementById('comm-author').value = '';
-  document.getElementById('comm-note').value = '';
-  document.getElementById('comm-modal').classList.add('open');
-}
-
+function openCommModal(jobId) { currentJobForComm=jobId; document.getElementById('comm-author').value=''; document.getElementById('comm-note').value=''; document.getElementById('comm-modal').classList.add('open'); }
 async function saveComm() {
-  const note = document.getElementById('comm-note').value.trim();
-  const author = document.getElementById('comm-author').value.trim();
+  const note=document.getElementById('comm-note').value.trim();
+  const author=document.getElementById('comm-author').value.trim();
   if (!note) return alert('Please enter a note.');
-  await api('POST', '/api/jobs/'+currentJobForComm+'/communications', { note, author });
-  closeModal('comm-modal');
-  await loadAll();
-  openJobDetail(currentJobForComm);
+  await api('POST','/api/jobs/'+currentJobForComm+'/communications',{note,author});
+  closeModal('comm-modal'); await loadAll(); openJobDetail(currentJobForComm);
 }
 
 // ── Customers ─────────────────────────────────────────────────────────────────
 function renderCustomers() {
-  const q = (document.getElementById('cust-search')?.value||'').toLowerCase();
-  const custs = state.customers.filter(c => !q || c.name.toLowerCase().includes(q) || (c.email||'').toLowerCase().includes(q));
-  document.getElementById('customers-tbody').innerHTML = custs.length ? custs.map(c => {
-    const addrCount = state.addresses.filter(a=>a.customerId===c.id).length;
-    return `<tr>
-      <td><strong>${c.name}</strong></td>
-      <td>${badge(c.type, c.type)}</td>
-      <td>${c.email||'—'}</td><td>${c.phone||'—'}</td>
-      <td>${addrCount} address${addrCount!==1?'es':''}</td>
-      <td><div class="actions-col">
-        <button class="btn btn-ghost btn-sm" onclick="openCustomerModal('${c.id}')">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.id}')">Delete</button>
-      </div></td>
-    </tr>`;
-  }).join('') : '<tr class="empty-row"><td colspan="6">No customers found</td></tr>';
+  const q=(document.getElementById('cust-search')?.value||'').toLowerCase();
+  const custs=state.customers.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q));
+  document.getElementById('customers-tbody').innerHTML=custs.length?custs.map(c=>{
+    const addrCount=state.addresses.filter(a=>a.customerId===c.id).length;
+    const editBtn=isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="openCustomerModal('${c.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.id}')">Delete</button>`:'';
+    return `<tr><td><strong>${c.name}</strong></td><td>${badge(c.type,c.type)}</td><td>${c.email||'—'}</td><td>${c.phone||'—'}</td><td>${addrCount} address${addrCount!==1?'es':''}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
+  }).join(''):'<tr class="empty-row"><td colspan="6">No customers found</td></tr>';
 }
 
-function openCustomerModal(id = null) {
-  editingId.customer = id;
-  document.getElementById('cust-modal-title').textContent = id ? 'Edit Customer' : 'New Customer';
-  ['name','email','phone'].forEach(f => document.getElementById('cf-'+f).value = '');
-  document.getElementById('cf-type').value = 'managing_agent';
-  if (id) {
-    const c = state.customers.find(c=>c.id===id);
-    if (c) { document.getElementById('cf-name').value=c.name||''; document.getElementById('cf-email').value=c.email||''; document.getElementById('cf-phone').value=c.phone||''; document.getElementById('cf-type').value=c.type||'managing_agent'; }
-  }
+function openCustomerModal(id=null) {
+  if (!isAdmin()) return;
+  editingId.customer=id;
+  document.getElementById('cust-modal-title').textContent=id?'Edit Customer':'New Customer';
+  ['name','email','phone'].forEach(f=>document.getElementById('cf-'+f).value='');
+  document.getElementById('cf-type').value='managing_agent';
+  if (id) { const c=state.customers.find(c=>c.id===id); if(c){document.getElementById('cf-name').value=c.name||'';document.getElementById('cf-email').value=c.email||'';document.getElementById('cf-phone').value=c.phone||'';document.getElementById('cf-type').value=c.type||'managing_agent';} }
   document.getElementById('customer-modal').classList.add('open');
 }
-
 async function saveCustomer() {
-  const body = { type: document.getElementById('cf-type').value, name: document.getElementById('cf-name').value.trim(), email: document.getElementById('cf-email').value.trim(), phone: document.getElementById('cf-phone').value.trim() };
-  if (!body.name) return alert('Name is required.');
-  if (editingId.customer) await api('PUT', '/api/customers/'+editingId.customer, body);
-  else await api('POST', '/api/customers', body);
+  const body={type:document.getElementById('cf-type').value,name:document.getElementById('cf-name').value.trim(),email:document.getElementById('cf-email').value.trim(),phone:document.getElementById('cf-phone').value.trim()};
+  if(!body.name) return alert('Name is required.');
+  if(editingId.customer) await api('PUT','/api/customers/'+editingId.customer,body);
+  else await api('POST','/api/customers',body);
   closeModal('customer-modal'); await loadAll();
 }
-
-async function deleteCustomer(id) {
-  if (!confirm('Delete this customer?')) return;
-  await api('DELETE', '/api/customers/'+id); await loadAll();
-}
+async function deleteCustomer(id) { if(!confirm('Delete this customer?')) return; await api('DELETE','/api/customers/'+id); await loadAll(); }
 
 // ── Addresses ─────────────────────────────────────────────────────────────────
 function populateAddrFilter() {
-  const sel = document.getElementById('addr-cust-filter');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">All Customers</option>' + state.customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-  sel.value = cur;
+  const sel=document.getElementById('addr-cust-filter'); const cur=sel.value;
+  sel.innerHTML='<option value="">All Customers</option>'+state.customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  sel.value=cur;
 }
-
 function renderAddresses() {
-  const q = (document.getElementById('addr-search')?.value||'').toLowerCase();
-  const cf = document.getElementById('addr-cust-filter')?.value||'';
-  const addrs = state.addresses.filter(a => {
-    if (cf && a.customerId !== cf) return false;
-    const full = `${a.label} ${a.line1} ${a.line2} ${a.city} ${a.postcode}`.toLowerCase();
-    return !q || full.includes(q);
-  });
-  document.getElementById('addresses-tbody').innerHTML = addrs.length ? addrs.map(a => `<tr>
-    <td><strong>${a.label||'—'}</strong></td>
-    <td>${a.line1}${a.line2?' '+a.line2:''}, ${a.city}, ${a.postcode}</td>
-    <td>${customerName(a.customerId)}</td>
-    <td><div class="actions-col">
-      <button class="btn btn-ghost btn-sm" onclick="openAddressModal('${a.id}')">Edit</button>
-      <button class="btn btn-danger btn-sm" onclick="deleteAddress('${a.id}')">Delete</button>
-    </div></td>
-  </tr>`).join('') : '<tr class="empty-row"><td colspan="4">No addresses found</td></tr>';
+  const q=(document.getElementById('addr-search')?.value||'').toLowerCase();
+  const cf=document.getElementById('addr-cust-filter')?.value||'';
+  const addrs=state.addresses.filter(a=>{ if(cf&&a.customerId!==cf) return false; const full=`${a.label} ${a.line1} ${a.city} ${a.postcode}`.toLowerCase(); return !q||full.includes(q); });
+  document.getElementById('addresses-tbody').innerHTML=addrs.length?addrs.map(a=>{
+    const editBtn=isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="openAddressModal('${a.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteAddress('${a.id}')">Delete</button>`:'';
+    return `<tr><td><strong>${a.label||'—'}</strong></td><td>${a.line1}${a.line2?' '+a.line2:''}, ${a.city}, ${a.postcode}</td><td>${customerName(a.customerId)}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
+  }).join(''):'<tr class="empty-row"><td colspan="4">No addresses found</td></tr>';
 }
-
-function openAddressModal(id = null) {
-  editingId.address = id;
-  document.getElementById('addr-modal-title').textContent = id ? 'Edit Address' : 'New Address';
-  ['label','line1','line2','city','postcode'].forEach(f => document.getElementById('af-'+f).value = '');
-  const cs = document.getElementById('af-customerId');
-  cs.innerHTML = '<option value="">Select customer…</option>' + state.customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-  if (id) {
-    const a = state.addresses.find(a=>a.id===id);
-    if (a) { cs.value=a.customerId; ['label','line1','line2','city','postcode'].forEach(f=>{ document.getElementById('af-'+f).value=a[f]||''; }); }
-  }
+function openAddressModal(id=null) {
+  if(!isAdmin()) return;
+  editingId.address=id;
+  document.getElementById('addr-modal-title').textContent=id?'Edit Address':'New Address';
+  ['label','line1','line2','city','postcode'].forEach(f=>document.getElementById('af-'+f).value='');
+  const cs=document.getElementById('af-customerId');
+  cs.innerHTML='<option value="">Select customer…</option>'+state.customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  if(id){const a=state.addresses.find(a=>a.id===id);if(a){cs.value=a.customerId;['label','line1','line2','city','postcode'].forEach(f=>{document.getElementById('af-'+f).value=a[f]||'';});}}
   document.getElementById('address-modal').classList.add('open');
 }
-
 async function saveAddress() {
-  const body = { customerId: document.getElementById('af-customerId').value, label: document.getElementById('af-label').value.trim(), line1: document.getElementById('af-line1').value.trim(), line2: document.getElementById('af-line2').value.trim(), city: document.getElementById('af-city').value.trim(), postcode: document.getElementById('af-postcode').value.trim() };
-  if (!body.customerId || !body.line1) return alert('Customer and Address Line 1 are required.');
-  if (editingId.address) await api('PUT', '/api/addresses/'+editingId.address, body);
-  else await api('POST', '/api/addresses', body);
+  const body={customerId:document.getElementById('af-customerId').value,label:document.getElementById('af-label').value.trim(),line1:document.getElementById('af-line1').value.trim(),line2:document.getElementById('af-line2').value.trim(),city:document.getElementById('af-city').value.trim(),postcode:document.getElementById('af-postcode').value.trim()};
+  if(!body.customerId||!body.line1) return alert('Customer and Address Line 1 are required.');
+  if(editingId.address) await api('PUT','/api/addresses/'+editingId.address,body);
+  else await api('POST','/api/addresses',body);
   closeModal('address-modal'); await loadAll();
 }
-
-async function deleteAddress(id) {
-  if (!confirm('Delete this address?')) return;
-  await api('DELETE', '/api/addresses/'+id); await loadAll();
-}
+async function deleteAddress(id) { if(!confirm('Delete this address?')) return; await api('DELETE','/api/addresses/'+id); await loadAll(); }
 
 // ── Trades ────────────────────────────────────────────────────────────────────
 function renderTrades() {
-  const q = (document.getElementById('trade-search')?.value||'').toLowerCase();
-  const trades = state.trades.filter(t => !q || t.companyName.toLowerCase().includes(q) || (t.contactName||'').toLowerCase().includes(q));
-  document.getElementById('trades-tbody').innerHTML = trades.length ? trades.map(t => `<tr>
-    <td><strong>${t.companyName}</strong><br><small style="color:var(--mist)">${t.companyAddress||''}</small></td>
-    <td>${t.contactName||'—'}</td>
-    <td>${t.contactNumber||'—'}</td>
-    <td>${t.contactEmail ? `<a href="mailto:${t.contactEmail}" style="color:var(--accent)">${t.contactEmail}</a>` : '—'}</td>
-    <td>${(t.services||[]).map(s=>`<span style="background:var(--surface);padding:2px 7px;border-radius:4px;font-size:0.78rem;margin:1px;display:inline-block">${s}</span>`).join('')||'—'}</td>
-    <td>${badge(t.status, t.status)}</td>
-    <td><div class="actions-col">
-      <button class="btn btn-ghost btn-sm" onclick="openTradeModal('${t.id}')">Edit</button>
-      <button class="btn btn-danger btn-sm" onclick="deleteTrade('${t.id}')">Delete</button>
-    </div></td>
-  </tr>`).join('') : '<tr class="empty-row"><td colspan="7">No trades found</td></tr>';
+  const q=(document.getElementById('trade-search')?.value||'').toLowerCase();
+  const trades=state.trades.filter(t=>!q||t.companyName.toLowerCase().includes(q)||(t.contactName||'').toLowerCase().includes(q));
+  document.getElementById('trades-tbody').innerHTML=trades.length?trades.map(t=>{
+    const editBtn=isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="openTradeModal('${t.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTrade('${t.id}')">Delete</button>`:'';
+    return `<tr><td><strong>${t.companyName}</strong><br><small style="color:var(--mist)">${t.companyAddress||''}</small></td><td>${t.contactName||'—'}</td><td>${t.contactNumber||'—'}</td><td>${t.contactEmail?`<a href="mailto:${t.contactEmail}" style="color:var(--accent)">${t.contactEmail}</a>`:'—'}</td><td>${(t.services||[]).map(s=>`<span style="background:var(--surface);padding:2px 7px;border-radius:4px;font-size:0.78rem;display:inline-block;margin:1px">${s}</span>`).join('')||'—'}</td><td>${badge(t.status,t.status)}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
+  }).join(''):'<tr class="empty-row"><td colspan="7">No trades found</td></tr>';
 }
-
-function openTradeModal(id = null) {
-  editingId.trade = id;
-  serviceTagsArr = [];
-  document.getElementById('trade-modal-title').textContent = id ? 'Edit Trade' : 'New Trade';
-  ['companyName','companyAddress','contactName','contactNumber','contactEmail'].forEach(f => document.getElementById('tf-'+f).value = '');
-  document.getElementById('tf-status').value = 'active';
+function openTradeModal(id=null) {
+  if(!isAdmin()) return;
+  editingId.trade=id; serviceTagsArr=[];
+  document.getElementById('trade-modal-title').textContent=id?'Edit Trade':'New Trade';
+  ['companyName','companyAddress','contactName','contactNumber','contactEmail'].forEach(f=>document.getElementById('tf-'+f).value='');
+  document.getElementById('tf-status').value='active';
   renderServiceTags();
-  if (id) {
-    const t = state.trades.find(t=>t.id===id);
-    if (t) {
-      document.getElementById('tf-status').value=t.status||'active';
-      ['companyName','companyAddress','contactName','contactNumber','contactEmail'].forEach(f=>{ document.getElementById('tf-'+f).value=t[f]||''; });
-      serviceTagsArr = [...(t.services||[])];
-      renderServiceTags();
-    }
-  }
+  if(id){const t=state.trades.find(t=>t.id===id);if(t){document.getElementById('tf-status').value=t.status||'active';['companyName','companyAddress','contactName','contactNumber','contactEmail'].forEach(f=>{document.getElementById('tf-'+f).value=t[f]||'';});serviceTagsArr=[...(t.services||[])];renderServiceTags();}}
   document.getElementById('trade-modal').classList.add('open');
 }
-
-function addServiceTag(e) {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    const val = e.target.value.trim();
-    if (val && !serviceTagsArr.includes(val)) { serviceTagsArr.push(val); renderServiceTags(); }
-    e.target.value = '';
-  }
-}
-
-function removeServiceTag(idx) { serviceTagsArr.splice(idx, 1); renderServiceTags(); }
-
+function addServiceTag(e) { if(e.key==='Enter'){e.preventDefault();const val=e.target.value.trim();if(val&&!serviceTagsArr.includes(val)){serviceTagsArr.push(val);renderServiceTags();}e.target.value='';} }
+function removeServiceTag(idx) { serviceTagsArr.splice(idx,1); renderServiceTags(); }
 function renderServiceTags() {
-  const wrap = document.getElementById('tf-services-wrap');
-  const input = document.getElementById('tf-service-input');
-  wrap.innerHTML = '';
-  serviceTagsArr.forEach((s, i) => {
-    const tag = document.createElement('span');
-    tag.className = 'tag';
-    tag.innerHTML = `${s} <span class="tag-remove" onclick="removeServiceTag(${i})">×</span>`;
-    wrap.appendChild(tag);
-  });
+  const wrap=document.getElementById('tf-services-wrap'); const input=document.getElementById('tf-service-input');
+  wrap.innerHTML='';
+  serviceTagsArr.forEach((s,i)=>{ const tag=document.createElement('span'); tag.className='tag'; tag.innerHTML=`${s} <span class="tag-remove" onclick="removeServiceTag(${i})">×</span>`; wrap.appendChild(tag); });
   wrap.appendChild(input);
-  input.focus();
 }
-
 async function saveTrade() {
-  const body = { status: document.getElementById('tf-status').value, companyName: document.getElementById('tf-companyName').value.trim(), companyAddress: document.getElementById('tf-companyAddress').value.trim(), contactName: document.getElementById('tf-contactName').value.trim(), contactNumber: document.getElementById('tf-contactNumber').value.trim(), contactEmail: document.getElementById('tf-contactEmail').value.trim(), services: serviceTagsArr };
-  if (!body.companyName) return alert('Company name is required.');
-  if (editingId.trade) await api('PUT', '/api/trades/'+editingId.trade, body);
-  else await api('POST', '/api/trades', body);
+  const body={status:document.getElementById('tf-status').value,companyName:document.getElementById('tf-companyName').value.trim(),companyAddress:document.getElementById('tf-companyAddress').value.trim(),contactName:document.getElementById('tf-contactName').value.trim(),contactNumber:document.getElementById('tf-contactNumber').value.trim(),contactEmail:document.getElementById('tf-contactEmail').value.trim(),services:serviceTagsArr};
+  if(!body.companyName) return alert('Company name is required.');
+  if(editingId.trade) await api('PUT','/api/trades/'+editingId.trade,body);
+  else await api('POST','/api/trades',body);
   closeModal('trade-modal'); await loadAll();
 }
+async function deleteTrade(id) { if(!confirm('Delete this trade?')) return; await api('DELETE','/api/trades/'+id); await loadAll(); }
 
-async function deleteTrade(id) {
-  if (!confirm('Delete this trade?')) return;
-  await api('DELETE', '/api/trades/'+id); await loadAll();
+// ── Users ─────────────────────────────────────────────────────────────────────
+function renderUsers() {
+  const q=(document.getElementById('user-search')?.value||'').toLowerCase();
+  const users=state.users.filter(u=>!q||u.name.toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q));
+  document.getElementById('users-tbody').innerHTML=users.length?users.map(u=>`
+    <tr>
+      <td><strong>${u.name}</strong></td>
+      <td>${u.email}</td>
+      <td>${badge(u.role,u.role)}</td>
+      <td>${u.active?'<span style="color:var(--green);font-weight:600">Active</span>':'<span style="color:var(--mist)">Disabled</span>'}</td>
+      <td style="color:var(--mist);font-size:0.82rem">${new Date(u.created_at).toLocaleDateString('en-GB')}</td>
+      <td><div class="actions-col">
+        <button class="btn btn-ghost btn-sm" onclick="openUserModal('${u.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">Delete</button>
+      </div></td>
+    </tr>`).join(''):'<tr class="empty-row"><td colspan="6">No users found</td></tr>';
 }
 
-// ── Init ─────────────────────────────────────────────────────────────────────
-loadAll();
+function openUserModal(id=null) {
+  editingId.user=id;
+  document.getElementById('user-modal-title').textContent=id?'Edit User':'New User';
+  document.getElementById('uf-name').value='';
+  document.getElementById('uf-email').value='';
+  document.getElementById('uf-password').value='';
+  document.getElementById('uf-role').value='readonly';
+  document.getElementById('uf-active-group').style.display='none';
+  document.getElementById('uf-password-hint').textContent='';
+  if(id){
+    const u=state.users.find(u=>u.id===id);
+    if(u){
+      document.getElementById('uf-name').value=u.name||'';
+      document.getElementById('uf-email').value=u.email||'';
+      document.getElementById('uf-role').value=u.role||'readonly';
+      document.getElementById('uf-active-group').style.display='';
+      document.getElementById('uf-active').value=String(u.active);
+      document.getElementById('uf-password-hint').textContent='Leave password blank to keep existing password';
+    }
+  }
+  document.getElementById('user-modal').classList.add('open');
+}
+
+async function saveUser() {
+  const name=document.getElementById('uf-name').value.trim();
+  const email=document.getElementById('uf-email').value.trim();
+  const password=document.getElementById('uf-password').value;
+  const role=document.getElementById('uf-role').value;
+  const active=document.getElementById('uf-active').value==='true';
+  if(!name||!email) return alert('Name and email are required.');
+  if(!editingId.user&&!password) return alert('Password is required for new users.');
+  if(password&&password.length<8) return alert('Password must be at least 8 characters.');
+  const body={name,email,role,active};
+  if(password) body.password=password;
+  let result;
+  if(editingId.user) result=await api('PUT','/api/users/'+editingId.user,body);
+  else result=await api('POST','/api/users',body);
+  if(result&&result.error) return alert(result.error);
+  closeModal('user-modal'); await loadAll();
+}
+
+async function deleteUser(id) {
+  if(!confirm('Delete this user? They will no longer be able to log in.')) return;
+  const result=await api('DELETE','/api/users/'+id);
+  if(result&&result.error) return alert(result.error);
+  await loadAll();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+init();
 </script>
 </body>
 </html>
