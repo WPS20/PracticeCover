@@ -171,6 +171,28 @@
 
 
 
+  /* ── Tasks ── */
+  .task-item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; background: var(--white); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; transition: box-shadow 0.15s; }
+  .task-item:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.07); }
+  .task-item.overdue { border-left: 3px solid var(--red); }
+  .task-item.due-today { border-left: 3px solid var(--amber); }
+  .task-item.status-complete { opacity: 0.55; }
+  .task-cb { width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; margin-top: 2px; cursor: pointer; }
+  .task-body { flex: 1; min-width: 0; }
+  .task-desc { font-size: 0.9rem; font-weight: 500; color: var(--ink); margin-bottom: 5px; }
+  .task-desc.done { text-decoration: line-through; color: var(--mist); }
+  .task-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.78rem; color: var(--mist); }
+  .task-date-pill { font-weight: 600; }
+  .task-date-pill.overdue { color: var(--red); }
+  .task-date-pill.due-today { color: var(--amber); }
+  .task-actions { display: flex; gap: 5px; flex-shrink: 0; }
+  .badge-open { background: #eff6ff; color: var(--blue); }
+  .badge-in_progress { background: #fef3c7; color: #92400e; }
+  .badge-complete { background: #f0fdf4; color: var(--green); }
+  .tasks-section { margin-bottom: 28px; }
+  .tasks-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .tasks-section-header h4 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; }
+
   /* ── Audit Log ── */
   .badge-created { background: #f0fdf4; color: var(--green); }
   .badge-updated { background: #eff6ff; color: var(--blue); }
@@ -216,6 +238,7 @@
       <a onclick="showPage('customers')" data-page="customers"><span class="icon">👥</span> Customers</a>
       <a onclick="showPage('addresses')" data-page="addresses"><span class="icon">📍</span> Addresses</a>
       <a onclick="showPage('trades')" data-page="trades"><span class="icon">🏗️</span> Trades</a>
+      <a onclick="showPage('tasks')" data-page="tasks"><span class="icon">✅</span> Tasks</a>
       <a onclick="showPage('log')" data-page="log" class="admin-only" style="display:none"><span class="icon">📋</span> Audit Log</a>
       <div class="nav-section admin-only" style="display:none">Admin</div>
       <a onclick="showPage('users')" data-page="users" class="admin-only" style="display:none"><span class="icon">🔑</span> Users</a>
@@ -236,21 +259,30 @@
 
       <!-- DASHBOARD -->
       <div class="page active" id="page-dashboard">
-        <div style="margin-bottom:24px">
+        <div style="margin-bottom:20px">
           <h3 id="dashboard-greeting" style="font-family:'DM Serif Display',serif;font-size:1.4rem"></h3>
         </div>
-        <div style="margin-top:8px">
-          <div class="stats-grid" id="stats-grid"></div>
-          <div class="dashboard-grid">
-            <div class="card">
-              <div class="card-header"><h3>Recent Jobs</h3><button class="btn btn-secondary btn-sm" onclick="showPage('jobs')">View All</button></div>
-              <table><thead><tr><th>Work Order</th><th>Title</th><th>Customer</th><th>Status</th></tr></thead>
-              <tbody id="recent-jobs"></tbody></table>
+        <div class="dashboard-grid" style="grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px">
+          <div class="tasks-section">
+            <div class="tasks-section-header">
+              <h4>My Tasks</h4>
+              <button class="btn btn-primary btn-sm" onclick="openTaskModal()">+ New Task</button>
             </div>
-            <div class="card">
-              <div class="card-header"><h3>Jobs by Status</h3></div>
-              <div style="padding:16px"><div class="status-list" id="status-breakdown"></div></div>
-            </div>
+            <div id="my-tasks-list"><div style="text-align:center;padding:32px;color:var(--mist);font-size:0.88rem">Loading tasks…</div></div>
+          </div>
+          <div>
+            <div class="stats-grid" id="stats-grid"></div>
+          </div>
+        </div>
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-header"><h3>Recent Jobs</h3><button class="btn btn-secondary btn-sm" onclick="showPage('jobs')">View All</button></div>
+            <table><thead><tr><th>Work Order</th><th>Title</th><th>Customer</th><th>Status</th></tr></thead>
+            <tbody id="recent-jobs"></tbody></table>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Jobs by Status</h3></div>
+            <div style="padding:16px"><div class="status-list" id="status-breakdown"></div></div>
           </div>
         </div>
       </div>
@@ -345,6 +377,24 @@
             <thead><tr><th>When</th><th>User</th><th>Action</th><th>Type</th><th>Description</th></tr></thead>
             <tbody id="log-tbody"></tbody>
           </table>
+        </div>
+      </div>
+      <!-- TASKS PAGE -->
+      <div class="page" id="page-tasks">
+        <div class="card">
+          <div class="card-header" style="flex-wrap:wrap;gap:10px">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <div class="search-bar"><input type="text" placeholder="Search tasks…" id="task-search" oninput="renderAllTasks()"></div>
+              <select id="task-filter-user" onchange="renderAllTasks()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem"><option value="">All Users</option></select>
+              <select id="task-filter-status" onchange="renderAllTasks()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
+                <option value="">All Statuses</option>
+                <option value="open">Open</option>
+                <option value="in_progress">In Progress</option>
+                <option value="complete">Complete</option>
+              </select>
+            </div>
+          </div>
+          <div style="padding:16px" id="all-tasks-list"></div>
         </div>
       </div>
     </div>
@@ -505,7 +555,7 @@
 
 <script>
 // ── State ─────────────────────────────────────────────────────────────────────
-let state = { customers: [], addresses: [], jobs: [], trades: [], users: [] };
+let state = { customers: [], addresses: [], jobs: [], trades: [], users: [], myTasks: [], allTasks: [] };
 let currentUser = null;
 let editingId = { job: null, customer: null, address: null, trade: null, user: null };
 let currentJobForComm = null;
@@ -566,12 +616,12 @@ async function doLogin() {
 async function doLogout() {
   await fetch('/api/auth/logout', { method: 'POST' });
   currentUser = null;
-  state = { customers: [], addresses: [], jobs: [], trades: [], users: [] };
+  state = { customers: [], addresses: [], jobs: [], trades: [], users: [], myTasks: [], allTasks: [] };
   showLogin();
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const pageTitles = { dashboard: 'Dashboard', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Trades', users: 'User Management', log: 'Audit Log' };
+const pageTitles = { dashboard: 'Dashboard', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Trades', users: 'User Management', tasks: 'Tasks', log: 'Audit Log' };
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -586,9 +636,12 @@ function showPage(name) {
     addresses: '<button class="btn btn-primary" onclick="openAddressModal()">+ New Address</button>',
     trades: '<button class="btn btn-primary" onclick="openTradeModal()">+ New Trade</button>',
     users: isAdmin() ? '<button class="btn btn-primary" onclick="openUserModal()">+ New User</button>' : '',
+    tasks: '<button class="btn btn-primary" onclick="openTaskModal()">+ New Task</button>',
     dashboard: ''
   };
   document.getElementById('topbar-action').innerHTML = actions[name] || '';
+  if (name === 'dashboard') { renderDashboard(); }
+  if (name === 'tasks') { populateTaskFilters(); loadAllTasks(); }
   if (name === 'log') { loadLog(); }
 }
 
@@ -609,9 +662,11 @@ async function loadAll() {
   if (!customers) return;
   state = { ...state, customers, addresses, jobs, trades };
   const users = await api('GET', '/api/users');
-  if (users) state.users = users; renderJobs(); renderCustomers(); renderAddresses(); renderTrades();
+  if (users) { state.users = users; }
+  renderJobs(); renderCustomers(); renderAddresses(); renderTrades();
   if (isAdmin()) renderUsers();
   populateAddrFilter();
+  await loadMyTasks();
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
@@ -959,6 +1014,186 @@ async function deleteUser(id) {
 
 
 
+// ── Tasks ─────────────────────────────────────────────────────────────────────
+let editingTaskId = null;
+
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+// Load open tasks assigned to current user — used on dashboard
+async function loadMyTasks() {
+  if (!currentUser) return;
+  const tasks = await api('GET', '/api/tasks?assignedTo=' + encodeURIComponent(currentUser.id) + '&status=open');
+  if (!Array.isArray(tasks)) return;
+  state.myTasks = tasks;
+  renderMyTasks();
+}
+
+// Load all tasks — used on the Tasks page
+async function loadAllTasks() {
+  const tasks = await api('GET', '/api/tasks');
+  if (!Array.isArray(tasks)) return;
+  state.allTasks = tasks;
+  renderAllTasks();
+}
+
+function renderMyTasks() {
+  const el = document.getElementById('my-tasks-list');
+  if (!el) return;
+  // Already open tasks only, sort by target date ascending
+  const tasks = (state.myTasks || []).slice().sort((a,b) => (a.targetDate||'').localeCompare(b.targetDate||''));
+  if (!tasks.length) {
+    el.innerHTML = '<div style="text-align:center;padding:32px;color:var(--mist);font-size:0.88rem">No open tasks assigned to you ✓</div>';
+    return;
+  }
+  el.innerHTML = tasks.map(t => taskItemHtml(t, false)).join('');
+}
+
+function renderAllTasks() {
+  const el = document.getElementById('all-tasks-list');
+  if (!el) return;
+  const q = (document.getElementById('task-search')?.value || '').toLowerCase();
+  const uf = document.getElementById('task-filter-user')?.value || '';
+  const sf = document.getElementById('task-filter-status')?.value || '';
+  const tasks = (state.allTasks || [])
+    .filter(t => {
+      if (uf && t.assignedTo !== uf) return false;
+      if (sf && t.status !== sf) return false;
+      if (q && !(t.description||'').toLowerCase().includes(q) &&
+               !(t.assignedToName||'').toLowerCase().includes(q) &&
+               !(t.customerName||'').toLowerCase().includes(q) &&
+               !(t.jobTitle||'').toLowerCase().includes(q)) return false;
+      return true;
+    })
+    .sort((a,b) => (a.targetDate||'').localeCompare(b.targetDate||''));
+  if (!tasks.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--mist)">No tasks found</div>';
+    return;
+  }
+  el.innerHTML = tasks.map(t => taskItemHtml(t, true)).join('');
+}
+
+function taskItemHtml(t, showAssignee) {
+  const td = todayStr();
+  const overdue = t.targetDate && t.targetDate < td && t.status !== 'complete';
+  const dueToday = t.targetDate === td && t.status !== 'complete';
+  let cls = 'task-item';
+  if (t.status === 'complete') cls += ' status-complete';
+  else if (overdue) cls += ' overdue';
+  else if (dueToday) cls += ' due-today';
+  let dateCls = 'task-date-pill';
+  if (overdue) dateCls += ' overdue';
+  else if (dueToday) dateCls += ' due-today';
+  const links = [
+    t.customerName ? '👥 ' + t.customerName : '',
+    t.jobTitle ? '🔧 ' + (t.workOrderId ? t.workOrderId + ' – ' : '') + t.jobTitle : ''
+  ].filter(Boolean);
+  return `<div class="${cls}">
+    <input type="checkbox" class="task-cb" ${t.status==='complete'?'checked':''} onchange="toggleTask('${t.id}',this.checked)">
+    <div class="task-body">
+      <div class="task-desc ${t.status==='complete'?'done':''}">${t.description}</div>
+      <div class="task-meta">
+        <span class="${dateCls}">📅 ${t.targetDate ? fmtDateVal(t.targetDate) : 'No date'}</span>
+        ${showAssignee && t.assignedToName ? `<span>👤 ${t.assignedToName}</span>` : ''}
+        ${t.assignedByName ? `<span style="color:var(--mist)">from ${t.assignedByName}</span>` : ''}
+        ${links.map(l => `<span>${l}</span>`).join('')}
+        ${badge(t.status, t.status)}
+      </div>
+    </div>
+    <div class="task-actions">
+      <button class="btn btn-ghost btn-sm" onclick="openTaskModal('${t.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteTask('${t.id}')">Del</button>
+    </div>
+  </div>`;
+}
+
+async function toggleTask(id, checked) {
+  // Find the task in either store
+  const task = (state.myTasks || []).concat(state.allTasks || []).find(t => t.id === id);
+  if (!task) return;
+  const result = await api('PUT', '/api/tasks/' + id, { ...task, status: checked ? 'complete' : 'open' });
+  if (!result || result.error) return;
+  // Refresh whichever views are active
+  await loadMyTasks();
+  const tasksPageActive = document.getElementById('page-tasks')?.classList.contains('active');
+  if (tasksPageActive) await loadAllTasks();
+}
+
+function populateTaskFilters() {
+  const sel = document.getElementById('task-filter-user');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Users</option>' + (state.users || []).map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+async function openTaskModal(id = null) {
+  editingTaskId = id;
+  document.getElementById('task-modal-title').textContent = id ? 'Edit Task' : 'New Task';
+  document.getElementById('tm-description').value = '';
+  document.getElementById('tm-targetDate').value = '';
+  document.getElementById('tm-status').value = 'open';
+
+  const userSel = document.getElementById('tm-assignedTo');
+  userSel.innerHTML = '<option value="">Select user…</option>' +
+    (state.users || []).map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+
+  const custSel = document.getElementById('tm-customerId');
+  custSel.innerHTML = '<option value="">None</option>' +
+    (state.customers || []).slice().sort((a,b)=>a.name.localeCompare(b.name))
+      .map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+  const jobSel = document.getElementById('tm-jobId');
+  jobSel.innerHTML = '<option value="">None</option>' +
+    (state.jobs || []).map(j => `<option value="${j.id}">${j.workOrderId ? j.workOrderId + ' – ' : ''}${j.title}</option>`).join('');
+
+  if (id) {
+    // Look in both stores for the task being edited
+    const t = (state.myTasks || []).concat(state.allTasks || []).find(t => t.id === id);
+    if (t) {
+      document.getElementById('tm-description').value = t.description || '';
+      document.getElementById('tm-targetDate').value = t.targetDate || '';
+      document.getElementById('tm-status').value = t.status || 'open';
+      userSel.value = t.assignedTo || '';
+      custSel.value = t.customerId || '';
+      jobSel.value = t.jobId || '';
+    }
+  } else {
+    // Default: assign to self
+    userSel.value = currentUser.id;
+  }
+  document.getElementById('task-modal').classList.add('open');
+}
+
+async function saveTask() {
+  const description = document.getElementById('tm-description').value.trim();
+  const targetDate  = document.getElementById('tm-targetDate').value;
+  const assignedTo  = document.getElementById('tm-assignedTo').value;
+  const status      = document.getElementById('tm-status').value;
+  const customerId  = document.getElementById('tm-customerId').value || null;
+  const jobId       = document.getElementById('tm-jobId').value || null;
+  if (!description || !targetDate || !assignedTo) {
+    alert('Description, target date and assigned user are all required.');
+    return;
+  }
+  const body = { description, targetDate, assignedTo, assignedBy: currentUser.id, status, customerId, jobId };
+  const result = editingTaskId
+    ? await api('PUT',  '/api/tasks/' + editingTaskId, body)
+    : await api('POST', '/api/tasks', body);
+  if (!result || result.error) { alert(result?.error || 'Save failed'); return; }
+  closeModal('task-modal');
+  await loadMyTasks();
+  const tasksPageActive = document.getElementById('page-tasks')?.classList.contains('active');
+  if (tasksPageActive) await loadAllTasks();
+}
+
+async function deleteTask(id) {
+  if (!confirm('Delete this task?')) return;
+  await api('DELETE', '/api/tasks/' + id);
+  await loadMyTasks();
+  const tasksPageActive = document.getElementById('page-tasks')?.classList.contains('active');
+  if (tasksPageActive) await loadAllTasks();
+}
+
 // ── Audit Log ─────────────────────────────────────────────────────────────────
 let logData = [];
 
@@ -1007,5 +1242,33 @@ function renderLog() {
 init();
 </script>
 
+<!-- ── TASK MODAL ── -->
+<div class="modal-overlay" id="task-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header"><h3 id="task-modal-title">New Task</h3><button class="modal-close" onclick="closeModal('task-modal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid cols-1">
+        <div class="form-group"><label>Description *</label><textarea id="tm-description" rows="3" placeholder="What needs to be done?"></textarea></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Assign To *</label><select id="tm-assignedTo"><option value="">Select user…</option></select></div>
+          <div class="form-group"><label>Target Date *</label><input type="date" id="tm-targetDate"></div>
+        </div>
+        <div class="form-group"><label>Status</label>
+          <select id="tm-status">
+            <option value="open">Open</option>
+            <option value="in_progress">In Progress</option>
+            <option value="complete">Complete</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Link to Customer (optional)</label><select id="tm-customerId"><option value="">None</option></select></div>
+        <div class="form-group"><label>Link to Job (optional)</label><select id="tm-jobId"><option value="">None</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('task-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTask()">Save Task</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

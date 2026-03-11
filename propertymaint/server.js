@@ -412,3 +412,88 @@ function normaliseComm(r) { return { id: r.id, jobId: r.job_id, note: r.note, au
 function fmtDate(d) { return d ? d.toISOString().split('T')[0] : ''; }
 function orNull(v) { return v && v.trim() !== '' ? v : null; }
 
+
+// ─── Tasks ────────────────────────────────────────────────────────────────────
+app.get('/api/tasks', requireAuth, async (req, res) => {
+  try {
+    const { assignedTo, status } = req.query;
+    const baseQ = `
+      SELECT t.*,
+        u.name  AS assigned_to_name,
+        ab.name AS assigned_by_name,
+        c.name  AS customer_name,
+        j.title AS job_title, j.work_order_id
+      FROM tasks t
+      LEFT JOIN users u  ON t.assigned_to = u.id
+      LEFT JOIN users ab ON t.assigned_by  = ab.id
+      LEFT JOIN customers c ON t.customer_id = c.id
+      LEFT JOIN jobs j ON t.job_id = j.id`;
+    const conditions = [];
+    const params = [];
+    if (assignedTo) { conditions.push(`t.assigned_to = $${params.length+1}`); params.push(assignedTo); }
+    if (status)     { conditions.push(`t.status = $${params.length+1}`);      params.push(status); }
+    const where = conditions.length ? ' WHERE ' + conditions.join(' AND ') : '';
+    const result = await query(baseQ + where + ' ORDER BY t.target_date ASC, t.created_at ASC', params);
+    res.json(result.rows.map(normaliseTask));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/tasks', requireAuth, async (req, res) => {
+  try {
+    const { description, targetDate, assignedTo, assignedBy, customerId, jobId, status } = req.body;
+    if (!description || !targetDate || !assignedTo) return res.status(400).json({ error: 'Description, target date and assigned user required' });
+    const id = uuidv4();
+    await query(
+      'INSERT INTO tasks (id,description,target_date,assigned_to,assigned_by,customer_id,job_id,status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
+      [id, description, targetDate, assignedTo, assignedBy || req.session.userId, customerId || null, jobId || null, status || 'open']
+    );
+    const full = await query(`
+      SELECT t.*, u.name AS assigned_to_name, ab.name AS assigned_by_name,
+        c.name AS customer_name, j.title AS job_title, j.work_order_id
+      FROM tasks t
+      LEFT JOIN users u  ON t.assigned_to = u.id
+      LEFT JOIN users ab ON t.assigned_by = ab.id
+      LEFT JOIN customers c ON t.customer_id = c.id
+      LEFT JOIN jobs j ON t.job_id = j.id
+      WHERE t.id = $1`, [id]);
+    res.status(201).json(normaliseTask(full.rows[0]));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/tasks/:id', requireAuth, async (req, res) => {
+  try {
+    const { description, targetDate, assignedTo, assignedBy, customerId, jobId, status } = req.body;
+    await query(
+      'UPDATE tasks SET description=$1,target_date=$2,assigned_to=$3,assigned_by=$4,customer_id=$5,job_id=$6,status=$7 WHERE id=$8',
+      [description, targetDate, assignedTo, assignedBy || req.session.userId, customerId || null, jobId || null, status, req.params.id]
+    );
+    const full = await query(`
+      SELECT t.*, u.name AS assigned_to_name, ab.name AS assigned_by_name,
+        c.name AS customer_name, j.title AS job_title, j.work_order_id
+      FROM tasks t
+      LEFT JOIN users u  ON t.assigned_to = u.id
+      LEFT JOIN users ab ON t.assigned_by = ab.id
+      LEFT JOIN customers c ON t.customer_id = c.id
+      LEFT JOIN jobs j ON t.job_id = j.id
+      WHERE t.id = $1`, [req.params.id]);
+    if (!full.rows.length) return res.status(404).json({ error: 'Not found' });
+    res.json(normaliseTask(full.rows[0]));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/tasks/:id', requireAuth, async (req, res) => {
+  try { await query('DELETE FROM tasks WHERE id=$1', [req.params.id]); res.json({ success: true }); }
+  catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+function normaliseTask(r) {
+  return {
+    id: r.id, description: r.description,
+    targetDate: r.target_date ? r.target_date.toISOString().split('T')[0] : '',
+    assignedTo: r.assigned_to, assignedToName: r.assigned_to_name,
+    assignedBy: r.assigned_by, assignedByName: r.assigned_by_name,
+    customerId: r.customer_id, customerName: r.customer_name,
+    jobId: r.job_id, jobTitle: r.job_title, workOrderId: r.work_order_id,
+    status: r.status, createdAt: r.created_at
+  };
+}
