@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 const multer = require('multer');
-const fetch = require('node-fetch');
+// Node 18+ has fetch built-in — no need for node-fetch
 
 const app = express();
 const PORT = process.env.PORT || 3000;
