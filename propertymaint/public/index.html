@@ -193,6 +193,23 @@
   .tasks-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .tasks-section-header h4 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; }
 
+  /* ── Attachments ── */
+  .attach-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .attach-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; }
+  .attach-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .attach-name { flex: 1; font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .attach-meta { font-size: 0.75rem; color: var(--mist); white-space: nowrap; }
+  .attach-del { background: none; border: none; color: var(--mist); cursor: pointer; font-size: 1rem; padding: 2px 6px; border-radius: 4px; transition: all 0.15s; }
+  .attach-del:hover { background: #fee2e2; color: var(--red); }
+  .upload-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.15s; margin-top: 10px; position: relative; }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: #fff5f1; }
+  .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-zone .uz-icon { font-size: 1.8rem; margin-bottom: 6px; }
+  .upload-zone .uz-text { font-size: 0.85rem; color: var(--mist); }
+  .upload-zone .uz-text strong { color: var(--accent); }
+  .upload-progress { display: none; align-items: center; gap: 10px; margin-top: 8px; font-size: 0.83rem; color: var(--slate); }
+  .upload-progress.show { display: flex; }
+
   /* ── Audit Log ── */
   .badge-created { background: #f0fdf4; color: var(--green); }
   .badge-updated { background: #eff6ff; color: var(--blue); }
@@ -837,7 +854,19 @@ function openJobDetail(id) {
         ${(j.communications||[]).length?(j.communications).map(c=>`<div class="comm-item"><div class="comm-meta">${new Date(c.date).toLocaleString('en-GB')}${c.author?' · '+c.author:''}</div><div>${c.note}</div></div>`).join(''):'<p style="color:var(--mist);font-size:0.87rem;text-align:center;padding:16px">No communications yet</p>'}
       </div>
     </div>
+    <div class="detail-section" style="margin-top:16px">
+      <h4>Attachments</h4>
+      <div id="job-attach-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>
+      <div class="upload-zone" id="job-upload-zone" ondragover="handleDragOver(event,'job-upload-zone')" ondragleave="handleDragLeave(event,'job-upload-zone')" ondrop="handleDrop(event,'job','${j.id}')">
+        <input type="file" multiple accept="*/*" onchange="uploadAttachments(this.files,'job','${j.id}')">
+        <div class="uz-icon">📎</div>
+        <div class="uz-text"><strong>Click to upload</strong> or drag &amp; drop</div>
+        <div class="uz-text" style="margin-top:2px">Multiple files supported · Max 20MB each</div>
+      </div>
+      <div class="upload-progress" id="job-upload-progress"><span>⏳</span><span id="job-upload-status">Uploading…</span></div>
+    </div>
   `;
+  loadAttachments('job', '${j.id}', 'job-attach-list');
   document.getElementById('job-detail-modal').classList.add('open');
 }
 
@@ -856,7 +885,7 @@ function renderCustomers() {
   const custs=state.customers.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q));
   document.getElementById('customers-tbody').innerHTML=custs.length?custs.map(c=>{
     const addrCount=state.addresses.filter(a=>a.customerId===c.id).length;
-    const editBtn=`<button class="btn btn-ghost btn-sm" onclick="openCustomerModal('${c.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.id}')">Delete</button>`;
+    const editBtn=`<button class="btn btn-secondary btn-sm" onclick="openCustomerDetail('${c.id}')">View</button><button class="btn btn-ghost btn-sm" onclick="openCustomerModal('${c.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.id}')">Delete</button>`;
     return `<tr><td><strong>${c.name}</strong></td><td>${badge(c.type,c.type)}</td><td>${c.email||'—'}</td><td>${c.phone||'—'}</td><td>${addrCount} address${addrCount!==1?'es':''}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
   }).join(''):'<tr class="empty-row"><td colspan="6">No customers found</td></tr>';
 }
@@ -916,7 +945,7 @@ function renderTrades() {
   const q=(document.getElementById('trade-search')?.value||'').toLowerCase();
   const trades=state.trades.filter(t=>!q||t.companyName.toLowerCase().includes(q)||(t.contactName||'').toLowerCase().includes(q));
   document.getElementById('trades-tbody').innerHTML=trades.length?trades.map(t=>{
-    const editBtn=`<button class="btn btn-ghost btn-sm" onclick="openTradeModal('${t.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTrade('${t.id}')">Delete</button>`;
+    const editBtn=`<button class="btn btn-secondary btn-sm" onclick="openTradeDetail('${t.id}')">View</button><button class="btn btn-ghost btn-sm" onclick="openTradeModal('${t.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTrade('${t.id}')">Delete</button>`;
     return `<tr><td><strong>${t.companyName}</strong><br><small style="color:var(--mist)">${t.companyAddress||''}</small></td><td>${t.contactName||'—'}</td><td>${t.contactNumber||'—'}</td><td>${t.contactEmail?`<a href="mailto:${t.contactEmail}" style="color:var(--accent)">${t.contactEmail}</a>`:'—'}</td><td>${(t.services||[]).map(s=>`<span style="background:var(--surface);padding:2px 7px;border-radius:4px;font-size:0.78rem;display:inline-block;margin:1px">${s}</span>`).join('')||'—'}</td><td>${badge(t.status,t.status)}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
   }).join(''):'<tr class="empty-row"><td colspan="7">No trades found</td></tr>';
 }
@@ -1194,6 +1223,165 @@ async function deleteTask(id) {
   if (tasksPageActive) await loadAllTasks();
 }
 
+// ── Customer Detail ───────────────────────────────────────────────────────────
+function openCustomerDetail(id) {
+  const c = state.customers.find(c => c.id === id);
+  if (!c) return;
+  const addrs = state.addresses.filter(a => a.customerId === id);
+  const jobs  = state.jobs.filter(j => j.customerId === id);
+  document.getElementById('cd-name').textContent = c.name;
+  document.getElementById('cd-body').innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-section"><h4>Contact Info</h4>
+        <div class="detail-row"><span class="key">Type</span><span>${badge(c.type, c.type)}</span></div>
+        ${c.email ? `<div class="detail-row"><span class="key">Email</span><a href="mailto:${c.email}" style="color:var(--accent)">${c.email}</a></div>` : ''}
+        ${c.phone ? `<div class="detail-row"><span class="key">Phone</span><span>${c.phone}</span></div>` : ''}
+      </div>
+      <div class="detail-section"><h4>Addresses (${addrs.length})</h4>
+        ${addrs.length ? addrs.map(a => `<div style="font-size:0.87rem;padding:5px 0;border-bottom:1px solid var(--surface)">${a.label ? '<strong>' + a.label + '</strong> – ' : ''}${a.line1}${a.line2 ? ', ' + a.line2 : ''}, ${a.city}, ${a.postcode}</div>`).join('') : '<p style="color:var(--mist);font-size:0.87rem;padding:8px">No addresses</p>'}
+      </div>
+    </div>
+    <div class="detail-section" style="margin-bottom:16px"><h4>Jobs (${jobs.length})</h4>
+      ${jobs.length ? `<table style="width:100%"><thead><tr><th>Work Order</th><th>Title</th><th>Status</th></tr></thead><tbody>${jobs.map(j => `<tr><td><strong>${j.workOrderId}</strong></td><td>${j.title}</td><td>${badge(j.status,j.status)}</td></tr>`).join('')}</tbody></table>` : '<p style="color:var(--mist);font-size:0.87rem;padding:8px">No jobs</p>'}
+    </div>
+    <div class="detail-section">
+      <h4>Attachments</h4>
+      <div id="cust-attach-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>
+      <div class="upload-zone" ondragover="handleDragOver(event,'cust-uz')" ondragleave="handleDragLeave(event,'cust-uz')" ondrop="handleDrop(event,'customer','${c.id}')">
+        <input type="file" multiple accept="*/*" onchange="uploadAttachments(this.files,'customer','${c.id}')">
+        <div class="uz-icon">📎</div>
+        <div class="uz-text"><strong>Click to upload</strong> or drag &amp; drop</div>
+      </div>
+      <div class="upload-progress" id="cust-upload-progress"><span>⏳</span><span id="cust-upload-status">Uploading…</span></div>
+    </div>
+  `;
+  loadAttachments('customer', c.id, 'cust-attach-list');
+  document.getElementById('cd-edit-btn').onclick = () => { closeModal('customer-detail-modal'); openCustomerModal(id); };
+  document.getElementById('customer-detail-modal').classList.add('open');
+}
+
+// ── Trade Detail ───────────────────────────────────────────────────────────────
+function openTradeDetail(id) {
+  const t = state.trades.find(t => t.id === id);
+  if (!t) return;
+  const jobs = state.jobs.filter(j => (j.tradeIds || []).includes(id));
+  document.getElementById('td-name').textContent = t.companyName;
+  document.getElementById('td-body').innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-section"><h4>Contact Info</h4>
+        ${t.companyAddress ? `<div class="detail-row"><span class="key">Address</span><span style="text-align:right">${t.companyAddress}</span></div>` : ''}
+        ${t.contactName   ? `<div class="detail-row"><span class="key">Contact</span><span>${t.contactName}</span></div>` : ''}
+        ${t.contactNumber ? `<div class="detail-row"><span class="key">Phone</span><span>${t.contactNumber}</span></div>` : ''}
+        ${t.contactEmail  ? `<div class="detail-row"><span class="key">Email</span><a href="mailto:${t.contactEmail}" style="color:var(--accent)">${t.contactEmail}</a></div>` : ''}
+        <div class="detail-row"><span class="key">Status</span><span>${badge(t.status, t.status)}</span></div>
+      </div>
+      <div class="detail-section"><h4>Services</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;padding-top:4px">
+          ${(t.services||[]).length ? (t.services).map(s => `<span style="background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:20px;font-size:0.82rem">${s}</span>`).join('') : '<span style="color:var(--mist);font-size:0.87rem">No services listed</span>'}
+        </div>
+      </div>
+    </div>
+    <div class="detail-section" style="margin-bottom:16px"><h4>Assigned Jobs (${jobs.length})</h4>
+      ${jobs.length ? `<table style="width:100%"><thead><tr><th>Work Order</th><th>Title</th><th>Customer</th><th>Status</th></tr></thead><tbody>${jobs.map(j => `<tr><td><strong>${j.workOrderId}</strong></td><td>${j.title}</td><td>${customerName(j.customerId)}</td><td>${badge(j.status,j.status)}</td></tr>`).join('')}</tbody></table>` : '<p style="color:var(--mist);font-size:0.87rem;padding:8px">No jobs assigned</p>'}
+    </div>
+    <div class="detail-section">
+      <h4>Attachments</h4>
+      <div id="trade-attach-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>
+      <div class="upload-zone" ondragover="handleDragOver(event,'trade-uz')" ondragleave="handleDragLeave(event,'trade-uz')" ondrop="handleDrop(event,'trade','${t.id}')">
+        <input type="file" multiple accept="*/*" onchange="uploadAttachments(this.files,'trade','${t.id}')">
+        <div class="uz-icon">📎</div>
+        <div class="uz-text"><strong>Click to upload</strong> or drag &amp; drop</div>
+      </div>
+      <div class="upload-progress" id="trade-upload-progress"><span>⏳</span><span id="trade-upload-status">Uploading…</span></div>
+    </div>
+  `;
+  loadAttachments('trade', t.id, 'trade-attach-list');
+  document.getElementById('td-edit-btn').onclick = () => { closeModal('trade-detail-modal'); openTradeModal(id); };
+  document.getElementById('trade-detail-modal').classList.add('open');
+}
+
+// ── Attachments ────────────────────────────────────────────────────────────────
+async function loadAttachments(entityType, entityId, listElId) {
+  const el = document.getElementById(listElId);
+  if (!el) return;
+  const data = await api('GET', `/api/attachments?entityType=${entityType}&entityId=${encodeURIComponent(entityId)}`);
+  if (!Array.isArray(data)) { el.innerHTML = '<p style="color:var(--red);font-size:0.85rem">Failed to load attachments</p>'; return; }
+  if (!data.length) { el.innerHTML = '<p style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">No attachments yet</p>'; return; }
+  el.innerHTML = '<div class="attach-list">' + data.map(a => attachItemHtml(a, entityType, entityId, listElId)).join('') + '</div>';
+}
+
+function attachItemHtml(a, entityType, entityId, listElId) {
+  const icon = attachIcon(a.mimeType, a.fileName);
+  const size = a.fileSize ? (a.fileSize > 1048576 ? (a.fileSize/1048576).toFixed(1)+'MB' : Math.round(a.fileSize/1024)+'KB') : '';
+  const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-GB') : '';
+  const uploader = a.uploaderName ? ' · ' + a.uploaderName : '';
+  return `<div class="attach-item" id="att-${a.id}">
+    <span class="attach-icon">${icon}</span>
+    <a class="attach-name" href="${a.publicUrl}" target="_blank" title="${a.fileName}">${a.fileName}</a>
+    <span class="attach-meta">${size}${size && (date||uploader) ? ' · ' : ''}${date}${uploader}</span>
+    <button class="attach-del" title="Delete" onclick="deleteAttachment('${a.id}','${entityType}','${entityId}','${listElId}')">🗑</button>
+  </div>`;
+}
+
+function attachIcon(mime, name) {
+  if (!mime && !name) return '📄';
+  const m = (mime || '').toLowerCase();
+  const ext = (name || '').split('.').pop().toLowerCase();
+  if (m.startsWith('image/')) return '🖼️';
+  if (m === 'application/pdf' || ext === 'pdf') return '📕';
+  if (m.includes('word') || ext === 'docx' || ext === 'doc') return '📝';
+  if (m.includes('excel') || m.includes('spreadsheet') || ext === 'xlsx' || ext === 'xls' || ext === 'csv') return '📊';
+  if (m.includes('zip') || m.includes('compressed') || ext === 'zip' || ext === 'rar') return '🗜️';
+  return '📄';
+}
+
+async function deleteAttachment(id, entityType, entityId, listElId) {
+  if (!confirm('Delete this attachment? This cannot be undone.')) return;
+  const r = await api('DELETE', '/api/attachments/' + id);
+  if (r && r.success) await loadAttachments(entityType, entityId, listElId);
+  else alert('Delete failed');
+}
+
+async function uploadAttachments(files, entityType, entityId) {
+  if (!files || !files.length) return;
+  const progressId = entityType === 'job' ? 'job-upload' : entityType === 'customer' ? 'cust-upload' : 'trade-upload';
+  const listElId   = entityType === 'job' ? 'job-attach-list' : entityType === 'customer' ? 'cust-attach-list' : 'trade-attach-list';
+  const progressEl = document.getElementById(progressId + '-progress');
+  const statusEl   = document.getElementById(progressId + '-status');
+  if (progressEl) progressEl.classList.add('show');
+  if (statusEl) statusEl.textContent = `Uploading ${files.length} file${files.length > 1 ? 's' : ''}…`;
+
+  const fd = new FormData();
+  fd.append('entityType', entityType);
+  fd.append('entityId', entityId);
+  for (const f of files) fd.append('files', f);
+
+  try {
+    const res = await fetch('/api/attachments', {
+      method: 'POST',
+      body: fd
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Upload failed'); }
+    else { await loadAttachments(entityType, entityId, listElId); }
+  } catch (e) { alert('Upload error: ' + e.message); }
+  finally { if (progressEl) progressEl.classList.remove('show'); }
+}
+
+function handleDragOver(e, zoneId) {
+  e.preventDefault();
+  document.getElementById(zoneId)?.classList.add('drag-over');
+}
+function handleDragLeave(e, zoneId) {
+  document.getElementById(zoneId)?.classList.remove('drag-over');
+}
+function handleDrop(e, entityType, entityId) {
+  e.preventDefault();
+  const zone = e.currentTarget;
+  zone?.classList.remove('drag-over');
+  if (e.dataTransfer.files.length) uploadAttachments(e.dataTransfer.files, entityType, entityId);
+}
+
 // ── Audit Log ─────────────────────────────────────────────────────────────────
 let logData = [];
 
@@ -1241,6 +1429,36 @@ function renderLog() {
 // ── Init ──────────────────────────────────────────────────────────────────────
 init();
 </script>
+
+<!-- ── CUSTOMER DETAIL MODAL ── -->
+<div class="modal-overlay" id="customer-detail-modal">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-header">
+      <div><h3 id="cd-name">Customer</h3></div>
+      <button class="modal-close" onclick="closeModal('customer-detail-modal')">×</button>
+    </div>
+    <div class="modal-body" id="cd-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('customer-detail-modal')">Close</button>
+      <button class="btn btn-primary" id="cd-edit-btn">Edit Customer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TRADE DETAIL MODAL ── -->
+<div class="modal-overlay" id="trade-detail-modal">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-header">
+      <div><h3 id="td-name">Trade</h3></div>
+      <button class="modal-close" onclick="closeModal('trade-detail-modal')">×</button>
+    </div>
+    <div class="modal-body" id="td-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('trade-detail-modal')">Close</button>
+      <button class="btn btn-primary" id="td-edit-btn">Edit Trade</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── TASK MODAL ── -->
 <div class="modal-overlay" id="task-modal">

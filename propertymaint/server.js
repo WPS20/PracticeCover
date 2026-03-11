@@ -5,11 +5,14 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
+const multer = require('multer');
+const fetch = require('node-fetch');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 // ─── Database connection ──────────────────────────────────────────────────────
 const dbUrl = (process.env.DATABASE_URL || '').replace(/^postgres:\/\//, 'postgresql://');
@@ -448,6 +451,92 @@ app.delete('/api/tasks/:id', requireAuth, async (req, res) => {
   catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ─── Attachments ──────────────────────────────────────────────────────────────
+const SUPABASE_URL    = process.env.SUPABASE_URL || '';
+const SUPABASE_KEY    = process.env.SUPABASE_SERVICE_KEY || '';
+const STORAGE_BUCKET  = process.env.SUPABASE_STORAGE_BUCKET || 'attachments';
+
+// List attachments for an entity
+app.get('/api/attachments', requireAuth, async (req, res) => {
+  try {
+    const { entityType, entityId } = req.query;
+    if (!entityType || !entityId) return res.status(400).json({ error: 'entityType and entityId required' });
+    const result = await query(
+      'SELECT * FROM attachments WHERE entity_type=$1 AND entity_id=$2 ORDER BY created_at DESC',
+      [entityType, entityId]
+    );
+    res.json(result.rows.map(normaliseAttachment));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Upload one or more attachments
+app.post('/api/attachments', requireAuth, upload.array('files', 20), async (req, res) => {
+  try {
+    const { entityType, entityId } = req.body;
+    if (!entityType || !entityId) return res.status(400).json({ error: 'entityType and entityId required' });
+    if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files provided' });
+    if (!SUPABASE_URL || !SUPABASE_KEY) return res.status(500).json({ error: 'Supabase storage not configured' });
+
+    const saved = [];
+    for (const file of req.files) {
+      const ext = path.extname(file.originalname);
+      const storagePath = \`\${entityType}/\${entityId}/\${uuidv4()}\${ext}\`;
+
+      // Upload to Supabase Storage
+      const uploadRes = await fetch(
+        \`\${SUPABASE_URL}/storage/v1/object/\${STORAGE_BUCKET}/\${storagePath}\`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': \`Bearer \${SUPABASE_KEY}\`,
+            'Content-Type': file.mimetype,
+            'x-upsert': 'false'
+          },
+          body: file.buffer
+        }
+      );
+      if (!uploadRes.ok) {
+        const err = await uploadRes.text();
+        console.error('Supabase upload error:', err);
+        return res.status(500).json({ error: \`Upload failed for \${file.originalname}: \${err}\` });
+      }
+
+      // Get public URL
+      const publicUrl = \`\${SUPABASE_URL}/storage/v1/object/public/\${STORAGE_BUCKET}/\${storagePath}\`;
+
+      // Record in DB
+      const id = uuidv4();
+      await query(
+        'INSERT INTO attachments (id, entity_type, entity_id, file_name, file_size, mime_type, storage_path, public_url, uploaded_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+        [id, entityType, entityId, file.originalname, file.size, file.mimetype, storagePath, publicUrl, req.session.userId]
+      );
+      const row = await query('SELECT a.*, u.name as uploader_name FROM attachments a LEFT JOIN users u ON a.uploaded_by=u.id WHERE a.id=$1', [id]);
+      saved.push(normaliseAttachment(row.rows[0]));
+    }
+    res.status(201).json(saved);
+  } catch (e) { console.error('Attachment upload error:', e); res.status(500).json({ error: e.message }); }
+});
+
+// Delete an attachment
+app.delete('/api/attachments/:id', requireAuth, async (req, res) => {
+  try {
+    const row = await query('SELECT * FROM attachments WHERE id=$1', [req.params.id]);
+    if (!row.rows.length) return res.status(404).json({ error: 'Not found' });
+    const att = row.rows[0];
+
+    // Delete from Supabase Storage
+    if (SUPABASE_URL && SUPABASE_KEY) {
+      await fetch(
+        \`\${SUPABASE_URL}/storage/v1/object/\${STORAGE_BUCKET}/\${att.storage_path}\`,
+        { method: 'DELETE', headers: { 'Authorization': \`Bearer \${SUPABASE_KEY}\` } }
+      );
+    }
+    await query('DELETE FROM attachments WHERE id=$1', [req.params.id]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ─── Catch-all & start ────────────────────────────────────────────────────────
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
@@ -495,4 +584,13 @@ function normaliseTask(r) {
   };
 }
 function fmtDate(d) { return d ? d.toISOString().split('T')[0] : ''; }
+function normaliseAttachment(r) {
+  return {
+    id: r.id, entityType: r.entity_type, entityId: r.entity_id,
+    fileName: r.file_name, fileSize: r.file_size, mimeType: r.mime_type,
+    publicUrl: r.public_url, uploadedBy: r.uploaded_by,
+    uploaderName: r.uploader_name || null,
+    createdAt: r.created_at
+  };
+}
 function orNull(v) { return v && v.trim() !== '' ? v : null; }
