@@ -374,44 +374,6 @@ app.get('/api/audit-log', requireAuth, async (req, res) => {
     res.json(result.rows);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-// Catch-all
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-// ─── Normalisers ──────────────────────────────────────────────────────────────
-function normaliseCustomer(r) { return { id: r.id, type: r.type, name: r.name, email: r.email, phone: r.phone, createdAt: r.created_at }; }
-function normaliseAddress(r) { return { id: r.id, customerId: r.customer_id, label: r.label, line1: r.line1, line2: r.line2, city: r.city, postcode: r.postcode }; }
-function normaliseTrade(r) { return { id: r.id, status: r.status, companyName: r.company_name, companyAddress: r.company_address, contactName: r.contact_name, contactNumber: r.contact_number, contactEmail: r.contact_email, services: r.services || [] }; }
-function normaliseJob(r, tradeIds, communications) {
-  return {
-    id: r.id, workOrderId: r.work_order_id, customerId: r.customer_id, addressId: r.address_id,
-    title: r.title, status: r.status, actionRequired: r.action_required,
-    dateReceived: fmtDate(r.date_received),
-    deadlineForCompletion: fmtDate(r.deadline_for_completion),
-    dateWorkCompleted: fmtDate(r.date_work_completed),
-    dateInvoiced: fmtDate(r.date_invoiced),
-    invoiceNumber: r.invoice_number,
-    priceQuotedExclVat: r.price_quoted_excl_vat,
-    priceQuotedInclVat: r.price_quoted_incl_vat,
-    complianceStandard: r.compliance_standard,
-    poSentSubcontractor: fmtDate(r.po_sent_subcontractor),
-    chasedSubcontractor: fmtDate(r.chased_subcontractor),
-    proposedDateTenant: fmtDate(r.proposed_date_tenant),
-    bookedAdc: fmtDate(r.booked_adc),
-    bookedSubcontractor: fmtDate(r.booked_subcontractor),
-    tenantNotResponding: fmtDate(r.tenant_not_responding),
-    onHold: fmtDate(r.on_hold),
-    rejectedCancelled: fmtDate(r.rejected_cancelled),
-    poChasedDate: fmtDate(r.po_chased_date),
-    dateBooked: fmtDate(r.date_booked), datePaid: fmtDate(r.date_paid),
-    createdAt: r.created_at, tradeIds, communications
-  };
-}
-function normaliseComm(r) { return { id: r.id, jobId: r.job_id, note: r.note, author: r.author, date: r.date }; }
-function fmtDate(d) { return d ? d.toISOString().split('T')[0] : ''; }
-function orNull(v) { return v && v.trim() !== '' ? v : null; }
-
 
 // ─── Tasks ────────────────────────────────────────────────────────────────────
 app.get('/api/tasks', requireAuth, async (req, res) => {
@@ -486,6 +448,41 @@ app.delete('/api/tasks/:id', requireAuth, async (req, res) => {
   catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ─── Catch-all & start ────────────────────────────────────────────────────────
+app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// ─── Normalisers ──────────────────────────────────────────────────────────────
+function normaliseCustomer(r) { return { id: r.id, type: r.type, name: r.name, email: r.email, phone: r.phone, createdAt: r.created_at }; }
+function normaliseAddress(r) { return { id: r.id, customerId: r.customer_id, label: r.label, line1: r.line1, line2: r.line2, city: r.city, postcode: r.postcode }; }
+function normaliseTrade(r) { return { id: r.id, status: r.status, companyName: r.company_name, companyAddress: r.company_address, contactName: r.contact_name, contactNumber: r.contact_number, contactEmail: r.contact_email, services: r.services || [] }; }
+function normaliseJob(r, tradeIds, communications) {
+  return {
+    id: r.id, workOrderId: r.work_order_id, customerId: r.customer_id, addressId: r.address_id,
+    title: r.title, status: r.status, actionRequired: r.action_required,
+    dateReceived: fmtDate(r.date_received),
+    deadlineForCompletion: fmtDate(r.deadline_for_completion),
+    dateWorkCompleted: fmtDate(r.date_work_completed),
+    dateInvoiced: fmtDate(r.date_invoiced),
+    invoiceNumber: r.invoice_number,
+    priceQuotedExclVat: r.price_quoted_excl_vat,
+    priceQuotedInclVat: r.price_quoted_incl_vat,
+    complianceStandard: r.compliance_standard,
+    poSentSubcontractor: fmtDate(r.po_sent_subcontractor),
+    chasedSubcontractor: fmtDate(r.chased_subcontractor),
+    proposedDateTenant: fmtDate(r.proposed_date_tenant),
+    bookedAdc: fmtDate(r.booked_adc),
+    bookedSubcontractor: fmtDate(r.booked_subcontractor),
+    tenantNotResponding: fmtDate(r.tenant_not_responding),
+    onHold: fmtDate(r.on_hold),
+    rejectedCancelled: fmtDate(r.rejected_cancelled),
+    poChasedDate: fmtDate(r.po_chased_date),
+    dateBooked: fmtDate(r.date_booked), datePaid: fmtDate(r.date_paid),
+    createdAt: r.created_at, tradeIds, communications
+  };
+}
+function normaliseComm(r) { return { id: r.id, jobId: r.job_id, note: r.note, author: r.author, date: r.date }; }
 function normaliseTask(r) {
   return {
     id: r.id, description: r.description,
@@ -497,3 +494,5 @@ function normaliseTask(r) {
     status: r.status, createdAt: r.created_at
   };
 }
+function fmtDate(d) { return d ? d.toISOString().split('T')[0] : ''; }
+function orNull(v) { return v && v.trim() !== '' ? v : null; }
