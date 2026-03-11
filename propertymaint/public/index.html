@@ -965,8 +965,8 @@ function openAddressDetail(id) {
     '<div class="detail-section" style="margin-top:16px">' +
       '<h4>Attachments</h4>' +
       '<div id="addr-attach-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>' +
-      '<div class="upload-zone" id="addr-uz" ondragover="handleDragOver(event,'addr-uz')" ondragleave="handleDragLeave(event,'addr-uz')" ondrop="handleDrop(event,'address','' + a.id + '')">' +
-        '<input type="file" multiple accept="*/*" onchange="uploadAttachments(this.files,'address','' + a.id + '')">' +
+      '<div class="upload-zone" id="addr-uz" ondragover="handleDragOver(event,&quot;addr-uz&quot;)" ondragleave="handleDragLeave(event,&quot;addr-uz&quot;)" ondrop="handleDrop(event,&quot;address&quot;,&quot;' + a.id + '&quot;)">' +
+        '<input type="file" multiple accept="*/*" onchange="uploadAttachments(this.files,&quot;address&quot;,&quot;' + a.id + '&quot;)">' +
         '<div class="uz-icon">📎</div>' +
         '<div class="uz-text"><strong>Click to upload</strong> or drag &amp; drop</div>' +
       '</div>' +
@@ -1286,8 +1286,8 @@ function openCustomerDetail(id) {
     '<div class="detail-section">' +
       '<h4>Attachments</h4>' +
       '<div id="cust-attach-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>' +
-      '<div class="upload-zone" id="cust-uz" ondragover="handleDragOver(event,'cust-uz')" ondragleave="handleDragLeave(event,'cust-uz')" ondrop="handleDrop(event,'customer','' + c.id + '')">' +
-        '<input type="file" multiple accept="*/*" onchange="uploadAttachments(this.files,'customer','' + c.id + '')">' +
+      '<div class="upload-zone" id="cust-uz" ondragover="handleDragOver(event,&quot;cust-uz&quot;)" ondragleave="handleDragLeave(event,&quot;cust-uz&quot;)" ondrop="handleDrop(event,&quot;customer&quot;,&quot;' + c.id + '&quot;)">' +
+        '<input type="file" multiple accept="*/*" onchange="uploadAttachments(this.files,&quot;customer&quot;,&quot;' + c.id + '&quot;)">' +
         '<div class="uz-icon">📎</div>' +
         '<div class="uz-text"><strong>Click to upload</strong> or drag &amp; drop</div>' +
       '</div>' +
@@ -1325,8 +1325,8 @@ function openTradeDetail(id) {
     '<div class="detail-section">' +
       '<h4>Attachments</h4>' +
       '<div id="trade-attach-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>' +
-      '<div class="upload-zone" id="trade-uz" ondragover="handleDragOver(event,'trade-uz')" ondragleave="handleDragLeave(event,'trade-uz')" ondrop="handleDrop(event,'trade','' + t.id + '')">' +
-        '<input type="file" multiple accept="*/*" onchange="uploadAttachments(this.files,'trade','' + t.id + '')">' +
+      '<div class="upload-zone" id="trade-uz" ondragover="handleDragOver(event,&quot;trade-uz&quot;)" ondragleave="handleDragLeave(event,&quot;trade-uz&quot;)" ondrop="handleDrop(event,&quot;trade&quot;,&quot;' + t.id + '&quot;)">' +
+        '<input type="file" multiple accept="*/*" onchange="uploadAttachments(this.files,&quot;trade&quot;,&quot;' + t.id + '&quot;)">' +
         '<div class="uz-icon">📎</div>' +
         '<div class="uz-text"><strong>Click to upload</strong> or drag &amp; drop</div>' +
       '</div>' +
