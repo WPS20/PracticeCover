@@ -463,7 +463,7 @@ app.get('/api/attachments', requireAuth, async (req, res) => {
     const { entityType, entityId } = req.query;
     if (!entityType || !entityId) return res.status(400).json({ error: 'entityType and entityId required' });
     const result = await query(
-      'SELECT * FROM attachments WHERE entity_type=$1 AND entity_id=$2 ORDER BY created_at DESC',
+      'SELECT a.*, u.name as uploader_name FROM attachments a LEFT JOIN users u ON a.uploaded_by=u.id WHERE a.entity_type=$1 AND a.entity_id=$2 ORDER BY a.created_at DESC',
       [entityType, entityId]
     );
     res.json(result.rows.map(normaliseAttachment));
@@ -476,20 +476,21 @@ app.post('/api/attachments', requireAuth, upload.array('files', 20), async (req,
     const { entityType, entityId } = req.body;
     if (!entityType || !entityId) return res.status(400).json({ error: 'entityType and entityId required' });
     if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files provided' });
-    if (!SUPABASE_URL || !SUPABASE_KEY) return res.status(500).json({ error: 'Supabase storage not configured' });
+    if (!SUPABASE_URL || !SUPABASE_KEY) return res.status(500).json({ error: 'Supabase storage not configured. Set SUPABASE_URL, SUPABASE_SERVICE_KEY and SUPABASE_STORAGE_BUCKET env vars.' });
 
     const saved = [];
     for (const file of req.files) {
       const ext = path.extname(file.originalname);
-      const storagePath = \`\${entityType}/\${entityId}/\${uuidv4()}\${ext}\`;
+      const fileId = uuidv4();
+      const storagePath = entityType + '/' + entityId + '/' + fileId + ext;
 
       // Upload to Supabase Storage
       const uploadRes = await fetch(
-        \`\${SUPABASE_URL}/storage/v1/object/\${STORAGE_BUCKET}/\${storagePath}\`,
+        SUPABASE_URL + '/storage/v1/object/' + STORAGE_BUCKET + '/' + storagePath,
         {
           method: 'POST',
           headers: {
-            'Authorization': \`Bearer \${SUPABASE_KEY}\`,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
             'Content-Type': file.mimetype,
             'x-upsert': 'false'
           },
@@ -499,19 +500,20 @@ app.post('/api/attachments', requireAuth, upload.array('files', 20), async (req,
       if (!uploadRes.ok) {
         const err = await uploadRes.text();
         console.error('Supabase upload error:', err);
-        return res.status(500).json({ error: \`Upload failed for \${file.originalname}: \${err}\` });
+        return res.status(500).json({ error: 'Upload failed for ' + file.originalname + ': ' + err });
       }
 
-      // Get public URL
-      const publicUrl = \`\${SUPABASE_URL}/storage/v1/object/public/\${STORAGE_BUCKET}/\${storagePath}\`;
+      const publicUrl = SUPABASE_URL + '/storage/v1/object/public/' + STORAGE_BUCKET + '/' + storagePath;
 
-      // Record in DB
       const id = uuidv4();
       await query(
         'INSERT INTO attachments (id, entity_type, entity_id, file_name, file_size, mime_type, storage_path, public_url, uploaded_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
         [id, entityType, entityId, file.originalname, file.size, file.mimetype, storagePath, publicUrl, req.session.userId]
       );
-      const row = await query('SELECT a.*, u.name as uploader_name FROM attachments a LEFT JOIN users u ON a.uploaded_by=u.id WHERE a.id=$1', [id]);
+      const row = await query(
+        'SELECT a.*, u.name as uploader_name FROM attachments a LEFT JOIN users u ON a.uploaded_by=u.id WHERE a.id=$1',
+        [id]
+      );
       saved.push(normaliseAttachment(row.rows[0]));
     }
     res.status(201).json(saved);
@@ -525,11 +527,10 @@ app.delete('/api/attachments/:id', requireAuth, async (req, res) => {
     if (!row.rows.length) return res.status(404).json({ error: 'Not found' });
     const att = row.rows[0];
 
-    // Delete from Supabase Storage
     if (SUPABASE_URL && SUPABASE_KEY) {
       await fetch(
-        \`\${SUPABASE_URL}/storage/v1/object/\${STORAGE_BUCKET}/\${att.storage_path}\`,
-        { method: 'DELETE', headers: { 'Authorization': \`Bearer \${SUPABASE_KEY}\` } }
+        SUPABASE_URL + '/storage/v1/object/' + STORAGE_BUCKET + '/' + att.storage_path,
+        { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + SUPABASE_KEY } }
       );
     }
     await query('DELETE FROM attachments WHERE id=$1', [req.params.id]);
