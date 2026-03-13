@@ -327,7 +327,7 @@
           <div class="card-header">
             <div class="search-bar"><input type="text" placeholder="Search customers…" id="cust-search" oninput="renderCustomers()"></div>
           </div>
-          <table><thead><tr><th>Name</th><th>Type</th><th>Email</th><th>Phone</th><th>Addresses</th><th></th></tr></thead>
+          <table><thead><tr><th>Name</th><th>Type</th><th>Contact</th><th>Email</th><th>Phone / Mobile</th><th>Addresses</th><th></th></tr></thead>
           <tbody id="customers-tbody"></tbody></table>
         </div>
       </div>
@@ -482,6 +482,8 @@
         <div class="form-group"><label>Name *</label><input id="cf-name"></div>
         <div class="form-group"><label>Email</label><input id="cf-email" type="email"></div>
         <div class="form-group"><label>Phone</label><input id="cf-phone" type="tel"></div>
+        <div class="form-group"><label>Contact Name</label><input id="cf-contactName" placeholder="Primary contact person"></div>
+        <div class="form-group"><label>Contact Mobile</label><input id="cf-contactMobile" type="tel" placeholder="Mobile number"></div>
       </div>
     </div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('customer-modal')">Cancel</button><button class="btn btn-primary" onclick="saveCustomer()">Save</button></div>
@@ -810,6 +812,8 @@ function openJobDetail(id) {
       <div class="detail-section"><h4>Job Info</h4>
         <div class="detail-row"><span class="key">Status</span><span>${badge(j.status,j.status)}</span></div>
         <div class="detail-row"><span class="key">Customer</span><span>${customerName(j.customerId)}</span></div>
+        ${(()=>{const _c=state.customers.find(c=>c.id===j.customerId);return _c&&_c.contactName?`<div class="detail-row"><span class="key">Contact</span><strong>${_c.contactName}</strong></div>`:'';})()}
+        ${(()=>{const _c=state.customers.find(c=>c.id===j.customerId);return _c&&_c.contactMobile?`<div class="detail-row"><span class="key">Mobile</span><a href="tel:${_c.contactMobile}" style="color:var(--accent)">${_c.contactMobile}</a></div>`:'';})()}
         <div class="detail-row"><span class="key">Address</span><span style="text-align:right">${addressLabel(j.addressId)}</span></div>
         ${j.actionRequired?`<div class="detail-row" style="flex-direction:column;gap:4px"><span class="key">Action Required</span><span style="font-size:0.87rem;margin-top:4px">${j.actionRequired}</span></div>`:''}
       </div>
@@ -882,24 +886,24 @@ async function saveComm() {
 // ── Customers ─────────────────────────────────────────────────────────────────
 function renderCustomers() {
   const q=(document.getElementById('cust-search')?.value||'').toLowerCase();
-  const custs=state.customers.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q));
+  const custs=state.customers.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q)||(c.contactName||'').toLowerCase().includes(q)||(c.contactMobile||'').toLowerCase().includes(q));
   document.getElementById('customers-tbody').innerHTML=custs.length?custs.map(c=>{
     const addrCount=state.addresses.filter(a=>a.customerId===c.id).length;
     const editBtn=`<button class="btn btn-secondary btn-sm" onclick="openCustomerDetail('${c.id}')">View</button><button class="btn btn-ghost btn-sm" onclick="openCustomerModal('${c.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.id}')">Delete</button>`;
-    return `<tr><td><strong>${c.name}</strong></td><td>${badge(c.type,c.type)}</td><td>${c.email||'—'}</td><td>${c.phone||'—'}</td><td>${addrCount} address${addrCount!==1?'es':''}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
-  }).join(''):'<tr class="empty-row"><td colspan="6">No customers found</td></tr>';
+    return `<tr><td><strong>${c.name}</strong></td><td>${badge(c.type,c.type)}</td><td>${c.contactName||'—'}</td><td>${c.email||'—'}</td><td style="font-size:0.83rem">${[c.phone,c.contactMobile].filter(Boolean).join(' / ')||'—'}</td><td>${addrCount} address${addrCount!==1?'es':''}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
+  }).join(''):'<tr class="empty-row"><td colspan="7">No customers found</td></tr>';
 }
 
 function openCustomerModal(id=null) {
   editingId.customer=id;
   document.getElementById('cust-modal-title').textContent=id?'Edit Customer':'New Customer';
-  ['name','email','phone'].forEach(f=>document.getElementById('cf-'+f).value='');
+  ['name','email','phone','contactName','contactMobile'].forEach(f=>document.getElementById('cf-'+f).value='');
   document.getElementById('cf-type').value='managing_agent';
-  if (id) { const c=state.customers.find(c=>c.id===id); if(c){document.getElementById('cf-name').value=c.name||'';document.getElementById('cf-email').value=c.email||'';document.getElementById('cf-phone').value=c.phone||'';document.getElementById('cf-type').value=c.type||'managing_agent';} }
+  if (id) { const c=state.customers.find(c=>c.id===id); if(c){document.getElementById('cf-name').value=c.name||'';document.getElementById('cf-email').value=c.email||'';document.getElementById('cf-phone').value=c.phone||'';document.getElementById('cf-contactName').value=c.contactName||'';document.getElementById('cf-contactMobile').value=c.contactMobile||'';document.getElementById('cf-type').value=c.type||'managing_agent';} }
   document.getElementById('customer-modal').classList.add('open');
 }
 async function saveCustomer() {
-  const body={type:document.getElementById('cf-type').value,name:document.getElementById('cf-name').value.trim(),email:document.getElementById('cf-email').value.trim(),phone:document.getElementById('cf-phone').value.trim()};
+  const body={type:document.getElementById('cf-type').value,name:document.getElementById('cf-name').value.trim(),email:document.getElementById('cf-email').value.trim(),phone:document.getElementById('cf-phone').value.trim(),contactName:document.getElementById('cf-contactName').value.trim(),contactMobile:document.getElementById('cf-contactMobile').value.trim()};
   if(!body.name) return alert('Name is required.');
   if(editingId.customer) await api('PUT','/api/customers/'+editingId.customer,body);
   else await api('POST','/api/customers',body);
@@ -954,6 +958,8 @@ function openAddressDetail(id) {
     '<div class="detail-grid">' +
       '<div class="detail-section"><h4>Address Info</h4>' +
         '<div class="detail-row"><span class="key">Customer</span><span>' + (cust ? cust.name : '—') + '</span></div>' +
+        (cust && cust.contactName   ? '<div class="detail-row"><span class="key">Contact</span><strong>' + cust.contactName + '</strong></div>' : '') +
+        (cust && cust.contactMobile ? '<div class="detail-row"><span class="key">Mobile</span><a href="tel:' + cust.contactMobile + '" style="color:var(--accent)">' + cust.contactMobile + '</a></div>' : '') +
         (a.label   ? '<div class="detail-row"><span class="key">Label</span><span>' + a.label + '</span></div>' : '') +
         '<div class="detail-row"><span class="key">Line 1</span><span>' + a.line1 + '</span></div>' +
         (a.line2   ? '<div class="detail-row"><span class="key">Line 2</span><span>' + a.line2 + '</span></div>' : '') +
@@ -1277,6 +1283,8 @@ function openCustomerDetail(id) {
     '<div class="detail-grid">' +
       '<div class="detail-section"><h4>Contact Info</h4>' +
         '<div class="detail-row"><span class="key">Type</span><span>' + badge(c.type, c.type) + '</span></div>' +
+        (c.contactName   ? '<div class="detail-row"><span class="key">Contact</span><strong>' + c.contactName + '</strong></div>' : '') +
+        (c.contactMobile ? '<div class="detail-row"><span class="key">Mobile</span><a href="tel:' + c.contactMobile + '" style="color:var(--accent)">' + c.contactMobile + '</a></div>' : '') +
         (c.email ? '<div class="detail-row"><span class="key">Email</span><a href="mailto:' + c.email + '" style="color:var(--accent)">' + c.email + '</a></div>' : '') +
         (c.phone ? '<div class="detail-row"><span class="key">Phone</span><span>' + c.phone + '</span></div>' : '') +
       '</div>' +

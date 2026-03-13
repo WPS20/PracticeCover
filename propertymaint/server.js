@@ -148,8 +148,8 @@ app.get('/api/customers', requireAuth, async (req, res) => {
 });
 app.post('/api/customers', requireAuth, async (req, res) => {
   try {
-    const { type, name, email, phone } = req.body;
-    const result = await query('INSERT INTO customers (id,type,name,email,phone) VALUES ($1,$2,$3,$4,$5) RETURNING *', [uuidv4(),type,name,email,phone]);
+    const { type, name, email, phone, contactName, contactMobile } = req.body;
+    const result = await query('INSERT INTO customers (id,type,name,email,phone,contact_name,contact_mobile) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *', [uuidv4(),type,name,email,phone,contactName||null,contactMobile||null]);
     const c = result.rows[0];
     await auditLog(req.session.userId, req.session.name, 'created', 'Customer', c.id, `Created customer "${c.name}"`);
     res.status(201).json(normaliseCustomer(c));
@@ -157,8 +157,8 @@ app.post('/api/customers', requireAuth, async (req, res) => {
 });
 app.put('/api/customers/:id', requireAuth, async (req, res) => {
   try {
-    const { type, name, email, phone } = req.body;
-    const result = await query('UPDATE customers SET type=$1,name=$2,email=$3,phone=$4 WHERE id=$5 RETURNING *', [type,name,email,phone,req.params.id]);
+    const { type, name, email, phone, contactName, contactMobile } = req.body;
+    const result = await query('UPDATE customers SET type=$1,name=$2,email=$3,phone=$4,contact_name=$5,contact_mobile=$6 WHERE id=$7 RETURNING *', [type,name,email,phone,contactName||null,contactMobile||null,req.params.id]);
     if (!result.rows.length) return res.status(404).json({ error: 'Not found' });
     const c = result.rows[0];
     await auditLog(req.session.userId, req.session.name, 'updated', 'Customer', c.id, `Updated customer "${c.name}"`);
@@ -544,7 +544,7 @@ app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // ─── Normalisers ──────────────────────────────────────────────────────────────
-function normaliseCustomer(r) { return { id: r.id, type: r.type, name: r.name, email: r.email, phone: r.phone, createdAt: r.created_at }; }
+function normaliseCustomer(r) { return { id: r.id, type: r.type, name: r.name, email: r.email, phone: r.phone, contactName: r.contact_name || '', contactMobile: r.contact_mobile || '', createdAt: r.created_at }; }
 function normaliseAddress(r) { return { id: r.id, customerId: r.customer_id, label: r.label, line1: r.line1, line2: r.line2, city: r.city, postcode: r.postcode }; }
 function normaliseTrade(r) { return { id: r.id, status: r.status, companyName: r.company_name, companyAddress: r.company_address, contactName: r.contact_name, contactNumber: r.contact_number, contactEmail: r.contact_email, services: r.services || [] }; }
 function normaliseJob(r, tradeIds, communications) {
