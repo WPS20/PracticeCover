@@ -302,9 +302,9 @@
       <a class="active" onclick="showPage('dashboard')" data-page="dashboard"><span class="icon">📊</span> Dashboard</a>
       <div class="nav-section">Management</div>
       <a onclick="showPage('jobs')" data-page="jobs"><span class="icon">🔧</span> Jobs</a>
-      <a onclick="showPage('customers')" data-page="customers"><span class="icon">👥</span> Customers</a>
+      <a onclick="showPage('customers')" data-page="customers"><span class="icon">🏢</span> Customers</a>
       <a onclick="showPage('addresses')" data-page="addresses"><span class="icon">📍</span> Addresses</a>
-      <a onclick="showPage('trades')" data-page="trades"><span class="icon">🏗️</span> Subcontractors</a>
+      <a onclick="showPage('trades')" data-page="trades"><span class="icon">🔩</span> Subcontractors</a>
       <a onclick="showPage('tasks')" data-page="tasks"><span class="icon">✅</span> Tasks</a>
       <a onclick="showPage('log')" data-page="log" class="admin-only" style="display:none"><span class="icon">📋</span> Audit Log</a>
       <div class="nav-section admin-only" style="display:none">Admin</div>
@@ -399,8 +399,18 @@
       <!-- SUBCONTRACTORS -->
       <div class="page" id="page-trades">
         <div class="card">
-          <div class="card-header">
-            <div class="search-bar"><input type="text" placeholder="Search subcontractors…" id="trade-search" oninput="renderTrades()"></div>
+          <div class="card-header" style="flex-wrap:wrap;gap:10px">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <div class="search-bar"><input type="text" placeholder="Search subcontractors…" id="trade-search" oninput="renderTrades()"></div>
+              <div style="position:relative">
+                <div class="search-bar"><input type="text" id="trade-cat-search" placeholder="Filter by service category…" oninput="renderTradesCatDropdown()" autocomplete="off" style="min-width:240px"></div>
+                <div id="trade-cat-dropdown" style="display:none;position:absolute;top:100%;left:0;z-index:200;background:var(--white);border:1.5px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.1);max-height:240px;overflow-y:auto;min-width:340px;margin-top:4px"></div>
+              </div>
+          </div>
+          <div id="trade-active-cat" style="display:none;padding:8px 16px 0;display:flex;align-items:center;gap:8px;font-size:0.85rem">
+            <span style="color:var(--mist)">Filtered by:</span>
+            <span id="trade-active-cat-label" style="background:var(--accent);color:#fff;padding:2px 10px;border-radius:20px;font-size:0.8rem;font-weight:500"></span>
+            <button onclick="clearCatFilter()" style="background:none;border:none;cursor:pointer;color:var(--mist);font-size:0.9rem;padding:0" title="Clear filter">×</button>
           </div>
           <table><thead><tr><th>Company</th><th>Contact</th><th>Phone</th><th>Email</th><th>Services</th><th>Status</th><th></th></tr></thead>
           <tbody id="trades-tbody"></tbody></table>
@@ -1051,13 +1061,54 @@ function openAddressDetail(id) {
 }
 
 // ── Trades ────────────────────────────────────────────────────────────────────
+let activeCatFilter = null;
+
 function renderTrades() {
-  const q=(document.getElementById('trade-search')?.value||'').toLowerCase();
-  const trades=state.trades.filter(t=>!q||t.companyName.toLowerCase().includes(q)||(t.contactName||'').toLowerCase().includes(q));
-  document.getElementById('trades-tbody').innerHTML=trades.length?trades.map(t=>{
-    const editBtn=`<button class="btn btn-secondary btn-sm" onclick="openTradeDetail('${t.id}')">View</button><button class="btn btn-ghost btn-sm" onclick="openTradeModal('${t.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTrade('${t.id}')">Delete</button>`;
+  const q   = (document.getElementById('trade-search')?.value || '').toLowerCase();
+  const cat = activeCatFilter;
+  const trades = state.trades.filter(t => {
+    if (q && !t.companyName.toLowerCase().includes(q) && !(t.contactName||'').toLowerCase().includes(q)) return false;
+    if (cat && !(t.services||[]).includes(cat)) return false;
+    return true;
+  });
+  document.getElementById('trades-tbody').innerHTML = trades.length ? trades.map(t => {
+    const editBtn = `<button class="btn btn-secondary btn-sm" onclick="openTradeDetail('${t.id}')">View</button><button class="btn btn-ghost btn-sm" onclick="openTradeModal('${t.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTrade('${t.id}')">Delete</button>`;
     return `<tr><td><strong>${t.companyName}</strong><br><small style="color:var(--mist)">${t.companyAddress||''}</small></td><td>${t.contactName||'—'}</td><td>${t.contactNumber||'—'}</td><td>${t.contactEmail?`<a href="mailto:${t.contactEmail}" style="color:var(--accent)">${t.contactEmail}</a>`:'—'}</td><td>${(t.services||[]).map(s=>`<span style="background:var(--surface);padding:2px 7px;border-radius:4px;font-size:0.78rem;display:inline-block;margin:1px">${s}</span>`).join('')||'—'}</td><td>${badge(t.status,t.status)}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
-  }).join(''):'<tr class="empty-row"><td colspan="7">No subcontractors found</td></tr>';
+  }).join('') : `<tr class="empty-row"><td colspan="7">No subcontractors found${cat ? ' for "' + cat + '"' : ''}</td></tr>`;
+}
+
+function renderTradesCatDropdown() {
+  const q = (document.getElementById('trade-cat-search')?.value || '').trim().toLowerCase();
+  const dd = document.getElementById('trade-cat-dropdown');
+  if (!q) { dd.style.display = 'none'; return; }
+  // Get categories that match AND exist on at least one subcontractor
+  const usedCats = new Set(state.trades.flatMap(t => t.services || []));
+  const matches = SERVICE_CATEGORIES.filter(c => c.toLowerCase().includes(q) && usedCats.has(c));
+  // Also include categories not yet used so user can still search all
+  const allMatches = SERVICE_CATEGORIES.filter(c => c.toLowerCase().includes(q));
+  if (!allMatches.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = allMatches.map(c => {
+    const count = state.trades.filter(t => (t.services||[]).includes(c)).length;
+    return '<div onclick="selectCatFilter('' + c.replace(/'/g, "\'") + '')" style="padding:9px 14px;cursor:pointer;font-size:0.85rem;border-bottom:1px solid var(--surface);display:flex;justify-content:space-between;align-items:center" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''"><span>' + c + '</span>' + (count ? '<span style="background:var(--accent);color:#fff;border-radius:10px;padding:1px 7px;font-size:0.75rem;font-weight:600">' + count + '</span>' : '<span style="color:var(--mist);font-size:0.75rem">0</span>') + '</div>';
+  }).join('');
+  dd.style.display = 'block';
+}
+
+function selectCatFilter(cat) {
+  activeCatFilter = cat;
+  document.getElementById('trade-cat-search').value = '';
+  document.getElementById('trade-cat-dropdown').style.display = 'none';
+  const pill = document.getElementById('trade-active-cat');
+  const label = document.getElementById('trade-active-cat-label');
+  if (pill && label) { label.textContent = cat; pill.style.display = 'flex'; }
+  renderTrades();
+}
+
+function clearCatFilter() {
+  activeCatFilter = null;
+  const pill = document.getElementById('trade-active-cat');
+  if (pill) pill.style.display = 'none';
+  renderTrades();
 }
 const SERVICE_CATEGORIES = ["Access Equipment - Cherry Picker Operators", "Access Equipment - Mobile Elevated Work Platform (MEWP) Technicians", "Access Equipment - Scissor Lift Operators", "Asbestos Management Consultants", "Asbestos Removal Specialists", "Asbestos Surveyors", "Bricklayers", "Civil Engineering - Civil Engineers", "Civil Engineering - Site Engineers", "Cleaning - High-Pressure Cleaning Specialists", "Cleaning - Industrial Cleaners", "Cleaning - Post-Construction Cleaners", "Concrete - Concrete Finishers", "Concrete - Concrete Pump Operators", "Concrete - Ready-Mix Truck Drivers", "Damp and Timber Works - Damp Proofing Specialists", "Damp and Timber Works - Timber Treatment Experts", "Damp and Timber Works - Woodworm and Rot Specialists", "Demolition - Demolition Operatives", "Demolition - Soft Strip Demolition Teams", "Drainage - CCTV Drain Surveyors", "Drainage - Drain Jetting Specialists", "Drainage - Drainage Engineers", "Drilling and Sawing - Concrete Saw Operators", "Drilling and Sawing - Core Drilling Technicians", "Drilling and Sawing - Diamond Drillers", "Dry Lining - Dry Liners", "Dry Lining -Ceiling Fixers", "Dry Lining -Partition Installers", "Electrics – Commercial - Commercial Electricians", "Electrics – Commercial - Electrical Design Engineers", "Electrics – Commercial - Electrical Inspectors", "Electrics – Domestic - Domestic Electricians", "Electrics – Domestic - Electrical Testers", "Electrics – Domestic - Smart Home Installers", "Fabrication - Metal Fabricators", "Fabrication - Sheet Metal Workers", "Fabrication - Welding Specialists", "Fencing - Agricultural Fencing Specialists", "Fencing - Fence Erectors", "Fencing - Security Fencing Installers", "Fenestration (FENSA) - Curtain Walling Specialists", "Fenestration (FENSA) - Glaziers", "Fenestration (FENSA) - Window Installers", "Fire Alarm - Fire Alarm Engineers", "Fire Alarm - Fire Detection System Designers", "Fire Alarm - Maintenance Technicians", "Fire Extinguishers and Equipment - Compliance Inspectors", "Fire Extinguishers and Equipment - Fire Extinguisher Technicians", "Fire Extinguishers and Equipment - Fire Safety Equipment Suppliers", "Fire Protection – Passive - Curtain Walling", "Fire Protection – Passive - Fire Door Installers/Inspectors", "Fire Protection – Passive - Fire Stopping Installers", "Fire Protection – Passive - Intumescent Coating Applicators", "Fitted Interiors – Bathrooms - Bathroom Installers", "Fitted Interiors – Bathrooms - Wet Room Specialists", "Fitted Interiors – Kitchens - Cabinet Makers", "Fitted Interiors – Kitchens - Kitchen Fitters", "Fitted Interiors – Kitchens - Worktop Installers", "Flooring – Cap and Cove Safety Flooring - Commercial Flooring Specialists", "Flooring – Cap and Cove Safety Flooring - Hygienic Flooring Experts", "Flooring – Cap and Cove Safety Flooring - Safety Flooring Installers", "Flooring – Carpets and Lino - Carpet Fitters", "Flooring – Carpets and Lino - Floor Preparation Specialists", "Flooring – Carpets and Lino - Linoleum Installers", "Gas – Commercial - Boiler Installation Technicians", "Gas – Commercial - Commercial Gas Engineers", "Gas – Commercial - Gas Safety Inspectors", "Gas – Domestic - Domestic Gas Engineers", "Gas – Domestic - Gas Appliance Servicers and Testers", "Gas – Domestic - Heating Installers", "General Builders", "General Maintenance and Repair - Handypersons", "General Maintenance and Repair - Property Maintenance Operatives", "General Maintenance and Repair - Reactive Maintenance Teams", "Groundworks - Excavator Operators", "Groundworks - Foundation Specialists", "Groundworks - Groundworkers", "HETAS Engineer - Biomass Boiler Technicians", "HETAS Engineer - Chimney Sweeps", "HETAS Engineer - Solid Fuel Heating Installers", "Health, Safety & Environment - Environmental Consultants", "Health, Safety & Environment - Health and Safety Officers", "Health, Safety & Environment - Site Safety Auditors", "Heritage Works - Conservation Specialists", "Heritage Works - Heritage Bricklayers", "Heritage Works - Restoration Carpenters", "Insulation - Cavity Wall Insulation Specialists", "Insulation - External Wall Insulation Experts", "Insulation - Loft Insulation Installers", "Joinery/Carpentry - Bench Joiners", "Joinery/Carpentry - Shopfitters", "Joinery/Carpentry - Site Carpenters", "Landscaping - Hard Landscaping Specialists", "Landscaping - Landscape Gardeners", "Landscaping - Turf Installers", "Legionella - Compliance Consultants", "Legionella - Legionella Risk Assessors", "Legionella - Water Treatment Engineers", "Locksmith - Emergency Locksmiths", "Locksmith - Safe Engineers", "Locksmith - Security Lock Installers", "Mould - Air Quality Consultants", "Mould - Damp Surveyors", "Mould - Mould Remediation Specialists", "PAT Testing - Compliance Officers", "PAT Testing - Electrical Safety Inspectors", "PAT Testing - Portable Appliance Testing Technicians", "Painting and Decorating - Exterior Painters", "Painting and Decorating - Interior Decorators", "Painting and Decorating - Wallpaper Hangers", "Pest Control - Fumigation Experts", "Pest Control - Pest Control Technicians", "Pest Control - Wildlife Management Specialists", "Plastering - Decorative Plasterers", "Plastering - Skim Coating Specialists", "Plastering - Solid Plasterers", "Plumbing - Bathroom Fitters", "Plumbing - Heating Engineers", "Plumbing - Plumbers General", "Rendering - External Renderers", "Rendering - Monocouche Applicators", "Rendering - Silicone Render Specialists", "Roofing - Flat - Felt Roofers", "Roofing - Flat - Liquid Roofing Specialists", "Roofing - Flat - Single Ply Membrane Installers", "Roofing – Pitched - Roof Tilers", "Roofing – Pitched - Roof Truss Installers", "Roofing – Pitched - Slate Roofers", "Scaffolding - Access Solution Providers", "Scaffolding - Scaffolders", "Scaffolding - Temporary Works Designers", "Security Systems - Access Control Specialists", "Security Systems - Alarm System Engineers", "Security Systems - CCTV Installers", "Shutters and Blinds - Automated Blind Specialists", "Shutters and Blinds - Security Shutter Technicians", "Shutters and Blinds - Window Blind Installers", "Stonemasons", "Structural Engineering - Load-Bearing Assessment Experts", "Structural Engineering - Retaining Wall Designers", "Structural Engineering - Structural Engineers", "Structural Timber Frames - CLT (Cross-Laminated Timber) Installers", "Structural Timber Frames - Off-Site Construction Specialists", "Structural Timber Frames - Timber Frame Erectors", "Sustainability - Air Source Heat Pump Installers", "Sustainability - Biomass Boiler Installation and Maintenance", "Sustainability - EV Charger Installation", "Sustainability - Energy Efficient Lighting", "Sustainability - Rainwater Harvesting", "Sustainability - Solar installers", "Tarmac – Line Markings - Line Marking Technicians", "Tarmac – Line Markings - Road Surfacing Operatives", "Tarmac – Line Markings - Surface Dressing Specialists", "Tiling – Wall and Floor - Floor Tilers", "Tiling – Wall and Floor - Mosaic Specialists", "Tiling – Wall and Floor - Wall Tilers", "Tree Surgeon - Arborists", "Tree Surgeon - Stump Removal Specialists", "Tree Surgeon - Tree Felling Experts", "Unvented Cylinders - G3 Certified Installers", "Unvented Cylinders - Hot Water System Engineers", "Unvented Cylinders - Maintenance Technicians", "Waste Management - Site Clearance", "Waste Management - Skip Hire", "Wood Floor Installation - Hardwood Floor Fitters", "Wood Floor Installation - Laminate Flooring Specialists", "Wood Floor Installation - Parquet Installers", "Other"];
 
@@ -1718,6 +1769,13 @@ function renderLog() {
   }).join('');
 }
 // ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('click', e => {
+  const dd = document.getElementById('trade-cat-dropdown');
+  const input = document.getElementById('trade-cat-search');
+  if (dd && input && !dd.contains(e.target) && e.target !== input) {
+    dd.style.display = 'none';
+  }
+});
 init();
 </script>
 
