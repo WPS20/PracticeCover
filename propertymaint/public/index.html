@@ -220,6 +220,45 @@
   #trades-map-wrap { display: none; padding: 16px; }
   #trades-map-wrap.show { display: block; }
 
+  /* ── Purchase Orders ── */
+  .po-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; }
+  .po-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .po-number { font-weight: 700; font-size: 0.95rem; color: var(--ink); }
+  .po-meta { font-size: 0.8rem; color: var(--mist); margin-top: 2px; }
+  .po-actions { display: flex; gap: 6px; }
+  .badge-draft        { background: #f3f4f6; color: #6b7280; }
+  .badge-sent         { background: #eff6ff; color: var(--blue); }
+  .badge-acknowledged { background: #f0fdf4; color: var(--green); }
+  .badge-cancelled    { background: #fef2f2; color: var(--red); }
+  .po-items-table { width: 100%; border-collapse: collapse; margin: 10px 0 0; font-size: 0.85rem; }
+  .po-items-table th { text-align: left; padding: 6px 8px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--mist); text-transform: uppercase; letter-spacing: 0.6px; }
+  .po-items-table td { padding: 7px 8px; border-bottom: 1px solid var(--surface); vertical-align: middle; }
+  .po-items-table tr:last-child td { border-bottom: none; }
+  .po-items-table .td-num { text-align: right; white-space: nowrap; }
+  .po-items-table tfoot td { font-weight: 600; padding: 8px; border-top: 2px solid var(--border); }
+  .po-total-row { display: flex; justify-content: flex-end; gap: 24px; padding: 10px 8px 0; font-size: 0.88rem; }
+  .po-total-row .total-label { color: var(--slate); }
+  .po-total-row .total-value { font-weight: 700; color: var(--ink); min-width: 80px; text-align: right; }
+  .po-total-row .grand-total { font-size: 1rem; color: var(--accent); }
+  /* PO modal item rows */
+  .po-item-row { display: grid; grid-template-columns: 1fr 80px 110px 110px 36px; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .po-item-row input, .po-item-row select { padding: 7px 9px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 0.84rem; font-family: "Inter", sans-serif; color: var(--ink); background: var(--white); }
+  .po-item-row input:focus, .po-item-row select:focus { border-color: var(--accent); outline: none; }
+  .po-item-row .item-del { background: none; border: none; cursor: pointer; color: var(--mist); font-size: 1.1rem; padding: 4px; border-radius: 5px; }
+  .po-item-row .item-del:hover { background: #fee2e2; color: var(--red); }
+  .po-items-header { display: grid; grid-template-columns: 1fr 80px 110px 110px 36px; gap: 6px; margin-bottom: 4px; }
+  .po-items-header span { font-size: 0.74rem; font-weight: 600; color: var(--mist); text-transform: uppercase; letter-spacing: 0.6px; padding: 0 2px; }
+  .po-running-total { background: var(--surface); border-radius: 8px; padding: 10px 14px; margin-top: 10px; display: flex; justify-content: flex-end; gap: 20px; font-size: 0.85rem; }
+  .po-running-total span { color: var(--slate); }
+  .po-running-total strong { color: var(--ink); }
+  .po-running-total .grand { color: var(--accent); font-weight: 700; font-size: 0.95rem; }
+  /* Print styles */
+  @media print {
+    body > * { display: none !important; }
+    #po-print-area { display: block !important; }
+  }
+  #po-print-area { display: none; }
+
   /* ── Price inputs ── */
   .price-input-wrap { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--white); transition: border-color 0.15s; }
   .price-input-wrap:focus-within { border-color: var(--accent); }
@@ -550,7 +589,7 @@
       <button class="modal-close" onclick="closeModal('job-detail-modal')">×</button>
     </div>
     <div class="modal-body" id="job-detail-body"></div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('job-detail-modal')">Close</button><button class="btn btn-primary" id="jd-edit-btn" style="display:none">Edit Job</button></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('job-detail-modal')">Close</button><button class="btn btn-ghost" id="jd-po-btn" onclick="openPoModal()" style="display:none">📄 Raise PO</button><button class="btn btn-primary" id="jd-edit-btn" style="display:none">Edit Job</button></div>
   </div>
 </div>
 
@@ -972,9 +1011,17 @@ function openJobDetail(id) {
       </div>
       <div class="upload-progress" id="job-upload-progress"><span>⏳</span><span id="job-upload-status">Uploading…</span></div>
     </div>
+    <div class="detail-section" style="margin-top:16px">
+      <h4 style="display:flex;justify-content:space-between;align-items:center">Purchase Orders
+        <button class="btn btn-secondary btn-sm" onclick="openPoModal()">+ Raise PO</button>
+      </h4>
+      <div id="job-po-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>
+    </div>
   `;
+  document.getElementById('jd-po-btn').style.display = '';
   document.getElementById('job-detail-modal').classList.add('open');
   loadAttachments('job', j.id, 'job-attach-list');
+  loadJobPOs(j.id);
   const jobAddrObj = state.addresses.find(a => a.id === j.addressId);
   if (jobAddrObj) {
     const jobAddrStr = [jobAddrObj.line1, jobAddrObj.line2, jobAddrObj.city, jobAddrObj.postcode].filter(Boolean).join(', ');
@@ -1580,6 +1627,10 @@ function openTradeDetail(id) {
       '<h4 style="display:flex;justify-content:space-between;align-items:center">Location <a href="https://www.openstreetmap.org/search?query=' + encodeURIComponent(t.companyAddress||t.companyName) + '" target="_blank" style="font-size:0.78rem;font-weight:400;color:var(--accent)">Open in OSM ↗</a></h4>' +
       '<div class="map-container" id="trade-map-' + t.id + '"><div class="map-loading">🗺 Loading map…</div></div>' +
     '</div>' +
+    '<div class="detail-section" style="margin-bottom:16px">' +
+      '<h4>Purchase Orders</h4>' +
+      '<div id="trade-po-list-' + t.id + '"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>' +
+    '</div>' +
     '<div class="detail-section">' +
       '<h4>Attachments</h4>' +
       '<div id="trade-attach-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>' +
@@ -1593,6 +1644,7 @@ function openTradeDetail(id) {
   document.getElementById('td-edit-btn').onclick = function() { closeModal('trade-detail-modal'); openTradeModal(id); };
   document.getElementById('trade-detail-modal').classList.add('open');
   loadAttachments('trade', t.id, 'trade-attach-list');
+  loadTradePOs(t.id);
   if (t.companyAddress) renderLeafletMap('trade-map-' + t.id, t.companyAddress);
   else { const el = document.getElementById('trade-map-' + t.id); if (el) el.innerHTML = '<div class="map-error"><span>📍</span><span>No address on record</span></div>'; }
 }
@@ -1999,6 +2051,329 @@ function closeTradesMapAndView(tradeId) {
   openTradeDetail(tradeId);
 }
 
+
+// ── Purchase Orders ────────────────────────────────────────────────────────────
+let _currentPoJobId  = null;   // job context when modal is open
+let _currentPoId     = null;   // null = new, string = editing
+let _poItemCounter   = 0;
+
+// ── Load and render POs for a job ─────────────────────────────────────────────
+async function loadJobPOs(jobId) {
+  const el = document.getElementById('job-po-list');
+  if (!el) return;
+  const data = await api('GET', '/api/purchase-orders?jobId=' + encodeURIComponent(jobId));
+  if (!Array.isArray(data)) { el.innerHTML = '<p style="color:var(--red);font-size:0.85rem">Failed to load POs</p>'; return; }
+  if (!data.length) { el.innerHTML = '<p style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">No purchase orders yet</p>'; return; }
+  el.innerHTML = data.map(po => poCardHtml(po)).join('');
+}
+
+// ── Load and render POs for a subcontractor ───────────────────────────────────
+async function loadTradePOs(tradeId) {
+  const el = document.getElementById('trade-po-list-' + tradeId);
+  if (!el) return;
+  const data = await api('GET', '/api/purchase-orders?tradeId=' + encodeURIComponent(tradeId));
+  if (!Array.isArray(data)) { el.innerHTML = '<p style="color:var(--red);font-size:0.85rem">Failed to load POs</p>'; return; }
+  if (!data.length) { el.innerHTML = '<p style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">No purchase orders raised for this subcontractor</p>'; return; }
+  el.innerHTML = data.map(po => poCardHtml(po, true)).join('');
+}
+
+function poCardHtml(po, showJob = false) {
+  const subtotal = (po.items||[]).reduce((s,i) => s + i.quantity * i.unitCost, 0);
+  const vat      = (po.items||[]).reduce((s,i) => s + i.quantity * i.unitCost * (i.vatRate/100), 0);
+  const total    = subtotal + vat;
+  const jobRef   = showJob && po.jobTitle ? '<span style="color:var(--slate)"> · ' + po.workOrderId + ' ' + po.jobTitle + '</span>' : '';
+  return '<div class="po-card">' +
+    '<div class="po-card-header">' +
+      '<div>' +
+        '<span class="po-number">' + po.poNumber + '</span>' + jobRef +
+        '<div class="po-meta">Issued ' + fmtDateVal(po.issueDate) + ' · ' + po.tradeName + ' · Total: <strong>£' + total.toLocaleString('en-GB',{minimumFractionDigits:2}) + '</strong></div>' +
+      '</div>' +
+      '<div class="po-actions">' +
+        badge(po.status, po.status) +
+        '<button class="btn btn-ghost btn-sm" onclick="editPO(\'' + po.id + '\')">Edit</button>' +
+        '<button class="btn btn-ghost btn-sm" onclick="viewPrintPO(\'' + po.id + '\')">🖨 Print</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="deletePO(\'' + po.id + '\')">Del</button>' +
+      '</div>' +
+    '</div>' +
+    (po.items && po.items.length ?
+      '<table class="po-items-table"><thead><tr><th>Description</th><th style="text-align:right">Qty</th><th style="text-align:right">Unit Cost</th><th style="text-align:right">VAT</th><th style="text-align:right">Line Total</th></tr></thead><tbody>' +
+      po.items.map(i => {
+        const lineNet = i.quantity * i.unitCost;
+        const lineVat = lineNet * (i.vatRate/100);
+        return '<tr><td>' + i.description + '</td><td class="td-num">' + i.quantity + '</td><td class="td-num">£' + parseFloat(i.unitCost).toLocaleString('en-GB',{minimumFractionDigits:2}) + '</td><td class="td-num">' + i.vatRate + '%</td><td class="td-num">£' + (lineNet+lineVat).toLocaleString('en-GB',{minimumFractionDigits:2}) + '</td></tr>';
+      }).join('') +
+      '</tbody></table>' +
+      '<div class="po-total-row">' +
+        '<div><span class="total-label">Subtotal </span><span class="total-value">£' + subtotal.toLocaleString('en-GB',{minimumFractionDigits:2}) + '</span></div>' +
+        '<div><span class="total-label">VAT </span><span class="total-value">£' + vat.toLocaleString('en-GB',{minimumFractionDigits:2}) + '</span></div>' +
+        '<div><span class="total-label grand-total">Total </span><span class="total-value grand-total">£' + total.toLocaleString('en-GB',{minimumFractionDigits:2}) + '</span></div>' +
+      '</div>'
+    : '') +
+    (po.instructions ? '<div style="margin-top:8px;font-size:0.83rem;color:var(--slate);border-top:1px solid var(--surface);padding-top:8px"><strong>Instructions: </strong>' + po.instructions + '</div>' : '') +
+  '</div>';
+}
+
+// ── Open PO modal from job detail ─────────────────────────────────────────────
+async function openPoModal(existingPoId) {
+  // Determine current job from the open job detail modal
+  const jobTitle = document.getElementById('jd-title')?.textContent;
+  const jobWO    = document.getElementById('jd-workorder')?.textContent?.replace('Work Order: ', '');
+  const j = state.jobs.find(j => j.workOrderId === jobWO) || state.jobs.find(j => j.title === jobTitle);
+  if (!j) return alert('No job context found. Please open a job first.');
+  _currentPoJobId = j.id;
+  _currentPoId    = existingPoId || null;
+
+  // Reset modal
+  document.getElementById('po-modal-subtitle').textContent = j.workOrderId + ' – ' + j.title;
+  document.getElementById('po-issue-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('po-status').value = 'draft';
+  document.getElementById('po-instructions').value = '';
+  document.getElementById('po-notes').value = '';
+  document.getElementById('po-items-container').innerHTML = '';
+  document.getElementById('po-print-btn').style.display = 'none';
+  _poItemCounter = 0;
+
+  if (existingPoId) {
+    // Load existing PO for editing
+    const po = await api('GET', '/api/purchase-orders/' + existingPoId);
+    if (!po || po.error) return alert('Failed to load PO');
+    document.getElementById('po-modal-title').textContent = 'Edit Purchase Order';
+    document.getElementById('po-number').value = po.poNumber;
+    document.getElementById('po-issue-date').value = po.issueDate;
+    document.getElementById('po-status').value = po.status;
+    document.getElementById('po-instructions').value = po.instructions || '';
+    document.getElementById('po-notes').value = po.notes || '';
+    document.getElementById('po-print-btn').style.display = '';
+    setPoTradeInfo(po.tradeId, po.tradeName, po.tradeContact);
+    document.getElementById('po-trade-select-wrap').style.display = 'none';
+    (po.items || []).forEach(i => addPoItem(i));
+  } else {
+    // New PO — determine subcontractor
+    document.getElementById('po-modal-title').textContent = 'Raise Purchase Order';
+    const nextNum = await api('GET', '/api/purchase-orders?jobId=' + j.id);
+    // Generate PO number client-side preview
+    document.getElementById('po-number').value = '(auto)';
+
+    const tradeIds = j.tradeIds || [];
+    if (tradeIds.length === 0) {
+      // No subcontractors on job — show full list to pick from
+      document.getElementById('po-trade-select-label').textContent = 'No subcontractors assigned to this job. Select one:';
+      populatePoTradeSelect(state.trades);
+    } else if (tradeIds.length === 1) {
+      // Exactly one — auto-select
+      const t = state.trades.find(t => t.id === tradeIds[0]);
+      if (t) {
+        setPoTradeInfo(t.id, t.companyName, t.contactName + (t.contactNumber ? ' · ' + t.contactNumber : ''));
+        document.getElementById('po-trade-select-wrap').style.display = 'none';
+      }
+    } else {
+      // Multiple — ask user to pick
+      document.getElementById('po-trade-select-label').textContent = 'This job has multiple subcontractors. Select one for this PO:';
+      const assignedTrades = state.trades.filter(t => tradeIds.includes(t.id));
+      populatePoTradeSelect(assignedTrades);
+    }
+
+    // Pre-fill items from job details
+    addPoItem({ description: j.title + (j.actionRequired ? ' – ' + j.actionRequired : ''), quantity: 1, unitCost: j.priceQuotedExclVat || 0, vatRate: 20 });
+  }
+
+  if (!_poItemCounter) addPoItem();
+  updatePoTotals();
+  document.getElementById('po-modal').classList.add('open');
+}
+
+function populatePoTradeSelect(trades) {
+  const sel = document.getElementById('po-trade-sel');
+  sel.innerHTML = '<option value="">— Select subcontractor —</option>' +
+    trades.map(t => '<option value="' + t.id + '">' + t.companyName + (t.contactName ? ' (' + t.contactName + ')' : '') + '</option>').join('');
+  document.getElementById('po-trade-select-wrap').style.display = '';
+  document.getElementById('po-trade-banner').style.display = 'none';
+}
+
+function poTradeSelected() {
+  const sel = document.getElementById('po-trade-sel');
+  const t = state.trades.find(t => t.id === sel.value);
+  if (t) setPoTradeInfo(t.id, t.companyName, t.contactName + (t.contactNumber ? ' · ' + t.contactNumber : ''));
+  else document.getElementById('po-trade-banner').style.display = 'none';
+}
+
+function setPoTradeInfo(tradeId, name, contact) {
+  document.getElementById('po-trade-sel').value = tradeId;
+  document.getElementById('po-trade-name').textContent = name || '';
+  document.getElementById('po-trade-contact').textContent = contact || '';
+  document.getElementById('po-trade-banner').style.display = '';
+}
+
+// ── PO line items ─────────────────────────────────────────────────────────────
+function addPoItem(item) {
+  const idx = _poItemCounter++;
+  const row = document.createElement('div');
+  row.className = 'po-item-row';
+  row.id = 'po-row-' + idx;
+  const desc    = item ? item.description || '' : '';
+  const qty     = item ? (item.quantity  ?? 1) : 1;
+  const cost    = item ? (item.unitCost  ?? 0) : 0;
+  const vat     = item ? (item.vatRate   ?? 20) : 20;
+  row.innerHTML =
+    '<input type="text"   class="po-item-desc" placeholder="Description of work…" value="' + desc.replace(/"/g,'&quot;') + '" oninput="updatePoTotals()">' +
+    '<input type="number" class="po-item-qty"  placeholder="1"    value="' + qty  + '" min="0" step="0.01" oninput="updatePoTotals()" style="text-align:center">' +
+    '<input type="number" class="po-item-cost" placeholder="0.00" value="' + cost + '" min="0" step="0.01" oninput="updatePoTotals()" style="text-align:right">' +
+    '<select class="po-item-vat" onchange="updatePoTotals()">' +
+      '<option value="20"' + (vat==20?' selected':'') + '>20% Standard</option>' +
+      '<option value="5"'  + (vat==5 ?' selected':'') + '>5% Reduced</option>' +
+      '<option value="0"'  + (vat==0 ?' selected':'') + '>0% Zero / Exempt</option>' +
+    '</select>' +
+    '<button class="item-del" onclick="removePoItem(' + idx + ')" title="Remove line">×</button>';
+  document.getElementById('po-items-container').appendChild(row);
+  updatePoTotals();
+}
+
+function removePoItem(idx) {
+  const row = document.getElementById('po-row-' + idx);
+  if (row) row.remove();
+  updatePoTotals();
+}
+
+function updatePoTotals() {
+  let subtotal = 0, vatTotal = 0;
+  document.querySelectorAll('#po-items-container .po-item-row').forEach(row => {
+    const qty  = parseFloat(row.querySelector('.po-item-qty')?.value)  || 0;
+    const cost = parseFloat(row.querySelector('.po-item-cost')?.value) || 0;
+    const vat  = parseFloat(row.querySelector('.po-item-vat')?.value)  || 0;
+    const net  = qty * cost;
+    subtotal += net;
+    vatTotal += net * (vat/100);
+  });
+  document.getElementById('po-subtotal').textContent   = '£' + subtotal.toLocaleString('en-GB',{minimumFractionDigits:2});
+  document.getElementById('po-vat-total').textContent  = '£' + vatTotal.toLocaleString('en-GB',{minimumFractionDigits:2});
+  document.getElementById('po-grand-total').textContent= '£' + (subtotal+vatTotal).toLocaleString('en-GB',{minimumFractionDigits:2});
+}
+
+function collectPoItems() {
+  const items = [];
+  document.querySelectorAll('#po-items-container .po-item-row').forEach((row, idx) => {
+    const desc = row.querySelector('.po-item-desc')?.value?.trim();
+    if (!desc) return;
+    items.push({
+      description: desc,
+      quantity:    parseFloat(row.querySelector('.po-item-qty')?.value)  || 1,
+      unitCost:    parseFloat(row.querySelector('.po-item-cost')?.value) || 0,
+      vatRate:     parseFloat(row.querySelector('.po-item-vat')?.value)  ?? 20,
+      sortOrder:   idx
+    });
+  });
+  return items;
+}
+
+async function savePO() {
+  const tradeId = document.getElementById('po-trade-sel').value;
+  if (!tradeId) { alert('Please select a subcontractor for this PO.'); return; }
+  const items = collectPoItems();
+  if (!items.length) { alert('Please add at least one item line.'); return; }
+  const body = {
+    jobId:        _currentPoJobId,
+    tradeId,
+    issueDate:    document.getElementById('po-issue-date').value,
+    status:       document.getElementById('po-status').value,
+    instructions: document.getElementById('po-instructions').value.trim(),
+    notes:        document.getElementById('po-notes').value.trim(),
+    items
+  };
+  const result = _currentPoId
+    ? await api('PUT',  '/api/purchase-orders/' + _currentPoId, body)
+    : await api('POST', '/api/purchase-orders', body);
+  if (!result || result.error) { alert(result?.error || 'Save failed'); return; }
+  closeModal('po-modal');
+  await loadJobPOs(_currentPoJobId);
+  showToast('✅ Purchase Order ' + result.poNumber + ' saved');
+}
+
+async function editPO(poId) {
+  await openPoModal(poId);
+}
+
+async function deletePO(poId) {
+  if (!confirm('Delete this purchase order? This cannot be undone.')) return;
+  await api('DELETE', '/api/purchase-orders/' + poId);
+  await loadJobPOs(_currentPoJobId);
+  showToast('Purchase order deleted');
+}
+
+// ── Print / PDF a PO ─────────────────────────────────────────────────────────
+async function viewPrintPO(poId) {
+  const po = await api('GET', '/api/purchase-orders/' + poId);
+  if (!po || po.error) return alert('Failed to load PO');
+  const subtotal = (po.items||[]).reduce((s,i) => s + i.quantity * i.unitCost, 0);
+  const vat      = (po.items||[]).reduce((s,i) => s + i.quantity * i.unitCost * (i.vatRate/100), 0);
+  const total    = subtotal + vat;
+  const printHtml =
+    '<div style="font-family:Arial,sans-serif;max-width:750px;margin:0 auto;padding:40px 32px;color:#1a2535">' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;border-bottom:3px solid #3db54a;padding-bottom:20px">' +
+      '<div>' +
+        '<div style="font-size:1.8rem;font-weight:800;color:#1a2535">ADC <span style="color:#6b3fa0">Property Desk</span></div>' +
+        '<div style="font-size:0.85rem;color:#8898a8;margin-top:2px">PURCHASE ORDER</div>' +
+      '</div>' +
+      '<div style="text-align:right">' +
+        '<div style="font-size:1.4rem;font-weight:700;color:#3db54a">' + po.poNumber + '</div>' +
+        '<div style="font-size:0.85rem;color:#8898a8">Issued: ' + fmtDateVal(po.issueDate) + '</div>' +
+        '<div style="margin-top:4px">' + po.status.toUpperCase() + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px">' +
+      '<div>' +
+        '<div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:#8898a8;margin-bottom:6px">To (Subcontractor)</div>' +
+        '<div style="font-weight:700;font-size:1rem">' + po.tradeName + '</div>' +
+        (po.tradeAddress ? '<div style="font-size:0.87rem;color:#4a5a6a;margin-top:2px">' + po.tradeAddress + '</div>' : '') +
+        (po.tradeContact ? '<div style="font-size:0.87rem;color:#4a5a6a">Contact: ' + po.tradeContact + '</div>' : '') +
+        (po.tradeEmail   ? '<div style="font-size:0.87rem;color:#3db54a">' + po.tradeEmail + '</div>' : '') +
+      '</div>' +
+      '<div>' +
+        '<div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:#8898a8;margin-bottom:6px">For Job</div>' +
+        '<div style="font-weight:700">' + (po.workOrderId||'') + ' – ' + (po.jobTitle||'') + '</div>' +
+        (po.customerName  ? '<div style="font-size:0.87rem;color:#4a5a6a">Customer: ' + po.customerName + '</div>' : '') +
+        (po.addressLabel  ? '<div style="font-size:0.87rem;color:#4a5a6a">' + po.addressLabel + '</div>' : '') +
+      '</div>' +
+    '</div>' +
+    '<table style="width:100%;border-collapse:collapse;margin-bottom:16px">' +
+      '<thead>' +
+        '<tr style="background:#f4f6f8">' +
+          '<th style="text-align:left;padding:10px 12px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.6px;color:#8898a8;border-bottom:1px solid #dde3e8">Description</th>' +
+          '<th style="text-align:right;padding:10px 12px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.6px;color:#8898a8;border-bottom:1px solid #dde3e8">Qty</th>' +
+          '<th style="text-align:right;padding:10px 12px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.6px;color:#8898a8;border-bottom:1px solid #dde3e8">Unit Cost</th>' +
+          '<th style="text-align:right;padding:10px 12px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.6px;color:#8898a8;border-bottom:1px solid #dde3e8">VAT</th>' +
+          '<th style="text-align:right;padding:10px 12px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.6px;color:#8898a8;border-bottom:1px solid #dde3e8">Total</th>' +
+        '</tr>' +
+      '</thead><tbody>' +
+      (po.items||[]).map(i => {
+        const net = i.quantity * i.unitCost;
+        const vatAmt = net * (i.vatRate/100);
+        return '<tr><td style="padding:10px 12px;border-bottom:1px solid #f4f6f8">' + i.description + '</td>' +
+          '<td style="text-align:right;padding:10px 12px;border-bottom:1px solid #f4f6f8">' + i.quantity + '</td>' +
+          '<td style="text-align:right;padding:10px 12px;border-bottom:1px solid #f4f6f8">£' + parseFloat(i.unitCost).toLocaleString('en-GB',{minimumFractionDigits:2}) + '</td>' +
+          '<td style="text-align:right;padding:10px 12px;border-bottom:1px solid #f4f6f8">' + i.vatRate + '%</td>' +
+          '<td style="text-align:right;padding:10px 12px;border-bottom:1px solid #f4f6f8">£' + (net+vatAmt).toLocaleString('en-GB',{minimumFractionDigits:2}) + '</td></tr>';
+      }).join('') +
+      '</tbody></table>' +
+      '<div style="display:flex;justify-content:flex-end;gap:0;margin-bottom:28px">' +
+        '<table style="border-collapse:collapse;font-size:0.88rem">' +
+          '<tr><td style="padding:5px 20px;color:#4a5a6a">Subtotal</td><td style="padding:5px 12px;text-align:right;font-weight:500">£' + subtotal.toLocaleString('en-GB',{minimumFractionDigits:2}) + '</td></tr>' +
+          '<tr><td style="padding:5px 20px;color:#4a5a6a">VAT</td><td style="padding:5px 12px;text-align:right;font-weight:500">£' + vat.toLocaleString('en-GB',{minimumFractionDigits:2}) + '</td></tr>' +
+          '<tr style="border-top:2px solid #1a2535"><td style="padding:8px 20px;font-weight:700;font-size:1rem">TOTAL</td><td style="padding:8px 12px;text-align:right;font-weight:700;font-size:1rem;color:#3db54a">£' + total.toLocaleString('en-GB',{minimumFractionDigits:2}) + '</td></tr>' +
+        '</table>' +
+      '</div>' +
+    (po.instructions ? '<div style="background:#f4f6f8;border-radius:8px;padding:14px 16px;margin-bottom:20px"><div style="font-weight:600;font-size:0.85rem;margin-bottom:6px;color:#1a2535">Instructions / Additional Details</div><div style="font-size:0.87rem;color:#4a5a6a">' + po.instructions + '</div></div>' : '') +
+    '<div style="font-size:0.78rem;color:#8898a8;text-align:center;border-top:1px solid #dde3e8;padding-top:14px">ADC Property Desk · Generated ' + new Date().toLocaleDateString('en-GB') + '</div>' +
+    '</div>';
+
+  const printWin = window.open('', '_blank', 'width=900,height=700');
+  printWin.document.write('<!DOCTYPE html><html><head><title>' + po.poNumber + '</title><style>@media print{body{margin:0}}</style></head><body>' + printHtml + '<script>window.onload=function(){window.print();}<\/script></body></html>');
+  printWin.document.close();
+}
+
+function printPO() {
+  if (_currentPoId) viewPrintPO(_currentPoId);
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('click', e => {
   const dd = document.getElementById('trade-cat-dropdown');
@@ -2084,6 +2459,87 @@ init();
     </div>
   </div>
 </div>
+<!-- ── PURCHASE ORDER MODAL ── -->
+<div class="modal-overlay" id="po-modal">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-header">
+      <div>
+        <h3 id="po-modal-title">Raise Purchase Order</h3>
+        <div id="po-modal-subtitle" style="font-size:0.8rem;color:var(--mist);margin-top:2px"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('po-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- Subcontractor selector (shown when job has multiple or zero subcontractors) -->
+      <div id="po-trade-select-wrap" style="display:none;margin-bottom:16px">
+        <div class="form-group">
+          <label id="po-trade-select-label">Select Subcontractor *</label>
+          <select id="po-trade-sel" onchange="poTradeSelected()" style="width:100%">
+            <option value="">— Select subcontractor —</option>
+          </select>
+        </div>
+      </div>
+      <!-- Selected subcontractor info banner -->
+      <div id="po-trade-banner" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.87rem">
+        <strong id="po-trade-name"></strong>
+        <span id="po-trade-contact" style="color:var(--slate);margin-left:10px"></span>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>PO Number</label>
+          <input id="po-number" readonly style="background:var(--surface);color:var(--slate)">
+        </div>
+        <div class="form-group">
+          <label>Issue Date</label>
+          <input type="date" id="po-issue-date">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="po-status">
+            <option value="draft">Draft</option>
+            <option value="sent">Sent</option>
+            <option value="acknowledged">Acknowledged</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <!-- Items -->
+      <div style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <label style="font-size:0.8rem;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:1px">Items</label>
+          <button class="btn btn-secondary btn-sm" onclick="addPoItem()">+ Add Line</button>
+        </div>
+        <div class="po-items-header">
+          <span>Description</span><span style="text-align:center">Qty</span><span style="text-align:right">Unit Cost</span><span style="text-align:center">VAT %</span><span></span>
+        </div>
+        <div id="po-items-container"></div>
+        <div class="po-running-total" id="po-running-total">
+          <div><span>Subtotal: </span><strong id="po-subtotal">£0.00</strong></div>
+          <div><span>VAT: </span><strong id="po-vat-total">£0.00</strong></div>
+          <div><span class="grand">Total: </span><strong class="grand" id="po-grand-total">£0.00</strong></div>
+        </div>
+      </div>
+      <!-- Instructions -->
+      <div class="form-group" style="margin-top:14px">
+        <label>Additional Details / Instructions for Subcontractor</label>
+        <textarea id="po-instructions" rows="3" placeholder="Access arrangements, health & safety requirements, specific instructions…"></textarea>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label>Internal Notes</label>
+        <textarea id="po-notes" rows="2" placeholder="Internal notes (not shown on PO)"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('po-modal')">Cancel</button>
+      <button class="btn btn-ghost" onclick="printPO()" id="po-print-btn" style="display:none">🖨 Print / PDF</button>
+      <button class="btn btn-primary" onclick="savePO()">Save PO</button>
+    </div>
+  </div>
+</div>
+
+<!-- Print area for PO -->
+<div id="po-print-area"></div>
+
 <!-- ── COMPLIANCE PROMPT MODAL ── -->
 <div class="modal-overlay" id="compliance-modal">
   <div class="modal" style="max-width:460px">

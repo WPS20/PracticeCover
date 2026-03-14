@@ -654,6 +654,141 @@ app.delete('/api/attachments/:id', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ─── Purchase Orders ──────────────────────────────────────────────────────────
+
+// Generate next PO number
+async function nextPoNumber() {
+  const r = await query("SELECT po_number FROM purchase_orders ORDER BY created_at DESC LIMIT 1");
+  if (!r.rows.length) return 'PO-0001';
+  const last = r.rows[0].po_number;
+  const m = last.match(/(\d+)$/);
+  const n = m ? parseInt(m[1]) + 1 : 1;
+  return 'PO-' + String(n).padStart(4, '0');
+}
+
+// Normalise PO (with items joined)
+function normalisePO(r, items) {
+  return {
+    id: r.id, poNumber: r.po_number, jobId: r.job_id, tradeId: r.trade_id,
+    tradeName: r.trade_name || null, tradeEmail: r.trade_email || null,
+    tradeAddress: r.trade_address || null, tradeContact: r.trade_contact || null,
+    jobTitle: r.job_title || null, workOrderId: r.work_order_id || null,
+    customerName: r.customer_name || null, addressLabel: r.address_label || null,
+    status: r.status, issueDate: r.issue_date ? r.issue_date.toISOString().split('T')[0] : '',
+    instructions: r.instructions || '', notes: r.notes || '',
+    createdBy: r.created_by, createdByName: r.created_by_name || null,
+    createdAt: r.created_at, updatedAt: r.updated_at,
+    items: (items || []).map(i => ({
+      id: i.id, description: i.description,
+      quantity: parseFloat(i.quantity), unitCost: parseFloat(i.unit_cost),
+      vatRate: parseFloat(i.vat_rate), sortOrder: i.sort_order
+    }))
+  };
+}
+
+const PO_JOIN = `
+  SELECT p.*,
+    t.company_name AS trade_name, t.contact_email AS trade_email,
+    t.company_address AS trade_address, t.contact_name AS trade_contact,
+    j.title AS job_title, j.work_order_id,
+    c.name AS customer_name,
+    COALESCE(a.label || ' – ' || a.line1, a.line1) || ', ' || a.postcode AS address_label,
+    u.name AS created_by_name
+  FROM purchase_orders p
+  LEFT JOIN trades t   ON p.trade_id   = t.id
+  LEFT JOIN jobs j     ON p.job_id     = j.id
+  LEFT JOIN customers c ON j.customer_id = c.id
+  LEFT JOIN addresses a ON j.address_id  = a.id
+  LEFT JOIN users u    ON p.created_by  = u.id`;
+
+// List POs for a job OR a trade
+app.get('/api/purchase-orders', requireAuth, async (req, res) => {
+  try {
+    const { jobId, tradeId } = req.query;
+    let where = '';
+    const params = [];
+    if (jobId)   { where = ' WHERE p.job_id = $1';   params.push(jobId); }
+    else if (tradeId) { where = ' WHERE p.trade_id = $1'; params.push(tradeId); }
+    const pos = await query(PO_JOIN + where + ' ORDER BY p.created_at DESC', params);
+    const ids = pos.rows.map(r => r.id);
+    let itemsMap = {};
+    if (ids.length) {
+      const items = await query(
+        'SELECT * FROM po_items WHERE po_id = ANY($1) ORDER BY sort_order ASC',
+        [ids]
+      );
+      items.rows.forEach(i => { if (!itemsMap[i.po_id]) itemsMap[i.po_id] = []; itemsMap[i.po_id].push(i); });
+    }
+    res.json(pos.rows.map(r => normalisePO(r, itemsMap[r.id] || [])));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Get single PO
+app.get('/api/purchase-orders/:id', requireAuth, async (req, res) => {
+  try {
+    const po = await query(PO_JOIN + ' WHERE p.id = $1', [req.params.id]);
+    if (!po.rows.length) return res.status(404).json({ error: 'Not found' });
+    const items = await query('SELECT * FROM po_items WHERE po_id=$1 ORDER BY sort_order ASC', [req.params.id]);
+    res.json(normalisePO(po.rows[0], items.rows));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Create PO
+app.post('/api/purchase-orders', requireAuth, async (req, res) => {
+  try {
+    const { jobId, tradeId, issueDate, instructions, notes, items } = req.body;
+    if (!jobId || !tradeId) return res.status(400).json({ error: 'jobId and tradeId required' });
+    const poNumber = await nextPoNumber();
+    const id = uuidv4();
+    await query(
+      'INSERT INTO purchase_orders (id,po_number,job_id,trade_id,status,issue_date,instructions,notes,created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+      [id, poNumber, jobId, tradeId, 'draft', issueDate || new Date().toISOString().split('T')[0], instructions||'', notes||'', req.session.userId]
+    );
+    if (items && items.length) {
+      await Promise.all(items.map((item, idx) =>
+        query('INSERT INTO po_items (id,po_id,description,quantity,unit_cost,vat_rate,sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+          [uuidv4(), id, item.description, item.quantity||1, item.unitCost||0, item.vatRate??20, idx])
+      ));
+    }
+    const po = await query(PO_JOIN + ' WHERE p.id = $1', [id]);
+    const poItems = await query('SELECT * FROM po_items WHERE po_id=$1 ORDER BY sort_order ASC', [id]);
+    res.status(201).json(normalisePO(po.rows[0], poItems.rows));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Update PO
+app.put('/api/purchase-orders/:id', requireAuth, async (req, res) => {
+  try {
+    const { status, issueDate, instructions, notes, items } = req.body;
+    await query(
+      'UPDATE purchase_orders SET status=$1,issue_date=$2,instructions=$3,notes=$4,updated_at=NOW() WHERE id=$5',
+      [status, issueDate, instructions||'', notes||'', req.params.id]
+    );
+    // Replace all items
+    await query('DELETE FROM po_items WHERE po_id=$1', [req.params.id]);
+    if (items && items.length) {
+      await Promise.all(items.map((item, idx) =>
+        query('INSERT INTO po_items (id,po_id,description,quantity,unit_cost,vat_rate,sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+          [uuidv4(), req.params.id, item.description, item.quantity||1, item.unitCost||0, item.vatRate??20, idx])
+      ));
+    }
+    const po = await query(PO_JOIN + ' WHERE p.id = $1', [req.params.id]);
+    if (!po.rows.length) return res.status(404).json({ error: 'Not found' });
+    const poItems = await query('SELECT * FROM po_items WHERE po_id=$1 ORDER BY sort_order ASC', [req.params.id]);
+    res.json(normalisePO(po.rows[0], poItems.rows));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Delete PO
+app.delete('/api/purchase-orders/:id', requireAuth, async (req, res) => {
+  try {
+    await query('DELETE FROM po_items WHERE po_id=$1', [req.params.id]);
+    await query('DELETE FROM purchase_orders WHERE id=$1', [req.params.id]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ─── Catch-all & start ────────────────────────────────────────────────────────
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
