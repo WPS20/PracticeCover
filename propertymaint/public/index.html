@@ -308,6 +308,45 @@
   .upload-progress { display: none; align-items: center; gap: 10px; margin-top: 8px; font-size: 0.83rem; color: var(--slate); }
   .upload-progress.show { display: flex; }
 
+  /* ── Task Calendar ── */
+  .cal-wrap { padding: 16px 16px 0; }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .cal-title { font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+  .cal-nav { display: flex; align-items: center; gap: 8px; }
+  .cal-nav button { background: var(--surface); border: 1.5px solid var(--border); border-radius: 7px; padding: 5px 12px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--slate); font-family: "Inter", sans-serif; transition: all 0.15s; }
+  .cal-nav button:hover { background: var(--border); }
+  .cal-nav .today-btn { color: var(--accent); border-color: var(--accent); }
+  .cal-scope-toggle { display: flex; gap: 0; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .cal-scope-toggle button { border: none; padding: 6px 14px; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: "Inter", sans-serif; background: var(--white); color: var(--mist); transition: all 0.15s; }
+  .cal-scope-toggle button.active { background: var(--accent2); color: #fff; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); border-radius: 10px; overflow: hidden; }
+  .cal-day-name { background: var(--surface); text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--mist); text-transform: uppercase; letter-spacing: 0.8px; padding: 8px 4px; }
+  .cal-day { background: var(--white); min-height: 80px; padding: 6px 7px; cursor: default; position: relative; transition: background 0.1s; }
+  .cal-day.other-month { background: #fafafa; }
+  .cal-day.other-month .cal-day-num { color: var(--border); }
+  .cal-day.is-today { background: #f0fdf4; }
+  .cal-day.is-today .cal-day-num { background: var(--accent); color: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+  .cal-day.has-tasks { cursor: pointer; }
+  .cal-day.has-tasks:hover { background: var(--surface); }
+  .cal-day.selected { background: #eff6ff; outline: 2px solid var(--blue); outline-offset: -2px; }
+  .cal-day-num { font-size: 0.8rem; font-weight: 600; color: var(--slate); margin-bottom: 4px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+  .cal-dots { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 2px; }
+  .cal-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .cal-dot.overdue  { background: var(--red); }
+  .cal-dot.due-today { background: var(--amber); }
+  .cal-dot.upcoming  { background: var(--accent); }
+  .cal-dot.complete  { background: var(--border); }
+  .cal-task-pill { font-size: 0.72rem; line-height: 1.3; padding: 1px 5px; border-radius: 4px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: block; }
+  .cal-task-pill.overdue  { background: #fee2e2; color: var(--red); }
+  .cal-task-pill.due-today { background: #fef3c7; color: #92400e; }
+  .cal-task-pill.upcoming  { background: #f0fdf4; color: #166534; }
+  .cal-task-pill.complete  { background: var(--surface); color: var(--mist); text-decoration: line-through; }
+  .cal-legend { display: flex; gap: 16px; margin: 10px 16px 4px; flex-wrap: wrap; }
+  .cal-legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: var(--slate); }
+  .cal-legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+  .cal-selected-label { font-size: 0.82rem; color: var(--blue); font-weight: 600; margin: 0 16px 8px; display: none; }
+  .cal-selected-label.show { display: block; }
+
   /* ── Audit Log ── */
   .badge-created { background: #f0fdf4; color: var(--green); }
   .badge-updated { background: #eff6ff; color: var(--blue); }
@@ -524,12 +563,41 @@
       </div>
       <!-- TASKS PAGE -->
       <div class="page" id="page-tasks">
+        <!-- Calendar card -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="cal-wrap">
+            <div class="cal-header">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span class="cal-title" id="cal-title">Month Year</span>
+                <div class="cal-nav">
+                  <button onclick="calPrev()">‹</button>
+                  <button class="today-btn" onclick="calToday()">Today</button>
+                  <button onclick="calNext()">›</button>
+                </div>
+              </div>
+              <!-- Admin-only scope toggle -->
+              <div class="cal-scope-toggle admin-only" id="cal-scope-wrap" style="display:none">
+                <button id="cal-scope-mine" class="active" onclick="setCalScope('mine')">My Tasks</button>
+                <button id="cal-scope-all"  onclick="setCalScope('all')">All Tasks</button>
+              </div>
+            </div>
+            <div class="cal-grid" id="cal-grid"></div>
+          </div>
+          <div class="cal-legend">
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--red)"></div> Overdue</div>
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--amber)"></div> Due today</div>
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--accent)"></div> Upcoming</div>
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--border)"></div> Complete</div>
+          </div>
+          <div class="cal-selected-label" id="cal-selected-label"></div>
+        </div>
+        <!-- List card -->
         <div class="card">
           <div class="card-header" style="flex-wrap:wrap;gap:10px">
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-              <div class="search-bar"><input type="text" placeholder="Search tasks…" id="task-search" oninput="renderAllTasks()"></div>
-              <select id="task-filter-user" onchange="renderAllTasks()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem"><option value="">All Users</option></select>
-              <select id="task-filter-status" onchange="renderAllTasks()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
+              <div class="search-bar"><input type="text" placeholder="Search tasks…" id="task-search" oninput="onTaskFilterChange()"></div>
+              <select id="task-filter-user" onchange="onTaskFilterChange()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem"><option value="">All Users</option></select>
+              <select id="task-filter-status" onchange="onTaskFilterChange()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
                 <option value="">All Statuses</option>
                 <option value="open">Open</option>
                 <option value="in_progress">In Progress</option>
@@ -837,6 +905,8 @@ function showApp() {
   if (currentUser.role === 'admin') {
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
     document.querySelectorAll('a.admin-only').forEach(el => el.style.display = 'flex');
+    const csw = document.getElementById('cal-scope-wrap');
+    if (csw) csw.style.display = '';
   }
   loadAll();
 }
@@ -886,7 +956,7 @@ function showPage(name) {
   };
   document.getElementById('topbar-action').innerHTML = actions[name] || '';
   if (name === 'dashboard') { renderDashboard(); }
-  if (name === 'tasks') { populateTaskFilters(); loadAllTasks(); }
+  if (name === 'tasks') { populateTaskFilters(); loadAllTasks(); renderTaskCalendar(); }
   if (name === 'purchase-orders') { loadPoPage(); }
   if (name === 'invoices') { loadInvoicePage(); }
   if (name === 'log') { loadLog(); }
@@ -1501,6 +1571,7 @@ async function loadAllTasks() {
   if (!Array.isArray(tasks)) return;
   state.allTasks = tasks;
   renderAllTasks();
+  renderTaskCalendar();
 }
 
 function renderMyTasks() {
@@ -1518,11 +1589,21 @@ function renderMyTasks() {
 function renderAllTasks() {
   const el = document.getElementById('all-tasks-list');
   if (!el) return;
-  const q = (document.getElementById('task-search')?.value || '').toLowerCase();
+  const q  = (document.getElementById('task-search')?.value || '').toLowerCase();
   const uf = document.getElementById('task-filter-user')?.value || '';
   const sf = document.getElementById('task-filter-status')?.value || '';
-  const tasks = (state.allTasks || [])
+
+  // Base pool: respect calendar scope toggle for admins
+  let pool = state.allTasks || [];
+  if (isAdmin() && _calScope === 'mine') {
+    pool = pool.filter(t => t.assignedTo === (currentUser && currentUser.id));
+  } else if (!isAdmin()) {
+    pool = pool.filter(t => t.assignedTo === (currentUser && currentUser.id));
+  }
+
+  const tasks = pool
     .filter(t => {
+      if (_calSelDate && t.targetDate !== _calSelDate) return false;
       if (uf && t.assignedTo !== uf) return false;
       if (sf && t.status !== sf) return false;
       if (q && !(t.description||'').toLowerCase().includes(q) &&
@@ -1534,10 +1615,12 @@ function renderAllTasks() {
     })
     .sort((a,b) => (a.targetDate||'').localeCompare(b.targetDate||''));
   if (!tasks.length) {
-    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--mist)">No tasks found</div>';
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--mist)">' + (_calSelDate ? 'No tasks on this date' : 'No tasks found') + '</div>';
     return;
   }
-  el.innerHTML = tasks.map(t => taskItemHtml(t, true)).join('');
+  // Show assignee when admin viewing all tasks
+  const showAssignee = isAdmin() && _calScope === 'all';
+  el.innerHTML = tasks.map(t => taskItemHtml(t, showAssignee)).join('');
 }
 
 function taskItemHtml(t, showAssignee) {
@@ -3099,6 +3182,162 @@ function renderInvoiceCharts(stats) {
         scales: { x:{ ticks:{callback: v => '£' + v.toLocaleString('en-GB')}, grid:{color:'#f0f0f0'} }, y:{grid:{display:false}} } }
     });
   }
+}
+
+
+// ── Task Calendar ──────────────────────────────────────────────────────────────
+let _calYear      = new Date().getFullYear();
+let _calMonth     = new Date().getMonth();   // 0-indexed
+let _calScope     = 'mine';                  // 'mine' | 'all'
+let _calSelDate   = null;                    // selected YYYY-MM-DD or null
+
+function setCalScope(scope) {
+  _calScope = scope;
+  _calSelDate = null;
+  document.getElementById('cal-scope-mine').classList.toggle('active', scope === 'mine');
+  document.getElementById('cal-scope-all').classList.toggle('active', scope === 'all');
+  renderTaskCalendar();
+  renderAllTasks();
+}
+
+function calPrev()  { _calMonth--; if (_calMonth < 0)  { _calMonth = 11; _calYear--; } _calSelDate = null; renderTaskCalendar(); }
+function calNext()  { _calMonth++; if (_calMonth > 11) { _calMonth = 0;  _calYear++; } _calSelDate = null; renderTaskCalendar(); }
+function calToday() { _calYear = new Date().getFullYear(); _calMonth = new Date().getMonth(); _calSelDate = null; renderTaskCalendar(); renderAllTasks(); }
+
+// Called when search/filter inputs change — also clears calendar day selection
+function onTaskFilterChange() {
+  _calSelDate = null;
+  const lbl = document.getElementById('cal-selected-label');
+  if (lbl) { lbl.textContent = ''; lbl.classList.remove('show'); }
+  // Deselect all cal days
+  document.querySelectorAll('.cal-day.selected').forEach(d => d.classList.remove('selected'));
+  renderAllTasks();
+}
+
+function getCalTasks() {
+  // Admins: respect scope toggle. Non-admins: always own tasks only.
+  const allT = state.allTasks || [];
+  if (isAdmin() && _calScope === 'all') return allT;
+  return allT.filter(t => t.assignedTo === (currentUser && currentUser.id));
+}
+
+function taskDotClass(t) {
+  const today = todayStr();
+  if (t.status === 'complete') return 'complete';
+  if (t.targetDate < today)    return 'overdue';
+  if (t.targetDate === today)  return 'due-today';
+  return 'upcoming';
+}
+
+function renderTaskCalendar() {
+  const grid  = document.getElementById('cal-grid');
+  const title = document.getElementById('cal-title');
+  if (!grid || !title) return;
+
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  title.textContent = monthNames[_calMonth] + ' ' + _calYear;
+
+  // Build map of date → tasks
+  const tasks  = getCalTasks();
+  const byDate = {};
+  tasks.forEach(t => {
+    if (!t.targetDate) return;
+    if (!byDate[t.targetDate]) byDate[t.targetDate] = [];
+    byDate[t.targetDate].push(t);
+  });
+
+  const today     = todayStr();
+  const firstDay  = new Date(_calYear, _calMonth, 1);
+  const lastDay   = new Date(_calYear, _calMonth + 1, 0);
+  // Week starts Monday
+  let startDow = firstDay.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1; // convert to Mon=0
+
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let html = dayNames.map(d => '<div class="cal-day-name">' + d + '</div>').join('');
+
+  // Pad start
+  for (let i = 0; i < startDow; i++) {
+    const d = new Date(_calYear, _calMonth, 1 - (startDow - i));
+    const ds = d.toISOString().split('T')[0];
+    const dayTasks = byDate[ds] || [];
+    html += buildCalDay(ds, d.getDate(), true, today, dayTasks);
+  }
+
+  // Days in month
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const ds = _calYear + '-' + String(_calMonth + 1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const dayTasks = byDate[ds] || [];
+    html += buildCalDay(ds, d, false, today, dayTasks);
+  }
+
+  // Pad end to complete grid
+  const totalCells = startDow + lastDay.getDate();
+  const remainder  = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let i = 1; i <= remainder; i++) {
+    const d = new Date(_calYear, _calMonth + 1, i);
+    const ds = d.toISOString().split('T')[0];
+    const dayTasks = byDate[ds] || [];
+    html += buildCalDay(ds, i, true, today, dayTasks);
+  }
+
+  grid.innerHTML = html;
+
+  // Restore selection highlight
+  if (_calSelDate) {
+    const el = grid.querySelector('[data-date="' + _calSelDate + '"]');
+    if (el) el.classList.add('selected');
+  }
+
+  // Attach click handlers to days with tasks
+  grid.querySelectorAll('.cal-day.has-tasks').forEach(el => {
+    el.addEventListener('click', () => {
+      const ds = el.getAttribute('data-date');
+      if (_calSelDate === ds) {
+        // Deselect — show all
+        _calSelDate = null;
+        el.classList.remove('selected');
+        const lbl = document.getElementById('cal-selected-label');
+        if (lbl) { lbl.textContent = ''; lbl.classList.remove('show'); }
+      } else {
+        _calSelDate = ds;
+        grid.querySelectorAll('.cal-day.selected').forEach(d => d.classList.remove('selected'));
+        el.classList.add('selected');
+        const d = new Date(ds + 'T00:00:00');
+        const lbl = document.getElementById('cal-selected-label');
+        if (lbl) { lbl.textContent = 'Showing tasks for ' + d.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'}); lbl.classList.add('show'); }
+      }
+      renderAllTasks();
+    });
+  });
+}
+
+function buildCalDay(ds, dayNum, otherMonth, today, dayTasks) {
+  const isToday   = ds === today;
+  const hasTasks  = dayTasks.length > 0;
+  let cls = 'cal-day';
+  if (otherMonth) cls += ' other-month';
+  if (isToday)    cls += ' is-today';
+  if (hasTasks)   cls += ' has-tasks';
+  if (_calSelDate === ds) cls += ' selected';
+
+  // Show up to 2 task pills + overflow dot
+  const MAX_PILLS = 2;
+  let inner = '<div class="cal-day-num">' + dayNum + '</div>';
+  if (hasTasks) {
+    inner += '<div class="cal-dots">';
+    dayTasks.forEach(t => { inner += '<div class="cal-dot ' + taskDotClass(t) + '"></div>'; });
+    inner += '</div>';
+    // Pills for first 2 tasks
+    dayTasks.slice(0, MAX_PILLS).forEach(t => {
+      const desc = t.description.length > 22 ? t.description.substring(0, 22) + '…' : t.description;
+      inner += '<span class="cal-task-pill ' + taskDotClass(t) + '">' + desc + '</span>';
+    });
+    if (dayTasks.length > MAX_PILLS) {
+      inner += '<span style="font-size:0.7rem;color:var(--mist);padding-left:4px">+' + (dayTasks.length - MAX_PILLS) + ' more</span>';
+    }
+  }
+  return '<div class="' + cls + '" data-date="' + ds + '">' + inner + '</div>';
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
