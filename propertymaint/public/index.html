@@ -171,6 +171,13 @@
 
 
 
+  /* ── Price inputs ── */
+  .price-input-wrap { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--white); transition: border-color 0.15s; }
+  .price-input-wrap:focus-within { border-color: var(--accent); }
+  .price-prefix { padding: 0 10px; background: var(--surface); color: var(--slate); font-weight: 600; font-size: 0.9rem; border-right: 1.5px solid var(--border); height: 100%; display: flex; align-items: center; }
+  .price-input-wrap input { border: none !important; outline: none !important; border-radius: 0 !important; flex: 1; }
+  .price-input-wrap input:focus { border-color: transparent; }
+
   /* ── Tasks ── */
   .task-item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; background: var(--white); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; transition: box-shadow 0.15s; }
   .task-item:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.07); }
@@ -438,8 +445,8 @@
         <div class="form-group"><label>Date Work Completed</label><input type="date" id="jf-dateWorkCompleted"></div>
         <div class="form-group"><label>Date Invoiced</label><input type="date" id="jf-dateInvoiced"></div>
         <div class="form-group"><label>Invoice Number</label><input id="jf-invoiceNumber" placeholder="INV-001"></div>
-        <div class="form-group"><label>Price Quoted Excl. VAT</label><input type="number" step="0.01" id="jf-priceQuotedExclVat" placeholder="0.00"></div>
-        <div class="form-group"><label>Price Quoted Incl. VAT</label><input type="number" step="0.01" id="jf-priceQuotedInclVat" placeholder="0.00"></div>
+        <div class="form-group"><label>Price Quoted Excl. VAT</label><div class="price-input-wrap"><span class="price-prefix">£</span><input type="number" step="0.01" min="0" id="jf-priceQuotedExclVat" placeholder="0.00" oninput="calcInclVat()"></div></div>
+        <div class="form-group"><label>Price Quoted Incl. VAT <span style="font-weight:400;color:var(--mist)">(auto)</span></label><div class="price-input-wrap"><span class="price-prefix">£</span><input type="number" step="0.01" min="0" id="jf-priceQuotedInclVat" placeholder="0.00" readonly style="background:var(--surface);color:var(--slate)"></div></div>
         <div class="form-group"><label>Compliance Standard</label><input id="jf-complianceStandard"></div>
         <div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:12px;margin-top:4px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:1px">Booking Dates</div>
         <div class="form-group"><label>PO Sent Subcontractor</label><input type="date" id="jf-poSentSubcontractor"></div>
@@ -755,6 +762,8 @@ function openJobModal(id=null) {
       cs.value=j.customerId;
       loadAddressesForJob(()=>{ document.getElementById('jf-addressId').value=j.addressId; });
       (j.tradeIds||[]).forEach(tid=>{ const cb=document.getElementById('jtc-'+tid); if(cb) cb.checked=true; });
+      // If Incl. VAT is missing but Excl. is set, auto-calculate it
+      if (j.priceQuotedExclVat && !j.priceQuotedInclVat) calcInclVat();
     }
   }
   document.getElementById('job-modal').classList.add('open');
@@ -766,6 +775,17 @@ function loadAddressesForJob(cb) {
   const sel = document.getElementById('jf-addressId');
   sel.innerHTML = '<option value="">Select address…</option>' + addrs.map(a=>`<option value="${a.id}">${a.label?a.label+' – ':''}${a.line1}, ${a.postcode}</option>`).join('');
   if (cb) cb();
+}
+
+function calcInclVat() {
+  const exclInput = document.getElementById('jf-priceQuotedExclVat');
+  const inclInput = document.getElementById('jf-priceQuotedInclVat');
+  const val = parseFloat(exclInput.value);
+  if (!isNaN(val) && val >= 0) {
+    inclInput.value = (val * 1.2).toFixed(2);
+  } else {
+    inclInput.value = '';
+  }
 }
 
 async function saveJob() {
