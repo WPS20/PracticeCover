@@ -224,6 +224,10 @@
   .badge-created { background: #f0fdf4; color: var(--green); }
   .badge-updated { background: #eff6ff; color: var(--blue); }
   .badge-deleted { background: #fef2f2; color: var(--red); }
+  .log-summary { display: block; margin-top: 5px; font-size: 0.78rem; color: var(--slate); line-height: 1.6; }
+  .log-change { display: inline-block; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1px 7px; margin: 1px 2px 1px 0; white-space: nowrap; font-size: 0.76rem; }
+  .log-change .ch-arrow { color: var(--mist); margin: 0 3px; }
+  .log-change .ch-new { color: var(--ink); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -1486,12 +1490,35 @@ function renderLog() {
   tbody.innerHTML = rows.map(r => {
     const dt = new Date(r.created_at);
     const dateStr = dt.toLocaleDateString('en-GB') + ' ' + dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    // Split description into headline and change summary
+    const dashIdx = r.description.indexOf(' — ');
+    const headline = dashIdx >= 0 ? r.description.substring(0, dashIdx) : r.description;
+    const changeStr = dashIdx >= 0 ? r.description.substring(dashIdx + 3) : null;
+    // Render each "Field: old → new" chunk as a styled pill
+    let changePills = '';
+    if (changeStr) {
+      const chunks = changeStr.split(' · ');
+      changePills = '<span class="log-summary">' + chunks.map(chunk => {
+        const arrowIdx = chunk.indexOf(': ');
+        if (arrowIdx < 0) return '<span class="log-change">' + chunk + '</span>';
+        const fieldName = chunk.substring(0, arrowIdx);
+        const values = chunk.substring(arrowIdx + 2);
+        const parts = values.split(' → ');
+        if (parts.length === 2) {
+          return '<span class="log-change"><span style="color:var(--mist);font-size:0.72rem">' + fieldName + '</span> ' +
+                 '<span style="text-decoration:line-through;color:var(--mist)">' + parts[0] + '</span>' +
+                 '<span class="ch-arrow">→</span>' +
+                 '<span class="ch-new">' + parts[1] + '</span></span>';
+        }
+        return '<span class="log-change">' + chunk + '</span>';
+      }).join('') + '</span>';
+    }
     return `<tr>
       <td style="white-space:nowrap;color:var(--mist);font-size:0.82rem">${dateStr}</td>
       <td><strong style="font-size:0.87rem">${r.user_name || '—'}</strong></td>
       <td>${badge(r.action, r.action)}</td>
       <td><span style="font-size:0.82rem;color:var(--slate);font-weight:500">${r.entity_type}</span></td>
-      <td style="font-size:0.87rem">${r.description}</td>
+      <td style="font-size:0.87rem">${headline}${changePills}</td>
     </tr>`;
   }).join('');
 }

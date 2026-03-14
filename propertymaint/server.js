@@ -53,7 +53,7 @@ const requireAdmin = (req, res, next) => {
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-// ─── Audit log helper ─────────────────────────────────────────────────────────
+// ─── Audit log helpers ────────────────────────────────────────────────────────
 async function auditLog(userId, userName, action, entityType, entityId, description) {
   try {
     await query(
@@ -63,6 +63,28 @@ async function auditLog(userId, userName, action, entityType, entityId, descript
   } catch (e) {
     console.error('Audit log error:', e.message);
   }
+}
+
+// Build a human-readable diff summary between old and new field values
+function diffFields(oldObj, newObj, fieldMap) {
+  const changes = [];
+  for (const [key, label] of Object.entries(fieldMap)) {
+    const oldVal = oldObj[key] == null ? '' : String(oldObj[key]);
+    const newVal = newObj[key] == null ? '' : String(newObj[key]);
+    if (oldVal !== newVal) {
+      const fmtOld = oldVal || '—';
+      const fmtNew = newVal || '—';
+      changes.push(`${label}: ${fmtOld} → ${fmtNew}`);
+    }
+  }
+  return changes.length ? changes.join(' · ') : null;
+}
+
+// Format a date value from DB row (may be Date object or string)
+function fmtAuditDate(v) {
+  if (!v) return null;
+  if (v instanceof Date) return v.toISOString().split('T')[0];
+  return String(v).split('T')[0];
 }
 // ─── Auth routes ──────────────────────────────────────────────────────────────
 app.post('/api/auth/login', async (req, res) => {
@@ -158,10 +180,17 @@ app.post('/api/customers', requireAuth, async (req, res) => {
 app.put('/api/customers/:id', requireAuth, async (req, res) => {
   try {
     const { type, name, email, phone, contactName, contactMobile } = req.body;
+    const before = (await query('SELECT * FROM customers WHERE id=$1', [req.params.id])).rows[0];
     const result = await query('UPDATE customers SET type=$1,name=$2,email=$3,phone=$4,contact_name=$5,contact_mobile=$6 WHERE id=$7 RETURNING *', [type,name,email,phone,contactName||null,contactMobile||null,req.params.id]);
     if (!result.rows.length) return res.status(404).json({ error: 'Not found' });
     const c = result.rows[0];
-    await auditLog(req.session.userId, req.session.name, 'updated', 'Customer', c.id, `Updated customer "${c.name}"`);
+    const changes = before ? diffFields(
+      { type: before.type, name: before.name, email: before.email, phone: before.phone, contact: before.contact_name, mobile: before.contact_mobile },
+      { type: c.type, name: c.name, email: c.email, phone: c.phone, contact: c.contact_name, mobile: c.contact_mobile },
+      { type: 'Type', name: 'Name', email: 'Email', phone: 'Phone', contact: 'Contact Name', mobile: 'Contact Mobile' }
+    ) : null;
+    const desc = `Updated customer "${c.name}"${changes ? ' — ' + changes : ''}`;
+    await auditLog(req.session.userId, req.session.name, 'updated', 'Customer', c.id, desc);
     res.json(normaliseCustomer(c));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -198,10 +227,17 @@ app.post('/api/addresses', requireAuth, async (req, res) => {
 app.put('/api/addresses/:id', requireAuth, async (req, res) => {
   try {
     const { customerId, label, line1, line2, city, postcode } = req.body;
+    const before = (await query('SELECT * FROM addresses WHERE id=$1', [req.params.id])).rows[0];
     const result = await query('UPDATE addresses SET customer_id=$1,label=$2,line1=$3,line2=$4,city=$5,postcode=$6 WHERE id=$7 RETURNING *', [customerId,label,line1,line2,city,postcode,req.params.id]);
     if (!result.rows.length) return res.status(404).json({ error: 'Not found' });
     const a = result.rows[0];
-    const desc = `Updated address "${[a.label, a.line1, a.postcode].filter(Boolean).join(', ')}"`;
+    const changes = before ? diffFields(
+      { label: before.label, line1: before.line1, line2: before.line2, city: before.city, postcode: before.postcode },
+      { label: a.label, line1: a.line1, line2: a.line2, city: a.city, postcode: a.postcode },
+      { label: 'Label', line1: 'Line 1', line2: 'Line 2', city: 'City', postcode: 'Postcode' }
+    ) : null;
+    const addrStr = [a.label, a.line1, a.postcode].filter(Boolean).join(', ');
+    const desc = `Updated address "${addrStr}"${changes ? ' — ' + changes : ''}`;
     await auditLog(req.session.userId, req.session.name, 'updated', 'Address', a.id, desc);
     res.json(normaliseAddress(a));
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -234,10 +270,17 @@ app.post('/api/trades', requireAuth, async (req, res) => {
 app.put('/api/trades/:id', requireAuth, async (req, res) => {
   try {
     const { status, companyName, companyAddress, contactName, contactNumber, contactEmail, services } = req.body;
+    const before = (await query('SELECT * FROM trades WHERE id=$1', [req.params.id])).rows[0];
     const result = await query('UPDATE trades SET status=$1,company_name=$2,company_address=$3,contact_name=$4,contact_number=$5,contact_email=$6,services=$7 WHERE id=$8 RETURNING *', [status,companyName,companyAddress,contactName,contactNumber,contactEmail,services,req.params.id]);
     if (!result.rows.length) return res.status(404).json({ error: 'Not found' });
     const t = result.rows[0];
-    await auditLog(req.session.userId, req.session.name, 'updated', 'Trade', t.id, `Updated trade "${t.company_name}"`);
+    const changes = before ? diffFields(
+      { status: before.status, name: before.company_name, address: before.company_address, contact: before.contact_name, phone: before.contact_number, email: before.contact_email, services: (before.services||[]).join(', ') },
+      { status: t.status, name: t.company_name, address: t.company_address, contact: t.contact_name, phone: t.contact_number, email: t.contact_email, services: (t.services||[]).join(', ') },
+      { status: 'Status', name: 'Company', address: 'Address', contact: 'Contact', phone: 'Phone', email: 'Email', services: 'Services' }
+    ) : null;
+    const desc = `Updated trade "${t.company_name}"${changes ? ' — ' + changes : ''}`;
+    await auditLog(req.session.userId, req.session.name, 'updated', 'Trade', t.id, desc);
     res.json(normaliseTrade(t));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -298,6 +341,7 @@ app.post('/api/jobs', requireAuth, async (req, res) => {
 });
 app.put('/api/jobs/:id', requireAuth, async (req, res) => {
   try {
+    const beforeJob = (await query('SELECT * FROM jobs WHERE id=$1', [req.params.id])).rows[0] || null;
     const { workOrderId, customerId, addressId, title, status, actionRequired,
       dateReceived, deadlineForCompletion, dateWorkCompleted, dateInvoiced,
       invoiceNumber, priceQuotedExclVat, priceQuotedInclVat, complianceStandard,
@@ -323,7 +367,53 @@ app.put('/api/jobs/:id', requireAuth, async (req, res) => {
     await query('DELETE FROM job_trades WHERE job_id=$1', [req.params.id]);
     if (tradeIds && tradeIds.length) await Promise.all(tradeIds.map(tid => query('INSERT INTO job_trades (job_id,trade_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [req.params.id,tid])));
     const j = result.rows[0];
-    await auditLog(req.session.userId, req.session.name, 'updated', 'Job', j.id, `Updated job "${j.title}" (${j.work_order_id}) — status: ${j.status}`);
+    const jobChanges = beforeJob ? diffFields(
+      {
+        status: beforeJob.status,
+        title: beforeJob.title,
+        workOrder: beforeJob.work_order_id,
+        action: beforeJob.action_required,
+        received: fmtAuditDate(beforeJob.date_received),
+        deadline: fmtAuditDate(beforeJob.deadline_for_completion),
+        completed: fmtAuditDate(beforeJob.date_work_completed),
+        invoiced: fmtAuditDate(beforeJob.date_invoiced),
+        invoiceNo: beforeJob.invoice_number,
+        priceExcl: beforeJob.price_quoted_excl_vat != null ? '£'+parseFloat(beforeJob.price_quoted_excl_vat).toFixed(2) : null,
+        priceIncl: beforeJob.price_quoted_incl_vat != null ? '£'+parseFloat(beforeJob.price_quoted_incl_vat).toFixed(2) : null,
+        compliance: beforeJob.compliance_standard,
+        bookedAdc: fmtAuditDate(beforeJob.booked_adc),
+        bookedSub: fmtAuditDate(beforeJob.booked_subcontractor),
+        onHold: fmtAuditDate(beforeJob.on_hold),
+        rejected: fmtAuditDate(beforeJob.rejected_cancelled),
+      },
+      {
+        status: j.status,
+        title: j.title,
+        workOrder: j.work_order_id,
+        action: j.action_required,
+        received: fmtAuditDate(j.date_received),
+        deadline: fmtAuditDate(j.deadline_for_completion),
+        completed: fmtAuditDate(j.date_work_completed),
+        invoiced: fmtAuditDate(j.date_invoiced),
+        invoiceNo: j.invoice_number,
+        priceExcl: j.price_quoted_excl_vat != null ? '£'+parseFloat(j.price_quoted_excl_vat).toFixed(2) : null,
+        priceIncl: j.price_quoted_incl_vat != null ? '£'+parseFloat(j.price_quoted_incl_vat).toFixed(2) : null,
+        compliance: j.compliance_standard,
+        bookedAdc: fmtAuditDate(j.booked_adc),
+        bookedSub: fmtAuditDate(j.booked_subcontractor),
+        onHold: fmtAuditDate(j.on_hold),
+        rejected: fmtAuditDate(j.rejected_cancelled),
+      },
+      {
+        status: 'Status', title: 'Title', workOrder: 'Work Order', action: 'Action Required',
+        received: 'Date Received', deadline: 'Deadline', completed: 'Work Completed',
+        invoiced: 'Date Invoiced', invoiceNo: 'Invoice No.', priceExcl: 'Price Excl. VAT',
+        priceIncl: 'Price Incl. VAT', compliance: 'Compliance', bookedAdc: 'Booked ADC',
+        bookedSub: 'Booked Sub.', onHold: 'On Hold', rejected: 'Rejected/Cancelled',
+      }
+    ) : null;
+    const jobDesc = `Updated job "${j.title}" (${j.work_order_id})${jobChanges ? ' — ' + jobChanges : ''}`;
+    await auditLog(req.session.userId, req.session.name, 'updated', 'Job', j.id, jobDesc);
     res.json(normaliseJob(j, tradeIds || [], []));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
