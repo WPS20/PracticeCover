@@ -4023,7 +4023,7 @@ const GUIDES = [
 ];
 
 const FAQS = [
-  { q: 'How do I reset a user\'s password?', a: 'Admins can reset passwords via Admin → Users. Click Edit on the user, enter a new password (minimum 8 characters) and save. The user will need to use the new password on their next login.' },
+  { q: 'How do I reset a user\'s password?', a: 'Admins can reset passwords via Admin → Users. Click Edit on the user, enter a new password (minimum 8 characters) and save. The user will need to use the new password on their next login.', adminOnly: true },
   { q: 'Can a regular user see all jobs?', a: 'Yes — all authenticated users can see all jobs, customers, addresses and subcontractors. The Tasks page shows only their own tasks by default. Admin users can toggle between their own tasks and all tasks using the calendar scope toggle.' },
   { q: 'What is the difference between a Draft and Sent Purchase Order?', a: 'Draft means the PO has been created but not yet issued to the subcontractor. Change the status to Sent once you have emailed or handed it over. Acknowledged means the subcontractor has confirmed receipt.' },
   { q: 'Can I attach multiple files at once?', a: 'Yes — the upload zones on jobs, customers, addresses and subcontractors all support multiple file selection and drag-and-drop. Files are stored securely in Supabase Storage.' },
@@ -4033,8 +4033,7 @@ const FAQS = [
   { q: 'How do I find all subcontractors who do Gas work?', a: 'Go to Subcontractors and type "gas" in the "Filter by service category…" search box. A dropdown will appear showing matching categories with the count of subcontractors for each. Click a category to filter the list.' },
   { q: 'Can I link a task to both a job and a subcontractor?', a: 'Yes — the task form has separate optional dropdowns for Link to Customer, Link to Job, and Link to Subcontractor. You can fill in any combination of these.' },
   { q: 'Where can I see all purchase orders for a specific subcontractor?', a: 'Open the subcontractor\'s detail view by clicking "View" on the Subcontractors page. The Purchase Orders section shows all POs raised for that subcontractor across all jobs.' },
-  { q: 'How do maps work — do I need an API key?', a: 'No API key is needed. Maps use OpenStreetMap (free, open source) with geocoding via the Nominatim service. Addresses are looked up automatically when you open an address, job or subcontractor detail view. Results are cached during your session so repeated views are instant.' },
-  { q: 'What user roles are available?', a: 'There are three roles: Admin (full access including user management, audit log and Excel export), User (full read/write access to all records), and Readonly (can view all records but cannot create or edit anything).' },
+  { q: 'What user roles are available?', a: 'There are three roles: Admin (full access including user management, audit log and Excel export), User (full read/write access to all records), and Readonly (can view all records but cannot create or edit anything).', adminOnly: true },
   { q: 'How do I see who made a change to a record?', a: 'Admins can view the Audit Log (Admin → Audit Log in the sidebar). It shows every create, update and delete action with the user name, timestamp and a before/after comparison of changed fields.' },
   { q: 'Can I use this on my phone?', a: 'Yes — the system is fully mobile-responsive. On smaller screens the sidebar collapses behind a hamburger menu, tables reflow into card layouts, and modals slide up from the bottom like native mobile sheets.' }
 ];
@@ -4050,7 +4049,7 @@ function initUserGuides() {
   });
   // Render FAQ
   const faqEl = document.getElementById('faq-list');
-  if (faqEl) faqEl.innerHTML = FAQS.map((f,i) => faqItemHtml(f,i)).join('');
+  if (faqEl) faqEl.innerHTML = FAQS.filter(f => !f.adminOnly || isAdmin()).map((f,i) => faqItemHtml(f,i)).join('');
 }
 
 function guideCardHtml(g) {
@@ -4107,7 +4106,7 @@ function searchGuides() {
     g.cat.toLowerCase().includes(q)
   );
   // Also search FAQs
-  const faqMatches = FAQS.filter(f => f.q.toLowerCase().includes(q) || f.a.toLowerCase().includes(q));
+  const faqMatches = FAQS.filter(f => (!f.adminOnly || isAdmin()) && (f.q.toLowerCase().includes(q) || f.a.toLowerCase().includes(q)));
 
   if (!matches.length && !faqMatches.length) {
     resultsEl.innerHTML = '<div class="guides-no-results">No guides found for "' + q + '". Try a different search term.</div>';
