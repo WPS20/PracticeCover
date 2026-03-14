@@ -474,15 +474,17 @@ app.get('/api/tasks', requireAuth, async (req, res) => {
     const { assignedTo, status } = req.query;
     const baseQ = `
       SELECT t.*,
-        u.name  AS assigned_to_name,
-        ab.name AS assigned_by_name,
-        c.name  AS customer_name,
-        j.title AS job_title, j.work_order_id
+        u.name   AS assigned_to_name,
+        ab.name  AS assigned_by_name,
+        c.name   AS customer_name,
+        j.title  AS job_title, j.work_order_id,
+        tr.company_name AS trade_name
       FROM tasks t
-      LEFT JOIN users u  ON t.assigned_to = u.id
-      LEFT JOIN users ab ON t.assigned_by  = ab.id
+      LEFT JOIN users u   ON t.assigned_to  = u.id
+      LEFT JOIN users ab  ON t.assigned_by   = ab.id
       LEFT JOIN customers c ON t.customer_id = c.id
-      LEFT JOIN jobs j ON t.job_id = j.id`;
+      LEFT JOIN jobs j    ON t.job_id        = j.id
+      LEFT JOIN trades tr ON t.trade_id      = tr.id`;
     const conditions = [];
     const params = [];
     if (assignedTo) { conditions.push(`t.assigned_to = $${params.length+1}`); params.push(assignedTo); }
@@ -495,21 +497,23 @@ app.get('/api/tasks', requireAuth, async (req, res) => {
 
 app.post('/api/tasks', requireAuth, async (req, res) => {
   try {
-    const { description, targetDate, assignedTo, assignedBy, customerId, jobId, status } = req.body;
+    const { description, targetDate, assignedTo, assignedBy, customerId, jobId, tradeId, status } = req.body;
     if (!description || !targetDate || !assignedTo) return res.status(400).json({ error: 'Description, target date and assigned user required' });
     const id = uuidv4();
     await query(
-      'INSERT INTO tasks (id,description,target_date,assigned_to,assigned_by,customer_id,job_id,status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
-      [id, description, targetDate, assignedTo, assignedBy || req.session.userId, customerId || null, jobId || null, status || 'open']
+      'INSERT INTO tasks (id,description,target_date,assigned_to,assigned_by,customer_id,job_id,trade_id,status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+      [id, description, targetDate, assignedTo, assignedBy || req.session.userId, customerId || null, jobId || null, tradeId || null, status || 'open']
     );
     const full = await query(`
       SELECT t.*, u.name AS assigned_to_name, ab.name AS assigned_by_name,
-        c.name AS customer_name, j.title AS job_title, j.work_order_id
+        c.name AS customer_name, j.title AS job_title, j.work_order_id,
+        tr.company_name AS trade_name
       FROM tasks t
-      LEFT JOIN users u  ON t.assigned_to = u.id
-      LEFT JOIN users ab ON t.assigned_by = ab.id
+      LEFT JOIN users u   ON t.assigned_to  = u.id
+      LEFT JOIN users ab  ON t.assigned_by   = ab.id
       LEFT JOIN customers c ON t.customer_id = c.id
-      LEFT JOIN jobs j ON t.job_id = j.id
+      LEFT JOIN jobs j    ON t.job_id        = j.id
+      LEFT JOIN trades tr ON t.trade_id      = tr.id
       WHERE t.id = $1`, [id]);
     res.status(201).json(normaliseTask(full.rows[0]));
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -517,19 +521,21 @@ app.post('/api/tasks', requireAuth, async (req, res) => {
 
 app.put('/api/tasks/:id', requireAuth, async (req, res) => {
   try {
-    const { description, targetDate, assignedTo, assignedBy, customerId, jobId, status } = req.body;
+    const { description, targetDate, assignedTo, assignedBy, customerId, jobId, tradeId, status } = req.body;
     await query(
-      'UPDATE tasks SET description=$1,target_date=$2,assigned_to=$3,assigned_by=$4,customer_id=$5,job_id=$6,status=$7 WHERE id=$8',
-      [description, targetDate, assignedTo, assignedBy || req.session.userId, customerId || null, jobId || null, status, req.params.id]
+      'UPDATE tasks SET description=$1,target_date=$2,assigned_to=$3,assigned_by=$4,customer_id=$5,job_id=$6,trade_id=$7,status=$8 WHERE id=$9',
+      [description, targetDate, assignedTo, assignedBy || req.session.userId, customerId || null, jobId || null, tradeId || null, status, req.params.id]
     );
     const full = await query(`
       SELECT t.*, u.name AS assigned_to_name, ab.name AS assigned_by_name,
-        c.name AS customer_name, j.title AS job_title, j.work_order_id
+        c.name AS customer_name, j.title AS job_title, j.work_order_id,
+        tr.company_name AS trade_name
       FROM tasks t
-      LEFT JOIN users u  ON t.assigned_to = u.id
-      LEFT JOIN users ab ON t.assigned_by = ab.id
+      LEFT JOIN users u   ON t.assigned_to  = u.id
+      LEFT JOIN users ab  ON t.assigned_by   = ab.id
       LEFT JOIN customers c ON t.customer_id = c.id
-      LEFT JOIN jobs j ON t.job_id = j.id
+      LEFT JOIN jobs j    ON t.job_id        = j.id
+      LEFT JOIN trades tr ON t.trade_id      = tr.id
       WHERE t.id = $1`, [req.params.id]);
     if (!full.rows.length) return res.status(404).json({ error: 'Not found' });
     res.json(normaliseTask(full.rows[0]));
@@ -595,16 +601,36 @@ app.post('/api/attachments', requireAuth, upload.array('files', 20), async (req,
 
       const publicUrl = SUPABASE_URL + '/storage/v1/object/public/' + STORAGE_BUCKET + '/' + storagePath;
 
+      const isCompliance = req.body.isCompliance === 'true' || req.body.isCompliance === true;
+      const expiryDate   = req.body.expiryDate || null;
+
       const id = uuidv4();
       await query(
-        'INSERT INTO attachments (id, entity_type, entity_id, file_name, file_size, mime_type, storage_path, public_url, uploaded_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
-        [id, entityType, entityId, file.originalname, file.size, file.mimetype, storagePath, publicUrl, req.session.userId]
+        'INSERT INTO attachments (id, entity_type, entity_id, file_name, file_size, mime_type, storage_path, public_url, uploaded_by, is_compliance, expiry_date) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',
+        [id, entityType, entityId, file.originalname, file.size, file.mimetype, storagePath, publicUrl, req.session.userId, isCompliance, expiryDate || null]
       );
       const row = await query(
         'SELECT a.*, u.name as uploader_name FROM attachments a LEFT JOIN users u ON a.uploaded_by=u.id WHERE a.id=$1',
         [id]
       );
-      saved.push(normaliseAttachment(row.rows[0]));
+      const att = normaliseAttachment(row.rows[0]);
+
+      // Auto-create renewal task if compliance doc with expiry date on a subcontractor
+      if (isCompliance && expiryDate && entityType === 'trade') {
+        try {
+          const taskId = uuidv4();
+          const taskDesc = 'Review compliance/accreditation document: "' + file.originalname + '" for subcontractor — expiry date ' + expiryDate;
+          await query(
+            'INSERT INTO tasks (id,description,target_date,assigned_to,assigned_by,trade_id,status) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+            [taskId, taskDesc, expiryDate, req.session.userId, req.session.userId, entityId, 'open']
+          );
+          att.renewalTaskCreated = true;
+        } catch (taskErr) {
+          console.error('Failed to create renewal task:', taskErr.message);
+        }
+      }
+
+      saved.push(att);
     }
     res.status(201).json(saved);
   } catch (e) { console.error('Attachment upload error:', e); res.status(500).json({ error: e.message }); }
@@ -671,6 +697,7 @@ function normaliseTask(r) {
     assignedBy: r.assigned_by, assignedByName: r.assigned_by_name,
     customerId: r.customer_id, customerName: r.customer_name,
     jobId: r.job_id, jobTitle: r.job_title, workOrderId: r.work_order_id,
+    tradeId: r.trade_id, tradeName: r.trade_name || null,
     status: r.status, createdAt: r.created_at
   };
 }
@@ -681,6 +708,8 @@ function normaliseAttachment(r) {
     fileName: r.file_name, fileSize: r.file_size, mimeType: r.mime_type,
     publicUrl: r.public_url, uploadedBy: r.uploaded_by,
     uploaderName: r.uploader_name || null,
+    isCompliance: r.is_compliance || false,
+    expiryDate: r.expiry_date ? r.expiry_date.toISOString().split('T')[0] : null,
     createdAt: r.created_at
   };
 }

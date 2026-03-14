@@ -194,6 +194,18 @@
   .svc-tag button { background: none; border: none; color: rgba(255,255,255,0.8); cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 0; }
   .svc-tag button:hover { color: #fff; }
 
+  /* ── Compliance prompt ── */
+  .compliance-modal-body { padding: 24px; }
+  .compliance-choice { display: flex; gap: 12px; margin: 16px 0; }
+  .compliance-btn { flex: 1; padding: 14px; border-radius: 10px; border: 2px solid var(--border); background: var(--white); cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 500; transition: all 0.15s; text-align: center; }
+  .compliance-btn:hover { border-color: var(--accent); background: var(--surface); }
+  .compliance-btn.selected { border-color: var(--accent); background: #f0fdf4; }
+  .compliance-btn .cb-icon { font-size: 1.6rem; display: block; margin-bottom: 6px; }
+  .expiry-section { display: none; margin-top: 4px; }
+  .expiry-section.show { display: block; }
+  .compliance-badge { display: inline-flex; align-items: center; gap: 4px; background: #fff3cd; color: #856404; border: 1px solid #ffc107; border-radius: 4px; padding: 2px 8px; font-size: 0.75rem; font-weight: 600; }
+  .expiry-badge { display: inline-flex; align-items: center; gap: 4px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px; padding: 2px 8px; font-size: 0.75rem; font-weight: 600; }
+
   /* ── Price inputs ── */
   .price-input-wrap { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--white); transition: border-color 0.15s; }
   .price-input-wrap:focus-within { border-color: var(--accent); }
@@ -1258,7 +1270,8 @@ function renderAllTasks() {
       if (q && !(t.description||'').toLowerCase().includes(q) &&
                !(t.assignedToName||'').toLowerCase().includes(q) &&
                !(t.customerName||'').toLowerCase().includes(q) &&
-               !(t.jobTitle||'').toLowerCase().includes(q)) return false;
+               !(t.jobTitle||'').toLowerCase().includes(q) &&
+               !(t.tradeName||'').toLowerCase().includes(q)) return false;
       return true;
     })
     .sort((a,b) => (a.targetDate||'').localeCompare(b.targetDate||''));
@@ -1282,7 +1295,8 @@ function taskItemHtml(t, showAssignee) {
   else if (dueToday) dateCls += ' due-today';
   const links = [
     t.customerName ? '👥 ' + t.customerName : '',
-    t.jobTitle ? '🔧 ' + (t.workOrderId ? t.workOrderId + ' – ' : '') + t.jobTitle : ''
+    t.jobTitle ? '🔧 ' + (t.workOrderId ? t.workOrderId + ' – ' : '') + t.jobTitle : '',
+    t.tradeName ? '🏗️ ' + t.tradeName : ''
   ].filter(Boolean);
   return `<div class="${cls}">
     <input type="checkbox" class="task-cb" ${t.status==='complete'?'checked':''} onchange="toggleTask('${t.id}',this.checked)">
@@ -1343,6 +1357,11 @@ async function openTaskModal(id = null) {
   jobSel.innerHTML = '<option value="">None</option>' +
     (state.jobs || []).map(j => `<option value="${j.id}">${j.workOrderId ? j.workOrderId + ' – ' : ''}${j.title}</option>`).join('');
 
+  const tradeSel = document.getElementById('tm-tradeId');
+  tradeSel.innerHTML = '<option value="">None</option>' +
+    (state.trades || []).slice().sort((a,b) => a.companyName.localeCompare(b.companyName))
+      .map(t => `<option value="${t.id}">${t.companyName}</option>`).join('');
+
   if (id) {
     // Look in both stores for the task being edited
     const t = (state.myTasks || []).concat(state.allTasks || []).find(t => t.id === id);
@@ -1353,6 +1372,7 @@ async function openTaskModal(id = null) {
       userSel.value = t.assignedTo || '';
       custSel.value = t.customerId || '';
       jobSel.value = t.jobId || '';
+      tradeSel.value = t.tradeId || '';
     }
   } else {
     // Default: assign to self
@@ -1368,11 +1388,12 @@ async function saveTask() {
   const status      = document.getElementById('tm-status').value;
   const customerId  = document.getElementById('tm-customerId').value || null;
   const jobId       = document.getElementById('tm-jobId').value || null;
+  const tradeId     = document.getElementById('tm-tradeId').value || null;
   if (!description || !targetDate || !assignedTo) {
     alert('Description, target date and assigned user are all required.');
     return;
   }
-  const body = { description, targetDate, assignedTo, assignedBy: currentUser.id, status, customerId, jobId };
+  const body = { description, targetDate, assignedTo, assignedBy: currentUser.id, status, customerId, jobId, tradeId };
   const result = editingTaskId
     ? await api('PUT',  '/api/tasks/' + editingTaskId, body)
     : await api('POST', '/api/tasks', body);
@@ -1485,9 +1506,14 @@ function attachItemHtml(a, entityType, entityId, listElId) {
   const size = a.fileSize ? (a.fileSize > 1048576 ? (a.fileSize/1048576).toFixed(1)+'MB' : Math.round(a.fileSize/1024)+'KB') : '';
   const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-GB') : '';
   const uploader = a.uploaderName ? ' · ' + a.uploaderName : '';
+  const compBadge = a.isCompliance ? '<span class="compliance-badge">📋 Compliance</span> ' : '';
+  const expiryBadge = a.expiryDate ? '<span class="expiry-badge">⏰ Expires ' + fmtDateVal(a.expiryDate) + '</span>' : '';
   return `<div class="attach-item" id="att-${a.id}">
     <span class="attach-icon">${icon}</span>
-    <a class="attach-name" href="${a.publicUrl}" target="_blank" title="${a.fileName}">${a.fileName}</a>
+    <div style="flex:1;min-width:0">
+      <a class="attach-name" href="${a.publicUrl}" target="_blank" title="${a.fileName}">${a.fileName}</a>
+      ${a.isCompliance ? '<div style="margin-top:3px">' + compBadge + expiryBadge + '</div>' : ''}
+    </div>
     <span class="attach-meta">${size}${size && (date||uploader) ? ' · ' : ''}${date}${uploader}</span>
     <button class="attach-del" title="Delete" onclick="deleteAttachment('${a.id}','${entityType}','${entityId}','${listElId}')">🗑</button>
   </div>`;
@@ -1512,30 +1538,102 @@ async function deleteAttachment(id, entityType, entityId, listElId) {
   else alert('Delete failed');
 }
 
+// Compliance modal state
+let _complianceResolve = null;
+let _complianceIsCompliance = false;
+
+function selectCompliance(isYes) {
+  _complianceIsCompliance = isYes;
+  document.getElementById('comp-yes-btn').classList.toggle('selected', isYes);
+  document.getElementById('comp-no-btn').classList.toggle('selected', !isYes);
+  const expirySection = document.getElementById('expiry-section');
+  expirySection.classList.toggle('show', isYes);
+  if (!isYes) document.getElementById('comp-expiry-date').value = '';
+}
+
+function closeComplianceModal() {
+  document.getElementById('compliance-modal').classList.remove('open');
+  if (_complianceResolve) { _complianceResolve(null); _complianceResolve = null; }
+}
+
+function confirmCompliance() {
+  if (_complianceIsCompliance) {
+    const expiryDate = document.getElementById('comp-expiry-date').value;
+    if (!expiryDate) { alert('Please enter the document expiry date.'); return; }
+    document.getElementById('compliance-modal').classList.remove('open');
+    if (_complianceResolve) { _complianceResolve({ isCompliance: true, expiryDate }); _complianceResolve = null; }
+  } else {
+    document.getElementById('compliance-modal').classList.remove('open');
+    if (_complianceResolve) { _complianceResolve({ isCompliance: false, expiryDate: null }); _complianceResolve = null; }
+  }
+}
+
+function promptCompliance() {
+  // Reset state
+  _complianceIsCompliance = false;
+  document.getElementById('comp-yes-btn').classList.remove('selected');
+  document.getElementById('comp-no-btn').classList.remove('selected');
+  document.getElementById('expiry-section').classList.remove('show');
+  document.getElementById('comp-expiry-date').value = '';
+  document.getElementById('compliance-modal').classList.add('open');
+  return new Promise(resolve => { _complianceResolve = resolve; });
+}
+
 async function uploadAttachments(files, entityType, entityId) {
   if (!files || !files.length) return;
   const progressId = entityType === 'job' ? 'job-upload' : entityType === 'customer' ? 'cust-upload' : entityType === 'address' ? 'addr-upload' : 'trade-upload';
   const listElId   = entityType === 'job' ? 'job-attach-list' : entityType === 'customer' ? 'cust-attach-list' : entityType === 'address' ? 'addr-attach-list' : 'trade-attach-list';
+
+  // For subcontractor uploads — prompt about compliance
+  let complianceData = { isCompliance: false, expiryDate: null };
+  if (entityType === 'trade') {
+    const result = await promptCompliance();
+    if (result === null) return; // user cancelled
+    complianceData = result;
+  }
+
   const progressEl = document.getElementById(progressId + '-progress');
   const statusEl   = document.getElementById(progressId + '-status');
   if (progressEl) progressEl.classList.add('show');
   if (statusEl) statusEl.textContent = `Uploading ${files.length} file${files.length > 1 ? 's' : ''}…`;
 
-  const fd = new FormData();
-  fd.append('entityType', entityType);
-  fd.append('entityId', entityId);
-  for (const f of files) fd.append('files', f);
-
+  // Upload files one at a time so each gets the compliance data
   try {
-    const res = await fetch('/api/attachments', {
-      method: 'POST',
-      body: fd
-    });
-    const data = await res.json();
-    if (!res.ok) { alert(data.error || 'Upload failed'); }
-    else { await loadAttachments(entityType, entityId, listElId); }
+    for (const f of files) {
+      const fd = new FormData();
+      fd.append('entityType', entityType);
+      fd.append('entityId', entityId);
+      fd.append('isCompliance', String(complianceData.isCompliance));
+      if (complianceData.expiryDate) fd.append('expiryDate', complianceData.expiryDate);
+      fd.append('files', f);
+      const res = await fetch('/api/attachments', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'Upload failed for ' + f.name); break; }
+      // Notify user if a renewal task was auto-created
+      if (complianceData.isCompliance && data[0]?.renewalTaskCreated) {
+        const expiryFormatted = fmtDateVal(complianceData.expiryDate);
+        showToast('✅ Renewal task created — target date ' + expiryFormatted, 4000);
+        await loadMyTasks(); // refresh dashboard tasks
+      }
+    }
+    await loadAttachments(entityType, entityId, listElId);
   } catch (e) { alert('Upload error: ' + e.message); }
   finally { if (progressEl) progressEl.classList.remove('show'); }
+}
+
+// Simple toast notification
+function showToast(message, duration = 3000) {
+  let toast = document.getElementById('app-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'app-toast';
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 22px;border-radius:8px;font-size:0.88rem;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.2);transition:opacity 0.3s;pointer-events:none;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.style.opacity = '1';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, duration);
 }
 
 function handleDragOver(e, zoneId) {
@@ -1688,11 +1786,48 @@ init();
         </div>
         <div class="form-group"><label>Link to Customer (optional)</label><select id="tm-customerId"><option value="">None</option></select></div>
         <div class="form-group"><label>Link to Job (optional)</label><select id="tm-jobId"><option value="">None</option></select></div>
+        <div class="form-group"><label>Link to Subcontractor (optional)</label><select id="tm-tradeId"><option value="">None</option></select></div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('task-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveTask()">Save Task</button>
+    </div>
+  </div>
+</div>
+<!-- ── COMPLIANCE PROMPT MODAL ── -->
+<div class="modal-overlay" id="compliance-modal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <h3>Document Type</h3>
+      <button class="modal-close" onclick="closeComplianceModal()">×</button>
+    </div>
+    <div class="compliance-modal-body">
+      <p style="font-size:0.9rem;color:var(--slate);margin-bottom:4px">Is this a compliance or accreditation document that requires renewal?</p>
+      <p style="font-size:0.82rem;color:var(--mist);margin-bottom:16px">e.g. Gas Safe certificate, NICEIC accreditation, insurance, CHAS</p>
+      <div class="compliance-choice">
+        <button class="compliance-btn" id="comp-yes-btn" onclick="selectCompliance(true)">
+          <span class="cb-icon">📋</span>
+          Yes — needs renewal
+          <span style="display:block;font-size:0.78rem;color:var(--mist);margin-top:4px">I'll set an expiry date</span>
+        </button>
+        <button class="compliance-btn" id="comp-no-btn" onclick="selectCompliance(false)">
+          <span class="cb-icon">📄</span>
+          No — standard document
+          <span style="display:block;font-size:0.78rem;color:var(--mist);margin-top:4px">No expiry date needed</span>
+        </button>
+      </div>
+      <div class="expiry-section" id="expiry-section">
+        <div class="form-group" style="margin-top:8px">
+          <label>Document Expiry Date *</label>
+          <input type="date" id="comp-expiry-date" style="width:100%">
+          <p style="font-size:0.78rem;color:var(--mist);margin-top:4px">A renewal task will be assigned to you with this target date.</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeComplianceModal()">Cancel</button>
+      <button class="btn btn-primary" id="comp-confirm-btn" onclick="confirmCompliance()">Upload Document</button>
     </div>
   </div>
 </div>
