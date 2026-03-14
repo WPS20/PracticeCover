@@ -175,6 +175,25 @@
 
 
 
+  /* ── Service picker ── */
+  .svc-picker { border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 2px; }
+  .svc-search-wrap { padding: 8px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .svc-search-wrap input { width: 100%; border: 1.5px solid var(--border); border-radius: 6px; padding: 7px 10px; font-size: 0.85rem; font-family: 'Inter', sans-serif; outline: none; background: var(--white); }
+  .svc-search-wrap input:focus { border-color: var(--accent); }
+  .svc-list { max-height: 200px; overflow-y: auto; background: var(--white); }
+  .svc-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 0.85rem; cursor: pointer; border-bottom: 1px solid var(--surface); transition: background 0.1s; user-select: none; }
+  .svc-item:hover { background: var(--surface); }
+  .svc-item.selected { background: #f0fdf4; }
+  .svc-item input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--accent); flex-shrink: 0; cursor: pointer; }
+  .svc-item .svc-label { flex: 1; color: var(--ink); line-height: 1.3; }
+  .svc-item.hidden { display: none; }
+  .svc-no-results { padding: 16px; text-align: center; color: var(--mist); font-size: 0.85rem; display: none; }
+  .svc-selected-wrap { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; min-height: 0; }
+  .svc-selected-wrap:empty::before { content: "No services selected"; color: var(--mist); font-size: 0.82rem; font-style: italic; }
+  .svc-tag { display: inline-flex; align-items: center; gap: 5px; background: var(--accent); color: #fff; border-radius: 20px; padding: 3px 10px; font-size: 0.78rem; font-weight: 500; }
+  .svc-tag button { background: none; border: none; color: rgba(255,255,255,0.8); cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 0; }
+  .svc-tag button:hover { color: #fff; }
+
   /* ── Price inputs ── */
   .price-input-wrap { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--white); transition: border-color 0.15s; }
   .price-input-wrap:focus-within { border-color: var(--accent); }
@@ -529,21 +548,25 @@
 
 <!-- ── TRADE MODAL ── -->
 <div class="modal-overlay" id="trade-modal">
-  <div class="modal">
+  <div class="modal" style="max-width:700px">
     <div class="modal-header"><h3 id="trade-modal-title">New Trade</h3><button class="modal-close" onclick="closeModal('trade-modal')">×</button></div>
     <div class="modal-body">
       <div class="form-grid">
         <div class="form-group"><label>Status</label><select id="tf-status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-        <div class="form-group"><label>Company Name *</label><input id="tf-companyName"></div>
-        <div class="form-group full"><label>Company Address</label><input id="tf-companyAddress"></div>
-        <div class="form-group"><label>Contact Name</label><input id="tf-contactName"></div>
-        <div class="form-group"><label>Contact Number</label><input id="tf-contactNumber" type="tel"></div>
-        <div class="form-group full"><label>Contact Email</label><input id="tf-contactEmail" type="email"></div>
+        <div class="form-group"><label>Company Name *</label><input id="tf-companyName" placeholder="e.g. ABC Plumbing Ltd"></div>
+        <div class="form-group full"><label>Company Address</label><input id="tf-companyAddress" placeholder="Full company address"></div>
+        <div class="form-group"><label>Contact Name</label><input id="tf-contactName" placeholder="Primary contact person"></div>
+        <div class="form-group"><label>Contact Number</label><input id="tf-contactNumber" type="tel" placeholder="Office or main number"></div>
+        <div class="form-group full"><label>Contact Email</label><input id="tf-contactEmail" type="email" placeholder="email@example.com"></div>
         <div class="form-group full">
-          <label>Services Covered</label>
-          <div class="tags-wrap" id="tf-services-wrap" onclick="document.getElementById('tf-service-input').focus()">
-            <input class="tag-input" id="tf-service-input" placeholder="Type a service & press Enter…" onkeydown="addServiceTag(event)">
+          <label>Services Covered <span style="font-weight:400;color:var(--mist)">(select one or more)</span></label>
+          <div class="svc-picker">
+            <div class="svc-search-wrap">
+              <input type="text" id="tf-svc-search" placeholder="Search 169 service categories…" oninput="filterServices()" autocomplete="off">
+            </div>
+            <div class="svc-list" id="tf-svc-list"></div>
           </div>
+          <div class="svc-selected-wrap" id="tf-svc-selected"></div>
         </div>
       </div>
     </div>
@@ -1024,22 +1047,92 @@ function renderTrades() {
     return `<tr><td><strong>${t.companyName}</strong><br><small style="color:var(--mist)">${t.companyAddress||''}</small></td><td>${t.contactName||'—'}</td><td>${t.contactNumber||'—'}</td><td>${t.contactEmail?`<a href="mailto:${t.contactEmail}" style="color:var(--accent)">${t.contactEmail}</a>`:'—'}</td><td>${(t.services||[]).map(s=>`<span style="background:var(--surface);padding:2px 7px;border-radius:4px;font-size:0.78rem;display:inline-block;margin:1px">${s}</span>`).join('')||'—'}</td><td>${badge(t.status,t.status)}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
   }).join(''):'<tr class="empty-row"><td colspan="7">No trades found</td></tr>';
 }
+const SERVICE_CATEGORIES = ["Access Equipment - Cherry Picker Operators", "Access Equipment - Mobile Elevated Work Platform (MEWP) Technicians", "Access Equipment - Scissor Lift Operators", "Asbestos Management Consultants", "Asbestos Removal Specialists", "Asbestos Surveyors", "Bricklayers", "Civil Engineering - Civil Engineers", "Civil Engineering - Site Engineers", "Cleaning - High-Pressure Cleaning Specialists", "Cleaning - Industrial Cleaners", "Cleaning - Post-Construction Cleaners", "Concrete - Concrete Finishers", "Concrete - Concrete Pump Operators", "Concrete - Ready-Mix Truck Drivers", "Damp and Timber Works - Damp Proofing Specialists", "Damp and Timber Works - Timber Treatment Experts", "Damp and Timber Works - Woodworm and Rot Specialists", "Demolition - Demolition Operatives", "Demolition - Soft Strip Demolition Teams", "Drainage - CCTV Drain Surveyors", "Drainage - Drain Jetting Specialists", "Drainage - Drainage Engineers", "Drilling and Sawing - Concrete Saw Operators", "Drilling and Sawing - Core Drilling Technicians", "Drilling and Sawing - Diamond Drillers", "Dry Lining - Dry Liners", "Dry Lining -Ceiling Fixers", "Dry Lining -Partition Installers", "Electrics – Commercial - Commercial Electricians", "Electrics – Commercial - Electrical Design Engineers", "Electrics – Commercial - Electrical Inspectors", "Electrics – Domestic - Domestic Electricians", "Electrics – Domestic - Electrical Testers", "Electrics – Domestic - Smart Home Installers", "Fabrication - Metal Fabricators", "Fabrication - Sheet Metal Workers", "Fabrication - Welding Specialists", "Fencing - Agricultural Fencing Specialists", "Fencing - Fence Erectors", "Fencing - Security Fencing Installers", "Fenestration (FENSA) - Curtain Walling Specialists", "Fenestration (FENSA) - Glaziers", "Fenestration (FENSA) - Window Installers", "Fire Alarm - Fire Alarm Engineers", "Fire Alarm - Fire Detection System Designers", "Fire Alarm - Maintenance Technicians", "Fire Extinguishers and Equipment - Compliance Inspectors", "Fire Extinguishers and Equipment - Fire Extinguisher Technicians", "Fire Extinguishers and Equipment - Fire Safety Equipment Suppliers", "Fire Protection – Passive - Curtain Walling", "Fire Protection – Passive - Fire Door Installers/Inspectors", "Fire Protection – Passive - Fire Stopping Installers", "Fire Protection – Passive - Intumescent Coating Applicators", "Fitted Interiors – Bathrooms - Bathroom Installers", "Fitted Interiors – Bathrooms - Wet Room Specialists", "Fitted Interiors – Kitchens - Cabinet Makers", "Fitted Interiors – Kitchens - Kitchen Fitters", "Fitted Interiors – Kitchens - Worktop Installers", "Flooring – Cap and Cove Safety Flooring - Commercial Flooring Specialists", "Flooring – Cap and Cove Safety Flooring - Hygienic Flooring Experts", "Flooring – Cap and Cove Safety Flooring - Safety Flooring Installers", "Flooring – Carpets and Lino - Carpet Fitters", "Flooring – Carpets and Lino - Floor Preparation Specialists", "Flooring – Carpets and Lino - Linoleum Installers", "Gas – Commercial - Boiler Installation Technicians", "Gas – Commercial - Commercial Gas Engineers", "Gas – Commercial - Gas Safety Inspectors", "Gas – Domestic - Domestic Gas Engineers", "Gas – Domestic - Gas Appliance Servicers and Testers", "Gas – Domestic - Heating Installers", "General Builders", "General Maintenance and Repair - Handypersons", "General Maintenance and Repair - Property Maintenance Operatives", "General Maintenance and Repair - Reactive Maintenance Teams", "Groundworks - Excavator Operators", "Groundworks - Foundation Specialists", "Groundworks - Groundworkers", "HETAS Engineer - Biomass Boiler Technicians", "HETAS Engineer - Chimney Sweeps", "HETAS Engineer - Solid Fuel Heating Installers", "Health, Safety & Environment - Environmental Consultants", "Health, Safety & Environment - Health and Safety Officers", "Health, Safety & Environment - Site Safety Auditors", "Heritage Works - Conservation Specialists", "Heritage Works - Heritage Bricklayers", "Heritage Works - Restoration Carpenters", "Insulation - Cavity Wall Insulation Specialists", "Insulation - External Wall Insulation Experts", "Insulation - Loft Insulation Installers", "Joinery/Carpentry - Bench Joiners", "Joinery/Carpentry - Shopfitters", "Joinery/Carpentry - Site Carpenters", "Landscaping - Hard Landscaping Specialists", "Landscaping - Landscape Gardeners", "Landscaping - Turf Installers", "Legionella - Compliance Consultants", "Legionella - Legionella Risk Assessors", "Legionella - Water Treatment Engineers", "Locksmith - Emergency Locksmiths", "Locksmith - Safe Engineers", "Locksmith - Security Lock Installers", "Mould - Air Quality Consultants", "Mould - Damp Surveyors", "Mould - Mould Remediation Specialists", "PAT Testing - Compliance Officers", "PAT Testing - Electrical Safety Inspectors", "PAT Testing - Portable Appliance Testing Technicians", "Painting and Decorating - Exterior Painters", "Painting and Decorating - Interior Decorators", "Painting and Decorating - Wallpaper Hangers", "Pest Control - Fumigation Experts", "Pest Control - Pest Control Technicians", "Pest Control - Wildlife Management Specialists", "Plastering - Decorative Plasterers", "Plastering - Skim Coating Specialists", "Plastering - Solid Plasterers", "Plumbing - Bathroom Fitters", "Plumbing - Heating Engineers", "Plumbing - Plumbers General", "Rendering - External Renderers", "Rendering - Monocouche Applicators", "Rendering - Silicone Render Specialists", "Roofing - Flat - Felt Roofers", "Roofing - Flat - Liquid Roofing Specialists", "Roofing - Flat - Single Ply Membrane Installers", "Roofing – Pitched - Roof Tilers", "Roofing – Pitched - Roof Truss Installers", "Roofing – Pitched - Slate Roofers", "Scaffolding - Access Solution Providers", "Scaffolding - Scaffolders", "Scaffolding - Temporary Works Designers", "Security Systems - Access Control Specialists", "Security Systems - Alarm System Engineers", "Security Systems - CCTV Installers", "Shutters and Blinds - Automated Blind Specialists", "Shutters and Blinds - Security Shutter Technicians", "Shutters and Blinds - Window Blind Installers", "Stonemasons", "Structural Engineering - Load-Bearing Assessment Experts", "Structural Engineering - Retaining Wall Designers", "Structural Engineering - Structural Engineers", "Structural Timber Frames - CLT (Cross-Laminated Timber) Installers", "Structural Timber Frames - Off-Site Construction Specialists", "Structural Timber Frames - Timber Frame Erectors", "Sustainability - Air Source Heat Pump Installers", "Sustainability - Biomass Boiler Installation and Maintenance", "Sustainability - EV Charger Installation", "Sustainability - Energy Efficient Lighting", "Sustainability - Rainwater Harvesting", "Sustainability - Solar installers", "Tarmac – Line Markings - Line Marking Technicians", "Tarmac – Line Markings - Road Surfacing Operatives", "Tarmac – Line Markings - Surface Dressing Specialists", "Tiling – Wall and Floor - Floor Tilers", "Tiling – Wall and Floor - Mosaic Specialists", "Tiling – Wall and Floor - Wall Tilers", "Tree Surgeon - Arborists", "Tree Surgeon - Stump Removal Specialists", "Tree Surgeon - Tree Felling Experts", "Unvented Cylinders - G3 Certified Installers", "Unvented Cylinders - Hot Water System Engineers", "Unvented Cylinders - Maintenance Technicians", "Waste Management - Site Clearance", "Waste Management - Skip Hire", "Wood Floor Installation - Hardwood Floor Fitters", "Wood Floor Installation - Laminate Flooring Specialists", "Wood Floor Installation - Parquet Installers", "Other"];
+
 function openTradeModal(id=null) {
-  editingId.trade=id; serviceTagsArr=[];
-  document.getElementById('trade-modal-title').textContent=id?'Edit Trade':'New Trade';
-  ['companyName','companyAddress','contactName','contactNumber','contactEmail'].forEach(f=>document.getElementById('tf-'+f).value='');
-  document.getElementById('tf-status').value='active';
-  renderServiceTags();
-  if(id){const t=state.trades.find(t=>t.id===id);if(t){document.getElementById('tf-status').value=t.status||'active';['companyName','companyAddress','contactName','contactNumber','contactEmail'].forEach(f=>{document.getElementById('tf-'+f).value=t[f]||'';});serviceTagsArr=[...(t.services||[])];renderServiceTags();}}
+  editingId.trade = id;
+  serviceTagsArr = [];
+  document.getElementById('trade-modal-title').textContent = id ? 'Edit Trade' : 'New Trade';
+  ['companyName','companyAddress','contactName','contactNumber','contactEmail'].forEach(f => document.getElementById('tf-'+f).value = '');
+  document.getElementById('tf-status').value = 'active';
+  if (id) {
+    const t = state.trades.find(t => t.id === id);
+    if (t) {
+      document.getElementById('tf-status').value = t.status || 'active';
+      ['companyName','companyAddress','contactName','contactNumber','contactEmail'].forEach(f => { document.getElementById('tf-'+f).value = t[f] || ''; });
+      serviceTagsArr = [...(t.services || [])];
+    }
+  }
+  buildServiceList();
+  document.getElementById('tf-svc-search').value = '';
+  filterServices();
   document.getElementById('trade-modal').classList.add('open');
 }
-function addServiceTag(e) { if(e.key==='Enter'){e.preventDefault();const val=e.target.value.trim();if(val&&!serviceTagsArr.includes(val)){serviceTagsArr.push(val);renderServiceTags();}e.target.value='';} }
-function removeServiceTag(idx) { serviceTagsArr.splice(idx,1); renderServiceTags(); }
-function renderServiceTags() {
-  const wrap=document.getElementById('tf-services-wrap'); const input=document.getElementById('tf-service-input');
-  wrap.innerHTML='';
-  serviceTagsArr.forEach((s,i)=>{ const tag=document.createElement('span'); tag.className='tag'; tag.innerHTML=`${s} <span class="tag-remove" onclick="removeServiceTag(${i})">×</span>`; wrap.appendChild(tag); });
-  wrap.appendChild(input);
+
+function buildServiceList() {
+  const list = document.getElementById('tf-svc-list');
+  list.innerHTML = SERVICE_CATEGORIES.map(cat => {
+    const checked = serviceTagsArr.includes(cat);
+    const safeId = 'svc-' + cat.replace(/[^a-z0-9]/gi, '_');
+    return '<div class="svc-item' + (checked ? ' selected' : '') + '" id="item-' + safeId + '" onclick="toggleService(\'' + cat.replace(/'/g, "\'") + '\')">' +
+      '<input type="checkbox" ' + (checked ? 'checked' : '') + ' onclick="event.stopPropagation();toggleService(\'' + cat.replace(/'/g, "\'") + '\')">' +
+      '<span class="svc-label">' + cat + '</span>' +
+      '</div>';
+  }).join('') + '<div class="svc-no-results" id="tf-svc-noresults">No matching services found</div>';
+  renderSelectedServices();
+}
+
+function toggleService(cat) {
+  const idx = serviceTagsArr.indexOf(cat);
+  if (idx >= 0) {
+    serviceTagsArr.splice(idx, 1);
+  } else {
+    serviceTagsArr.push(cat);
+  }
+  // Update checkbox and row highlight
+  const safeId = 'svc-' + cat.replace(/[^a-z0-9]/gi, '_');
+  const item = document.getElementById('item-' + safeId);
+  if (item) {
+    item.classList.toggle('selected', serviceTagsArr.includes(cat));
+    const cb = item.querySelector('input[type=checkbox]');
+    if (cb) cb.checked = serviceTagsArr.includes(cat);
+  }
+  renderSelectedServices();
+}
+
+function removeService(cat) {
+  serviceTagsArr = serviceTagsArr.filter(s => s !== cat);
+  const safeId = 'svc-' + cat.replace(/[^a-z0-9]/gi, '_');
+  const item = document.getElementById('item-' + safeId);
+  if (item) {
+    item.classList.remove('selected');
+    const cb = item.querySelector('input[type=checkbox]');
+    if (cb) cb.checked = false;
+  }
+  renderSelectedServices();
+}
+
+function renderSelectedServices() {
+  const wrap = document.getElementById('tf-svc-selected');
+  if (!wrap) return;
+  wrap.innerHTML = serviceTagsArr.map(s =>
+    '<span class="svc-tag">' + s +
+    ' <button onclick="removeService(\'' + s.replace(/'/g, "\'") + '\')" title="Remove">×</button>' +
+    '</span>'
+  ).join('');
+}
+
+function filterServices() {
+  const q = (document.getElementById('tf-svc-search')?.value || '').toLowerCase().trim();
+  let visible = 0;
+  document.querySelectorAll('#tf-svc-list .svc-item').forEach(item => {
+    const label = item.querySelector('.svc-label')?.textContent || '';
+    const show = !q || label.toLowerCase().includes(q);
+    item.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+  const noResults = document.getElementById('tf-svc-noresults');
+  if (noResults) noResults.style.display = visible === 0 ? 'block' : 'none';
 }
 async function saveTrade() {
   const body={status:document.getElementById('tf-status').value,companyName:document.getElementById('tf-companyName').value.trim(),companyAddress:document.getElementById('tf-companyAddress').value.trim(),contactName:document.getElementById('tf-contactName').value.trim(),contactNumber:document.getElementById('tf-contactNumber').value.trim(),contactEmail:document.getElementById('tf-contactEmail').value.trim(),services:serviceTagsArr};
