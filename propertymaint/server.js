@@ -725,72 +725,6 @@ app.get('/api/purchase-orders', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Get single PO
-app.get('/api/purchase-orders/:id', requireAuth, async (req, res) => {
-  try {
-    const po = await query(PO_JOIN + ' WHERE p.id = $1', [req.params.id]);
-    if (!po.rows.length) return res.status(404).json({ error: 'Not found' });
-    const items = await query('SELECT * FROM po_items WHERE po_id=$1 ORDER BY sort_order ASC', [req.params.id]);
-    res.json(normalisePO(po.rows[0], items.rows));
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// Create PO
-app.post('/api/purchase-orders', requireAuth, async (req, res) => {
-  try {
-    const { jobId, tradeId, issueDate, instructions, notes, items } = req.body;
-    if (!jobId || !tradeId) return res.status(400).json({ error: 'jobId and tradeId required' });
-    const poNumber = await nextPoNumber();
-    const id = uuidv4();
-    await query(
-      'INSERT INTO purchase_orders (id,po_number,job_id,trade_id,status,issue_date,instructions,notes,created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
-      [id, poNumber, jobId, tradeId, 'draft', issueDate || new Date().toISOString().split('T')[0], instructions||'', notes||'', req.session.userId]
-    );
-    if (items && items.length) {
-      await Promise.all(items.map((item, idx) =>
-        query('INSERT INTO po_items (id,po_id,description,quantity,unit_cost,vat_rate,sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7)',
-          [uuidv4(), id, item.description, item.quantity||1, item.unitCost||0, item.vatRate??20, idx])
-      ));
-    }
-    const po = await query(PO_JOIN + ' WHERE p.id = $1', [id]);
-    const poItems = await query('SELECT * FROM po_items WHERE po_id=$1 ORDER BY sort_order ASC', [id]);
-    res.status(201).json(normalisePO(po.rows[0], poItems.rows));
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// Update PO
-app.put('/api/purchase-orders/:id', requireAuth, async (req, res) => {
-  try {
-    const { status, issueDate, instructions, notes, items } = req.body;
-    await query(
-      'UPDATE purchase_orders SET status=$1,issue_date=$2,instructions=$3,notes=$4,updated_at=NOW() WHERE id=$5',
-      [status, issueDate, instructions||'', notes||'', req.params.id]
-    );
-    // Replace all items
-    await query('DELETE FROM po_items WHERE po_id=$1', [req.params.id]);
-    if (items && items.length) {
-      await Promise.all(items.map((item, idx) =>
-        query('INSERT INTO po_items (id,po_id,description,quantity,unit_cost,vat_rate,sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7)',
-          [uuidv4(), req.params.id, item.description, item.quantity||1, item.unitCost||0, item.vatRate??20, idx])
-      ));
-    }
-    const po = await query(PO_JOIN + ' WHERE p.id = $1', [req.params.id]);
-    if (!po.rows.length) return res.status(404).json({ error: 'Not found' });
-    const poItems = await query('SELECT * FROM po_items WHERE po_id=$1 ORDER BY sort_order ASC', [req.params.id]);
-    res.json(normalisePO(po.rows[0], poItems.rows));
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// Delete PO
-app.delete('/api/purchase-orders/:id', requireAuth, async (req, res) => {
-  try {
-    await query('DELETE FROM po_items WHERE po_id=$1', [req.params.id]);
-    await query('DELETE FROM purchase_orders WHERE id=$1', [req.params.id]);
-    res.json({ success: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-
 // ─── PO Stats (for dashboard page) ────────────────────────────────────────────
 app.get('/api/purchase-orders/stats', requireAuth, async (req, res) => {
   try {
@@ -964,6 +898,72 @@ app.get('/api/purchase-orders/:id/docx', requireAuth, async (req, res) => {
     res.send(buffer);
   } catch (e) { console.error('DOCX error:', e); res.status(500).json({ error: e.message }); }
 });
+
+// Get single PO
+app.get('/api/purchase-orders/:id', requireAuth, async (req, res) => {
+  try {
+    const po = await query(PO_JOIN + ' WHERE p.id = $1', [req.params.id]);
+    if (!po.rows.length) return res.status(404).json({ error: 'Not found' });
+    const items = await query('SELECT * FROM po_items WHERE po_id=$1 ORDER BY sort_order ASC', [req.params.id]);
+    res.json(normalisePO(po.rows[0], items.rows));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Create PO
+app.post('/api/purchase-orders', requireAuth, async (req, res) => {
+  try {
+    const { jobId, tradeId, issueDate, instructions, notes, items } = req.body;
+    if (!jobId || !tradeId) return res.status(400).json({ error: 'jobId and tradeId required' });
+    const poNumber = await nextPoNumber();
+    const id = uuidv4();
+    await query(
+      'INSERT INTO purchase_orders (id,po_number,job_id,trade_id,status,issue_date,instructions,notes,created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+      [id, poNumber, jobId, tradeId, 'draft', issueDate || new Date().toISOString().split('T')[0], instructions||'', notes||'', req.session.userId]
+    );
+    if (items && items.length) {
+      await Promise.all(items.map((item, idx) =>
+        query('INSERT INTO po_items (id,po_id,description,quantity,unit_cost,vat_rate,sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+          [uuidv4(), id, item.description, item.quantity||1, item.unitCost||0, item.vatRate??20, idx])
+      ));
+    }
+    const po = await query(PO_JOIN + ' WHERE p.id = $1', [id]);
+    const poItems = await query('SELECT * FROM po_items WHERE po_id=$1 ORDER BY sort_order ASC', [id]);
+    res.status(201).json(normalisePO(po.rows[0], poItems.rows));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Update PO
+app.put('/api/purchase-orders/:id', requireAuth, async (req, res) => {
+  try {
+    const { status, issueDate, instructions, notes, items } = req.body;
+    await query(
+      'UPDATE purchase_orders SET status=$1,issue_date=$2,instructions=$3,notes=$4,updated_at=NOW() WHERE id=$5',
+      [status, issueDate, instructions||'', notes||'', req.params.id]
+    );
+    // Replace all items
+    await query('DELETE FROM po_items WHERE po_id=$1', [req.params.id]);
+    if (items && items.length) {
+      await Promise.all(items.map((item, idx) =>
+        query('INSERT INTO po_items (id,po_id,description,quantity,unit_cost,vat_rate,sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+          [uuidv4(), req.params.id, item.description, item.quantity||1, item.unitCost||0, item.vatRate??20, idx])
+      ));
+    }
+    const po = await query(PO_JOIN + ' WHERE p.id = $1', [req.params.id]);
+    if (!po.rows.length) return res.status(404).json({ error: 'Not found' });
+    const poItems = await query('SELECT * FROM po_items WHERE po_id=$1 ORDER BY sort_order ASC', [req.params.id]);
+    res.json(normalisePO(po.rows[0], poItems.rows));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Delete PO
+app.delete('/api/purchase-orders/:id', requireAuth, async (req, res) => {
+  try {
+    await query('DELETE FROM po_items WHERE po_id=$1', [req.params.id]);
+    await query('DELETE FROM purchase_orders WHERE id=$1', [req.params.id]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 
 // ─── Catch-all & start ────────────────────────────────────────────────────────
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
