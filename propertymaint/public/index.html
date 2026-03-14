@@ -1087,10 +1087,22 @@ function renderTradesCatDropdown() {
   // Also include categories not yet used so user can still search all
   const allMatches = SERVICE_CATEGORIES.filter(c => c.toLowerCase().includes(q));
   if (!allMatches.length) { dd.style.display = 'none'; return; }
-  dd.innerHTML = allMatches.map(c => {
+  dd.innerHTML = allMatches.map((c, i) => {
     const count = state.trades.filter(t => (t.services||[]).includes(c)).length;
-    return '<div onclick="selectCatFilter('' + c.replace(/'/g, "\'") + '')" style="padding:9px 14px;cursor:pointer;font-size:0.85rem;border-bottom:1px solid var(--surface);display:flex;justify-content:space-between;align-items:center" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''"><span>' + c + '</span>' + (count ? '<span style="background:var(--accent);color:#fff;border-radius:10px;padding:1px 7px;font-size:0.75rem;font-weight:600">' + count + '</span>' : '<span style="color:var(--mist);font-size:0.75rem">0</span>') + '</div>';
+    const safeIdx = i;
+    return '<div class="cat-dd-item" data-cat="' + i + '" style="padding:9px 14px;cursor:pointer;font-size:0.85rem;border-bottom:1px solid var(--surface);display:flex;justify-content:space-between;align-items:center"><span>' + c + '</span>' + (count ? '<span style="background:var(--accent);color:#fff;border-radius:10px;padding:1px 7px;font-size:0.75rem;font-weight:600">' + count + '</span>' : '<span style="color:var(--mist);font-size:0.75rem">0</span>') + '</div>';
   }).join('');
+  // Store matches for click handler
+  dd._matches = allMatches;
+  // Attach click handler
+  dd.onclick = function(e) {
+    const item = e.target.closest('.cat-dd-item');
+    if (!item) return;
+    const idx = parseInt(item.getAttribute('data-cat'));
+    if (!isNaN(idx) && dd._matches[idx]) selectCatFilter(dd._matches[idx]);
+  };
+  dd.onmouseover = function(e) { const item = e.target.closest('.cat-dd-item'); if (item) item.style.background = 'var(--surface)'; };
+  dd.onmouseout  = function(e) { const item = e.target.closest('.cat-dd-item'); if (item) item.style.background = ''; };
   dd.style.display = 'block';
 }
 
