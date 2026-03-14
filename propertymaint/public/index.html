@@ -6,6 +6,7 @@
 <title>ADC Property Desk</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -618,7 +619,11 @@
         <div class="card">
           <div class="card-header">
             <div class="search-bar"><input type="text" placeholder="Search jobs…" id="job-search" oninput="renderJobs()"></div>
-            <div style="display:flex;gap:8px">
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn btn-secondary btn-sm admin-only" id="jobs-export-btn" onclick="exportJobsExcel()" style="display:none;gap:6px" title="Export filtered jobs to Excel">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export Excel
+              </button>
               <select id="job-status-filter" onchange="renderJobs()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
                 <option value="">All Statuses</option>
                 <option value="needs_to_be_booked_adc">1. Needs to be booked ADC</option><option value="needs_to_be_booked_sub">2. Needs to be booked Subcontractor</option><option value="needs_to_be_booked_adc_sub">3. Needs to be booked ADC & Subcontractor</option><option value="booked_adc">4. Booked ADC (ADC only job)</option><option value="booked_adc_need_sub">5. Booked ADC - Need to book Subcontractor</option><option value="chased_sub">6. Chased Subcontractor</option><option value="booked_sub_need_adc">7. Booked Subcontractor - Need to book ADC</option><option value="booked_sub_only">8. Booked Subcontractor (Subcontractor only job)</option><option value="booked_adc_and_sub">9. Booked ADC & Subcontractor</option><option value="date_allocated">10. Date allocated - to agree with tenant</option><option value="tenant_not_responding">11. Tenant not responding/Referred to client</option><option value="on_hold">12. On hold</option>
@@ -3534,6 +3539,90 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+
+// ── Jobs Excel Export ─────────────────────────────────────────────────────────
+function exportJobsExcel() {
+  // Re-apply current filters to get exactly what's on screen
+  const q  = (document.getElementById('job-search')?.value || '').toLowerCase();
+  const sf = document.getElementById('job-status-filter')?.value || '';
+  const jobs = state.jobs.filter(j => {
+    if (sf && j.status !== sf) return false;
+    if (q && !j.title.toLowerCase().includes(q) &&
+             !j.workOrderId.toLowerCase().includes(q) &&
+             !customerName(j.customerId).toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if (!jobs.length) { showToast('No jobs to export'); return; }
+
+  // Build rows — all meaningful fields
+  const statusLabel = s => s ? s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '';
+
+  const rows = jobs.map(j => {
+    const tnames = (j.tradeIds || [])
+      .map(tid => { const t = state.trades.find(t => t.id === tid); return t ? t.companyName : ''; })
+      .filter(Boolean).join(', ');
+    const addr = state.addresses.find(a => a.id === j.addressId);
+    const addrStr = addr ? [(addr.label ? addr.label + ' – ' : '') + addr.line1, addr.line2, addr.city, addr.postcode].filter(Boolean).join(', ') : '';
+    return {
+      'Work Order':          j.workOrderId || '',
+      'Title':               j.title || '',
+      'Status':              statusLabel(j.status),
+      'Customer':            customerName(j.customerId),
+      'Address':             addrStr,
+      'Subcontractors':      tnames || '',
+      'Date Received':       j.dateReceived   ? fmtDateVal(j.dateReceived)   : '',
+      'Deadline':            j.deadlineForCompletion ? fmtDateVal(j.deadlineForCompletion) : '',
+      'Work Completed':      j.dateWorkCompleted ? fmtDateVal(j.dateWorkCompleted) : '',
+      'Date Invoiced':       j.dateInvoiced   ? fmtDateVal(j.dateInvoiced)   : '',
+      'Invoice Number':      j.invoiceNumber  || '',
+      'Price Excl. VAT (£)': j.priceQuotedExclVat  ? parseFloat(j.priceQuotedExclVat).toFixed(2)  : '',
+      'Price Incl. VAT (£)': j.priceQuotedInclVat  ? parseFloat(j.priceQuotedInclVat).toFixed(2)  : '',
+      'Compliance Standard': j.complianceStandard || '',
+      'Action Required':     j.actionRequired || '',
+      'Booked ADC':          j.bookedAdc          ? fmtDateVal(j.bookedAdc)          : '',
+      'Booked Subcontractor':j.bookedSubcontractor ? fmtDateVal(j.bookedSubcontractor): '',
+      'On Hold':             j.onHold             ? fmtDateVal(j.onHold)             : '',
+    };
+  });
+
+  // Build worksheet
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  // Column widths
+  const colWidths = [
+    {wch:12},{wch:30},{wch:28},{wch:22},{wch:36},{wch:26},
+    {wch:14},{wch:14},{wch:16},{wch:14},{wch:14},{wch:16},
+    {wch:16},{wch:22},{wch:28},{wch:14},{wch:20},{wch:10}
+  ];
+  ws['!cols'] = colWidths;
+
+  // Header row style — bold green
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let c = range.s.c; c <= range.e.c; c++) {
+    const cell = ws[XLSX.utils.encode_cell({ r: 0, c })];
+    if (cell) {
+      cell.s = {
+        font:    { bold: true, color: { rgb: 'FFFFFF' } },
+        fill:    { fgColor: { rgb: '3DB54A' } },
+        alignment: { horizontal: 'center' }
+      };
+    }
+  }
+
+  // Build workbook
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Jobs');
+
+  // Filename includes current filter info and date
+  const today    = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+  const filter   = sf ? '_' + sf.replace(/_/g, '-') : '';
+  const filename = 'ADC-Jobs' + filter + '_' + today + '.xlsx';
+
+  XLSX.writeFile(wb, filename);
+  showToast('✅ Exported ' + jobs.length + ' job' + (jobs.length !== 1 ? 's' : '') + ' to Excel');
+}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('click', e => {
