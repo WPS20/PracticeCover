@@ -348,6 +348,71 @@
   .cal-selected-label { font-size: 0.82rem; color: var(--blue); font-weight: 600; margin: 0 16px 8px; display: none; }
   .cal-selected-label.show { display: block; }
 
+  /* ── User Guides ── */
+  .guides-hero { background: linear-gradient(135deg, var(--accent2) 0%, #4c2880 100%); border-radius: 14px; padding: 32px 36px; margin-bottom: 28px; color: #fff; }
+  .guides-hero h2 { font-family: "Raleway", sans-serif; font-size: 1.7rem; font-weight: 800; margin-bottom: 8px; }
+  .guides-hero p { font-size: 0.95rem; opacity: 0.85; margin-bottom: 20px; }
+  .guides-search-wrap { position: relative; max-width: 480px; }
+  .guides-search-wrap input { width: 100%; padding: 12px 16px 12px 44px; border-radius: 10px; border: none; font-size: 0.95rem; font-family: "Inter", sans-serif; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+  .guides-search-wrap input:focus { outline: none; box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+  .guides-search-wrap::before { content: "🔍"; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 0.9rem; pointer-events: none; }
+  .guides-search-results { background: var(--white); border-radius: 10px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 24px; display: none; }
+  .guides-search-results.show { display: block; }
+  .guides-search-result-item { padding: 12px 18px; cursor: pointer; border-bottom: 1px solid var(--surface); display: flex; align-items: center; gap: 12px; transition: background 0.1s; }
+  .guides-search-result-item:last-child { border-bottom: none; }
+  .guides-search-result-item:hover { background: var(--surface); }
+  .guides-search-result-item .sri-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .guides-search-result-item .sri-title { font-weight: 600; font-size: 0.9rem; color: var(--ink); }
+  .guides-search-result-item .sri-cat { font-size: 0.78rem; color: var(--mist); margin-top: 1px; }
+  .guides-no-results { padding: 20px; text-align: center; color: var(--mist); font-size: 0.88rem; }
+  .guides-tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--surface); border-radius: 10px; padding: 4px; }
+  .guides-tab { flex: 1; padding: 9px 14px; border-radius: 8px; border: none; background: none; cursor: pointer; font-family: "Inter", sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--mist); transition: all 0.15s; text-align: center; }
+  .guides-tab.active { background: var(--white); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .guides-panel { display: none; }
+  .guides-panel.active { display: block; }
+  .guides-section { margin-bottom: 32px; }
+  .guides-section-title { font-family: "Raleway", sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--ink); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .guides-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .guide-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 18px; cursor: pointer; transition: all 0.15s; }
+  .guide-card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(61,181,74,0.12); transform: translateY(-1px); }
+  .guide-card .gc-icon { font-size: 1.6rem; margin-bottom: 8px; }
+  .guide-card .gc-title { font-weight: 700; font-size: 0.92rem; color: var(--ink); margin-bottom: 4px; }
+  .guide-card .gc-desc { font-size: 0.8rem; color: var(--mist); line-height: 1.5; }
+  .guide-card .gc-tag { display: inline-block; background: var(--surface); border-radius: 20px; padding: 2px 8px; font-size: 0.72rem; color: var(--slate); margin-top: 8px; font-weight: 600; }
+  /* Guide detail view */
+  .guide-detail { display: none; }
+  .guide-detail.active { display: block; }
+  .guide-back { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 0.88rem; font-weight: 600; font-family: "Inter", sans-serif; padding: 0; margin-bottom: 20px; display: flex; align-items: center; gap: 6px; }
+  .guide-detail-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px; padding: 22px; background: var(--surface); border-radius: 12px; }
+  .guide-detail-header .gdh-icon { font-size: 2.4rem; flex-shrink: 0; }
+  .guide-detail-header h2 { font-family: "Raleway", sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
+  .guide-detail-header p { font-size: 0.87rem; color: var(--slate); }
+  .guide-steps { counter-reset: step; }
+  .guide-step { display: flex; gap: 16px; margin-bottom: 20px; }
+  .guide-step::before { counter-increment: step; content: counter(step); min-width: 30px; height: 30px; background: var(--accent2); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; margin-top: 2px; }
+  .guide-step-body { flex: 1; padding-top: 4px; }
+  .guide-step-body strong { display: block; font-size: 0.92rem; color: var(--ink); margin-bottom: 4px; }
+  .guide-step-body p { font-size: 0.85rem; color: var(--slate); line-height: 1.6; margin: 0; }
+  .guide-tip { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; margin: 16px 0; font-size: 0.85rem; color: #166534; }
+  .guide-tip::before { content: "💡 Tip: "; font-weight: 700; }
+  .guide-warn { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; margin: 16px 0; font-size: 0.85rem; color: #92400e; }
+  .guide-warn::before { content: "⚠️ Note: "; font-weight: 700; }
+  /* FAQ */
+  .faq-item { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+  .faq-q { padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 0.9rem; color: var(--ink); background: var(--white); transition: background 0.1s; user-select: none; }
+  .faq-q:hover { background: var(--surface); }
+  .faq-q .faq-chevron { color: var(--mist); font-size: 0.8rem; transition: transform 0.2s; }
+  .faq-item.open .faq-chevron { transform: rotate(180deg); }
+  .faq-a { display: none; padding: 0 18px 16px; font-size: 0.87rem; color: var(--slate); line-height: 1.7; border-top: 1px solid var(--surface); padding-top: 12px; }
+  .faq-item.open .faq-a { display: block; }
+  @media (max-width: 768px) {
+    .guides-hero { padding: 22px 18px; }
+    .guides-hero h2 { font-size: 1.3rem; }
+    .guides-grid { grid-template-columns: 1fr; }
+    .guides-tabs { flex-wrap: wrap; }
+    .guides-tab { flex: none; width: calc(50% - 4px); }
+  }
+
   /* ── Audit Log ── */
   .badge-created { background: #f0fdf4; color: var(--green); }
   .badge-updated { background: #eff6ff; color: var(--blue); }
@@ -566,6 +631,8 @@
       <a onclick="showPage('log')" data-page="log" class="admin-only" style="display:none"><span class="icon">📋</span> Audit Log</a>
       <div class="nav-section admin-only" style="display:none">Admin</div>
       <a onclick="showPage('users')" data-page="users" class="admin-only" style="display:none"><span class="icon">🔑</span> Users</a>
+      <div class="nav-section">Help</div>
+      <a onclick="showPage('user-guides')" data-page="user-guides"><span class="icon">📖</span> User Guides</a>
     </nav>
     <div class="nav-user">
       <div class="uname" id="nav-username">—</div>
@@ -871,6 +938,73 @@
           <div style="padding:16px" id="po-page-list"><div style="text-align:center;padding:40px;color:var(--mist)">Loading…</div></div>
         </div>
       </div>
+      <!-- USER GUIDES PAGE -->
+      <div class="page" id="page-user-guides">
+        <!-- Hero search bar -->
+        <div class="guides-hero">
+          <h2>📖 User Guides &amp; Help Centre</h2>
+          <p>Step-by-step guides for every part of ADC Property Desk. Search below or browse by topic.</p>
+          <div class="guides-search-wrap">
+            <input type="text" id="guides-search" placeholder="Search guides… e.g. &quot;add customer&quot;, &quot;raise invoice&quot;" oninput="searchGuides()" autocomplete="off">
+          </div>
+        </div>
+        <!-- Search results (hidden until search) -->
+        <div class="guides-search-results" id="guides-search-results"></div>
+        <!-- Tab navigation -->
+        <div class="guides-tabs" id="guides-tabs">
+          <button class="guides-tab active" onclick="showGuidesTab('all')">All Guides</button>
+          <button class="guides-tab" onclick="showGuidesTab('jobs')">Jobs</button>
+          <button class="guides-tab" onclick="showGuidesTab('customers')">Customers &amp; Addresses</button>
+          <button class="guides-tab" onclick="showGuidesTab('subcontractors')">Subcontractors</button>
+          <button class="guides-tab" onclick="showGuidesTab('finance')">Finance</button>
+          <button class="guides-tab" onclick="showGuidesTab('tasks')">Tasks</button>
+          <button class="guides-tab" onclick="showGuidesTab('faq')">FAQ</button>
+        </div>
+        <!-- Guide list panels -->
+        <div id="guides-list-view">
+          <!-- ALL panel -->
+          <div class="guides-panel active" id="guides-panel-all">
+            <div class="guides-section">
+              <div class="guides-section-title"><span>🔧</span> Jobs</div>
+              <div class="guides-grid" id="grid-jobs"></div>
+            </div>
+            <div class="guides-section">
+              <div class="guides-section-title"><span>🏢</span> Customers &amp; Addresses</div>
+              <div class="guides-grid" id="grid-customers"></div>
+            </div>
+            <div class="guides-section">
+              <div class="guides-section-title"><span>🔩</span> Subcontractors</div>
+              <div class="guides-grid" id="grid-subcontractors"></div>
+            </div>
+            <div class="guides-section">
+              <div class="guides-section-title"><span>💰</span> Finance — Purchase Orders &amp; Invoicing</div>
+              <div class="guides-grid" id="grid-finance"></div>
+            </div>
+            <div class="guides-section">
+              <div class="guides-section-title"><span>✅</span> Tasks</div>
+              <div class="guides-grid" id="grid-tasks"></div>
+            </div>
+          </div>
+          <!-- Category panels (populated by JS) -->
+          <div class="guides-panel" id="guides-panel-jobs"><div class="guides-grid" id="grid-jobs-tab"></div></div>
+          <div class="guides-panel" id="guides-panel-customers"><div class="guides-grid" id="grid-customers-tab"></div></div>
+          <div class="guides-panel" id="guides-panel-subcontractors"><div class="guides-grid" id="grid-subcontractors-tab"></div></div>
+          <div class="guides-panel" id="guides-panel-finance"><div class="guides-grid" id="grid-finance-tab"></div></div>
+          <div class="guides-panel" id="guides-panel-tasks"><div class="guides-grid" id="grid-tasks-tab"></div></div>
+          <!-- FAQ panel -->
+          <div class="guides-panel" id="guides-panel-faq">
+            <div class="guides-section">
+              <div class="guides-section-title"><span>❓</span> Frequently Asked Questions</div>
+              <div id="faq-list"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Guide detail view -->
+        <div class="guide-detail" id="guide-detail-view">
+          <button class="guide-back" onclick="closeGuideDetail()">← Back to Guides</button>
+          <div id="guide-detail-content"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1103,7 +1237,7 @@ async function doLogout() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const pageTitles = { dashboard: 'Dashboard', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Subcontractors', users: 'User Management', tasks: 'Tasks', 'purchase-orders': 'Purchase Orders', invoices: 'Invoicing', log: 'Audit Log' };
+const pageTitles = { dashboard: 'Dashboard', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Subcontractors', users: 'User Management', tasks: 'Tasks', 'purchase-orders': 'Purchase Orders', invoices: 'Invoicing', log: 'Audit Log', 'user-guides': 'User Guides' };
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -1127,6 +1261,7 @@ function showPage(name) {
   if (name === 'purchase-orders') { loadPoPage(); }
   if (name === 'invoices') { loadInvoicePage(); }
   if (name === 'log') { loadLog(); }
+  if (name === 'user-guides') { initUserGuides(); }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -3623,6 +3758,423 @@ function exportJobsExcel() {
   XLSX.writeFile(wb, filename);
   showToast('✅ Exported ' + jobs.length + ' job' + (jobs.length !== 1 ? 's' : '') + ' to Excel');
 }
+
+
+// ── User Guides ────────────────────────────────────────────────────────────────
+
+const GUIDES = [
+  // ── JOBS ──────────────────────────────────────────────────────────────────
+  { id:'job-add', cat:'jobs', icon:'🔧', title:'Add a New Job',
+    desc:'Create a job record with work order, customer, address and status.',
+    steps:[
+      { h:'Click "+ New Job"', b:'From the Jobs page, click the green "+ New Job" button in the top-right corner of the screen.' },
+      { h:'Enter the Work Order ID', b:'Type a unique reference for this job, e.g. WO-001. This will appear throughout the system and on Purchase Orders and Invoices.' },
+      { h:'Enter a Job Title', b:'Give the job a clear, descriptive title such as "Replace boiler" or "Fix leaking roof". This is the main identifier visible on all lists.' },
+      { h:'Select the Customer', b:'Choose the customer from the dropdown. The customer must already exist — if not, add them first via the Customers page.' },
+      { h:'Select the Address', b:'Once a customer is selected, the address list will populate. Choose the correct property address for this job.' },
+      { h:'Set the Status', b:'Choose the appropriate booking status from the dropdown, e.g. "1. Needs to be booked ADC". This can be updated at any time as the job progresses.' },
+      { h:'Fill in dates and financials (optional)', b:'Enter Date Received, Deadline, Price Quoted and any other relevant fields. These can also be filled in or updated later.' },
+      { h:'Assign Subcontractors (optional)', b:'Tick one or more subcontractors to assign them to this job. They will appear in the Subcontractor view and can be used when raising Purchase Orders.' },
+      { h:'Click "Save"', b:'The job is created and will appear immediately in the Jobs list and on the Dashboard.' }
+    ],
+    tips:['You can also add communications, attachments, purchase orders and invoices directly from the job detail view.'],
+    warns:[]
+  },
+  { id:'job-edit', cat:'jobs', icon:'✏️', title:'Edit a Job',
+    desc:'Update any field on an existing job record.',
+    steps:[
+      { h:'Find the job', b:'Go to Jobs and use the search bar or status filter to locate the job you want to edit.' },
+      { h:'Click "Edit"', b:'Click the Edit button on the right-hand side of the job row.' },
+      { h:'Make your changes', b:'Update any fields — status, dates, financials, assigned subcontractors etc.' },
+      { h:'Click "Save"', b:'Changes are saved immediately and reflected throughout the system.' }
+    ],
+    tips:['You can also click the job title to open the detail view, then click "Edit Job" in the footer.'],
+    warns:['All changes are recorded in the Audit Log (admin only) with a before/after comparison.']
+  },
+  { id:'job-view', cat:'jobs', icon:'👁️', title:'View Job Details',
+    desc:'Open the full job record including dates, subcontractors, communications and attachments.',
+    steps:[
+      { h:'Click the job title', b:'On the Jobs page, click the green job title link to open the detail panel.' },
+      { h:'Review all sections', b:'The detail view shows: Job Info, Dates & Financials, Booking Dates, Assigned Subcontractors, Location map, Communications, Attachments, Purchase Orders and Invoices.' },
+      { h:'Use the action buttons', b:'From the footer you can Edit the Job, Raise a PO or Raise an Invoice directly.' }
+    ],
+    tips:['Click on the map to open the address in OpenStreetMap for full directions.'],
+    warns:[]
+  },
+  { id:'job-status', cat:'jobs', icon:'📊', title:'Update Job Status',
+    desc:'Move a job through the workflow from initial booking to completion.',
+    steps:[
+      { h:'Open the Edit Job form', b:'Click Edit on the job row, or open the detail view and click Edit Job.' },
+      { h:'Change the Status field', b:'Select the new status from the dropdown. The 12 statuses cover the full workflow from "Needs to be booked" through to "On hold" and "Rejected/Cancelled".' },
+      { h:'Update relevant dates', b:'When marking as booked, fill in the Booked ADC or Booked Subcontractor date. When work is done, fill in Date Work Completed.' },
+      { h:'Save', b:'The status badge updates immediately on the Jobs list and Dashboard.' }
+    ],
+    tips:['The Date Work Completed field is required before you can raise an Invoice.'],
+    warns:[]
+  },
+  { id:'job-comms', cat:'jobs', icon:'💬', title:'Add a Communication Note',
+    desc:'Log a call, email or site visit against a job.',
+    steps:[
+      { h:'Open the Job detail view', b:'Click the job title on the Jobs page.' },
+      { h:'Click "+ Add Note" in the Communications section', b:'This opens a small form for the note.' },
+      { h:'Enter the note and author name', b:'Describe what was discussed or agreed. The author field is free text.' },
+      { h:'Click "Save Note"', b:'The note is saved with a timestamp and appears in chronological order.' }
+    ],
+    tips:['Communications are visible to all users who can see the job.'],
+    warns:[]
+  },
+  // ── CUSTOMERS ─────────────────────────────────────────────────────────────
+  { id:'cust-add', cat:'customers', icon:'🏢', title:'Add a Customer',
+    desc:'Create a new customer (managing agent or individual).',
+    steps:[
+      { h:'Go to Customers', b:'Click "Customers" in the left sidebar.' },
+      { h:'Click "+ New Customer"', b:'Click the green button in the top-right corner.' },
+      { h:'Enter the customer name', b:'Type the company or individual\'s full name. This is the primary identifier used throughout the system.' },
+      { h:'Select customer type', b:'Choose "Managing Agent" for letting agents and property management companies, or "Individual" for private landlords.' },
+      { h:'Fill in contact details', b:'Enter contact name, mobile, email and phone number. The contact name and mobile will appear on job detail views for quick reference.' },
+      { h:'Click "Save"', b:'The customer is created and ready to be linked to addresses and jobs.' }
+    ],
+    tips:['Add the customer\'s primary contact name and mobile number so it shows up quickly in job and invoice views.'],
+    warns:[]
+  },
+  { id:'cust-edit', cat:'customers', icon:'✏️', title:'Edit a Customer',
+    desc:'Update a customer\'s name, type or contact details.',
+    steps:[
+      { h:'Find the customer', b:'Use the search bar on the Customers page to find the customer by name, email or contact.' },
+      { h:'Click "Edit"', b:'Click the Edit button on the customer row.' },
+      { h:'Update the fields', b:'Change any details as needed.' },
+      { h:'Click "Save"', b:'Changes are applied immediately across all linked jobs and invoices.' }
+    ],
+    tips:['You can also view a customer\'s full history — jobs, invoices and attachments — by clicking "View".'],
+    warns:[]
+  },
+  { id:'cust-view', cat:'customers', icon:'👁️', title:'View Customer Details',
+    desc:'See all jobs, invoices and attachments for a customer.',
+    steps:[
+      { h:'Click "View" on any customer row', b:'Opens the customer detail panel.' },
+      { h:'Review linked data', b:'The panel shows: contact info, all associated addresses, all jobs, all invoices raised for this customer, and attachments.' },
+      { h:'Upload documents', b:'Use the upload zone at the bottom to attach documents directly to the customer record.' }
+    ],
+    tips:['Invoices in the customer view link directly to the job — click Edit on any invoice to update it.'],
+    warns:[]
+  },
+  // ── ADDRESSES ─────────────────────────────────────────────────────────────
+  { id:'addr-add', cat:'customers', icon:'📍', title:'Add an Address',
+    desc:'Add a property address and link it to a customer.',
+    steps:[
+      { h:'Go to Addresses', b:'Click "Addresses" in the left sidebar.' },
+      { h:'Click "+ New Address"', b:'Opens the address form.' },
+      { h:'Select the customer', b:'Choose which customer this property belongs to.' },
+      { h:'Enter the address details', b:'Fill in the label (optional, e.g. "Flat 3"), Address Line 1, Line 2, City and Postcode.' },
+      { h:'Click "Save"', b:'The address is saved and will appear in the job creation form when this customer is selected.' }
+    ],
+    tips:['The Label field is useful for multi-unit properties — use it to distinguish Flat A from Flat B etc.'],
+    warns:[]
+  },
+  { id:'addr-edit', cat:'customers', icon:'✏️', title:'Edit an Address',
+    desc:'Correct or update a property address.',
+    steps:[
+      { h:'Find the address', b:'Use the customer filter on the Addresses page to narrow down the list.' },
+      { h:'Click "Edit"', b:'Opens the edit form pre-filled with current details.' },
+      { h:'Update the fields', b:'Correct the postcode, city or any other field.' },
+      { h:'Click "Save"', b:'The address updates immediately in all linked jobs.' }
+    ],
+    tips:['Clicking "View" on an address shows a map and all jobs at that address.'],
+    warns:[]
+  },
+  // ── SUBCONTRACTORS ────────────────────────────────────────────────────────
+  { id:'trade-add', cat:'subcontractors', icon:'🔩', title:'Add a Subcontractor',
+    desc:'Register a new subcontractor with their contact and service categories.',
+    steps:[
+      { h:'Go to Subcontractors', b:'Click "Subcontractors" in the left sidebar.' },
+      { h:'Click "+ New Subcontractor"', b:'Opens the subcontractor form.' },
+      { h:'Enter company details', b:'Fill in Company Name, Company Address, Contact Name, Contact Number and Contact Email.' },
+      { h:'Select Services Covered', b:'Use the searchable list to select one or more service categories (e.g. "Gas – Domestic", "Plumbing"). Type to filter the 169 available categories.' },
+      { h:'Set status to Active', b:'New subcontractors default to Active. Set to Inactive if they should not appear in job assignment lists.' },
+      { h:'Click "Save"', b:'The subcontractor is added and can now be assigned to jobs and raised on Purchase Orders.' }
+    ],
+    tips:['Adding accurate service categories lets you use the category filter on the Subcontractors page to quickly find the right trade for a job.'],
+    warns:[]
+  },
+  { id:'trade-edit', cat:'subcontractors', icon:'✏️', title:'Edit a Subcontractor',
+    desc:'Update a subcontractor\'s details or services.',
+    steps:[
+      { h:'Find the subcontractor', b:'Use the search bar or category filter on the Subcontractors page.' },
+      { h:'Click "Edit"', b:'Opens the edit form.' },
+      { h:'Make changes', b:'Update contact details or tick/untick service categories.' },
+      { h:'Click "Save"', b:'Changes are saved immediately.' }
+    ],
+    tips:[],
+    warns:[]
+  },
+  { id:'trade-compliance', cat:'subcontractors', icon:'📋', title:'Upload a Compliance Document',
+    desc:'Attach a Gas Safe certificate, NICEIC accreditation or other compliance document and set an expiry reminder.',
+    steps:[
+      { h:'Open the subcontractor detail view', b:'Click "View" on any subcontractor row.' },
+      { h:'Scroll to Attachments and drag/drop a file', b:'Or click the upload zone to browse for a file.' },
+      { h:'When prompted, choose "Yes — needs renewal"', b:'The system will ask whether this is a compliance document requiring renewal.' },
+      { h:'Enter the expiry date', b:'Select the date on which this certificate or accreditation expires.' },
+      { h:'Click "Upload Document"', b:'The document is saved with a compliance badge and expiry date. A renewal task is automatically created and assigned to you with the expiry date as the target date.' }
+    ],
+    tips:['The renewal task will appear on your dashboard and in the Tasks calendar on the expiry date so you are reminded in advance.'],
+    warns:['If the document does not need renewal (e.g. a general contract), choose "No — standard document" to skip the expiry date prompt.']
+  },
+  { id:'trade-filter', cat:'subcontractors', icon:'🔍', title:'Filter Subcontractors by Service',
+    desc:'Find all subcontractors who offer a specific type of work.',
+    steps:[
+      { h:'Go to Subcontractors', b:'Click "Subcontractors" in the sidebar.' },
+      { h:'Type in the category search box', b:'Use the "Filter by service category…" search box (next to the main search). Type the trade type, e.g. "gas" or "electrical".' },
+      { h:'Click a category from the dropdown', b:'The table instantly filters to only show subcontractors offering that service. A green badge shows the number matching.' },
+      { h:'Clear the filter', b:'Click the × next to the active filter pill to return to the full list.' }
+    ],
+    tips:['You can combine the company name search with the category filter to narrow results further.'],
+    warns:[]
+  },
+  // ── PURCHASE ORDERS ───────────────────────────────────────────────────────
+  { id:'po-raise', cat:'finance', icon:'📄', title:'Raise a Purchase Order',
+    desc:'Create a PO for a subcontractor from within a job.',
+    steps:[
+      { h:'Open the Job detail view', b:'Click the job title on the Jobs page.' },
+      { h:'Click "+ Raise PO" or "📄 Raise PO"', b:'Found in the Purchase Orders section of the job detail, and in the modal footer.' },
+      { h:'Select the subcontractor', b:'If the job has one subcontractor it is pre-selected. If there are multiple, choose the relevant one. If none are assigned, select from the full list.' },
+      { h:'Review and edit the line items', b:'The items are pre-filled from the job title and action required. Add, remove or edit lines as needed. Set the correct VAT rate per line (20% Standard, 5% Reduced, 0% Zero).' },
+      { h:'Add additional instructions', b:'Enter any site access details, health & safety requirements or specific instructions for the subcontractor in the Instructions field.' },
+      { h:'Set the status', b:'Leave as Draft until you are ready to send. Change to Sent once issued to the subcontractor.' },
+      { h:'Click "Save PO"', b:'The PO is saved with an auto-generated number (PO-0001 etc.) and appears on the job detail and the subcontractor\'s detail view.' }
+    ],
+    tips:['Use "🖨 Print / PDF" to print or save as PDF, or "⬇ Download Word" to get a formatted .docx file to email.'],
+    warns:[]
+  },
+  { id:'po-download', cat:'finance', icon:'⬇️', title:'Print or Download a Purchase Order',
+    desc:'Print to PDF or download a Word version of a PO.',
+    steps:[
+      { h:'Find the PO', b:'Open the job detail view or go to Purchase Orders in the sidebar.' },
+      { h:'Click "🖨 Print"', b:'Opens a print-ready version of the PO in a new window with ADC branding. Your browser\'s print dialog will appear — choose "Save as PDF" to create a PDF file.' },
+      { h:'Or click "⬇ Word"', b:'Downloads a fully formatted .docx file to your device, ready to email to the subcontractor.' }
+    ],
+    tips:['The Word document includes the subcontractor address, job reference, customer name, itemised table and your additional instructions.'],
+    warns:[]
+  },
+  // ── INVOICES ──────────────────────────────────────────────────────────────
+  { id:'inv-raise', cat:'finance', icon:'🧾', title:'Raise an Invoice',
+    desc:'Create an invoice for a customer from within a job.',
+    steps:[
+      { h:'Open the Job detail view', b:'The job must have a Date Work Completed set — if not, update this first via Edit Job.' },
+      { h:'Click "+ Raise Invoice" in the Invoices section', b:'Or click "🧾 Raise Invoice" in the modal footer.' },
+      { h:'Check the customer details', b:'The customer is automatically resolved from the job and shown in the banner at the top.' },
+      { h:'Set Invoice Date and Payment Due date', b:'Both default to today. Adjust the Payment Due date to match your payment terms (e.g. 30 days).' },
+      { h:'Review and edit line items', b:'Pre-filled from the job. Edit descriptions, quantities, unit costs and VAT rates as needed.' },
+      { h:'Add notes / payment terms', b:'Include bank details, payment reference or any other information for the customer.' },
+      { h:'Set the status to Draft or Sent', b:'Change to Paid when payment is received — a Date Paid field will appear.' },
+      { h:'Click "Save Invoice"', b:'The invoice is created with an auto-generated number (INV-0001 etc.) and is visible on the job and the customer\'s detail view.' }
+    ],
+    tips:['Mark invoices as Overdue if payment has not been received by the due date — this highlights them in red on the Invoicing dashboard.'],
+    warns:['Date Work Completed must be set on the job before raising an invoice. If it is missing, the system will warn you.']
+  },
+  { id:'inv-track', cat:'finance', icon:'📊', title:'Track Invoice Payments',
+    desc:'Monitor outstanding and paid invoices from the Invoicing page.',
+    steps:[
+      { h:'Go to Invoicing in the sidebar', b:'Click "🧾 Invoicing" to open the invoicing dashboard.' },
+      { h:'Review the stat cards', b:'The 6 cards at the top show: total count, total value, amount paid, outstanding value, overdue count and draft count.' },
+      { h:'Use the charts', b:'The monthly bar chart shows invoice volume over the past 12 months. The doughnut shows status distribution. The horizontal bar shows your top customers by invoice value.' },
+      { h:'Filter by status', b:'Use the status dropdown to show only Overdue invoices for chasing, or only Sent invoices awaiting payment.' },
+      { h:'Mark as paid', b:'Click Edit on an invoice, change status to Paid and enter the Date Paid, then save.' }
+    ],
+    tips:['Filter by customer to see the full invoice history for a specific client.'],
+    warns:[]
+  },
+  // ── TASKS ─────────────────────────────────────────────────────────────────
+  { id:'task-add', cat:'tasks', icon:'✅', title:'Add a Task',
+    desc:'Create a task and assign it to a user with a target date.',
+    steps:[
+      { h:'Go to Tasks', b:'Click "✅ Tasks" in the sidebar, or click "+ New Task" from the topbar action button.' },
+      { h:'Click "+ New Task"', b:'Opens the task creation form.' },
+      { h:'Enter a description', b:'Describe what needs to be done clearly and concisely.' },
+      { h:'Set the target date', b:'Choose the date by which this task must be completed.' },
+      { h:'Assign to a user', b:'Select the user responsible. Defaults to yourself.' },
+      { h:'Link to a customer, job or subcontractor (optional)', b:'Use the optional dropdown links to connect this task to a specific record for context.' },
+      { h:'Click "Save Task"', b:'The task appears on the assignee\'s dashboard and in the Tasks calendar on its target date.' }
+    ],
+    tips:['Compliance document uploads automatically create renewal tasks — you don\'t need to add those manually.'],
+    warns:[]
+  },
+  { id:'task-calendar', cat:'tasks', icon:'📅', title:'Use the Task Calendar',
+    desc:'View your tasks laid out on a monthly calendar.',
+    steps:[
+      { h:'Go to Tasks', b:'The calendar is at the top of the Tasks page.' },
+      { h:'Navigate months', b:'Use the ‹ and › buttons to move between months. Click "Today" to return to the current month.' },
+      { h:'Read the colour coding', b:'Red = overdue, Amber = due today, Green = upcoming, Grey = complete.' },
+      { h:'Click a day to filter', b:'Clicking any day that has tasks will filter the task list below to show only tasks due on that day. Click again to deselect.' },
+      { h:'Admin toggle', b:'Admins see a "My Tasks / All Tasks" toggle in the top-right of the calendar to switch between personal and all-user views.' }
+    ],
+    tips:['On mobile, the calendar shows dots only — tap a day to see the full task list for that date.'],
+    warns:[]
+  },
+  { id:'task-complete', cat:'tasks', icon:'☑️', title:'Complete a Task',
+    desc:'Mark a task as done directly from the list or calendar.',
+    steps:[
+      { h:'Find the task', b:'On the Dashboard (your open tasks) or the Tasks page.' },
+      { h:'Tick the checkbox', b:'Click the checkbox on the left of the task item.' },
+      { h:'Task is marked complete', b:'The task fades out and the status changes to "complete". It remains in the list for reference but no longer appears on your dashboard.' }
+    ],
+    tips:['You can also open Edit on a task and change the status to "In Progress" to indicate it is being worked on.'],
+    warns:[]
+  }
+];
+
+const FAQS = [
+  { q: 'How do I reset a user\'s password?', a: 'Admins can reset passwords via Admin → Users. Click Edit on the user, enter a new password (minimum 8 characters) and save. The user will need to use the new password on their next login.' },
+  { q: 'Can a regular user see all jobs?', a: 'Yes — all authenticated users can see all jobs, customers, addresses and subcontractors. The Tasks page shows only their own tasks by default. Admin users can toggle between their own tasks and all tasks using the calendar scope toggle.' },
+  { q: 'What is the difference between a Draft and Sent Purchase Order?', a: 'Draft means the PO has been created but not yet issued to the subcontractor. Change the status to Sent once you have emailed or handed it over. Acknowledged means the subcontractor has confirmed receipt.' },
+  { q: 'Can I attach multiple files at once?', a: 'Yes — the upload zones on jobs, customers, addresses and subcontractors all support multiple file selection and drag-and-drop. Files are stored securely in Supabase Storage.' },
+  { q: 'What happens when I upload a compliance document?', a: 'The system prompts you to confirm it is a compliance document and asks for its expiry date. A renewal task is then automatically created, assigned to you, with the expiry date as the target date. This will appear on your dashboard and the task calendar.' },
+  { q: 'Why can\'t I raise an invoice for this job?', a: 'The most common reason is that Date Work Completed has not been set on the job. Open Edit Job, fill in the Date Work Completed field and save. You can then raise the invoice.' },
+  { q: 'How do I export jobs to Excel?', a: 'Admin users will see an "Export Excel" button on the Jobs page header (next to the status filter). It exports the currently filtered jobs — so you can filter by status first to export a specific subset.' },
+  { q: 'How do I find all subcontractors who do Gas work?', a: 'Go to Subcontractors and type "gas" in the "Filter by service category…" search box. A dropdown will appear showing matching categories with the count of subcontractors for each. Click a category to filter the list.' },
+  { q: 'Can I link a task to both a job and a subcontractor?', a: 'Yes — the task form has separate optional dropdowns for Link to Customer, Link to Job, and Link to Subcontractor. You can fill in any combination of these.' },
+  { q: 'Where can I see all purchase orders for a specific subcontractor?', a: 'Open the subcontractor\'s detail view by clicking "View" on the Subcontractors page. The Purchase Orders section shows all POs raised for that subcontractor across all jobs.' },
+  { q: 'How do maps work — do I need an API key?', a: 'No API key is needed. Maps use OpenStreetMap (free, open source) with geocoding via the Nominatim service. Addresses are looked up automatically when you open an address, job or subcontractor detail view. Results are cached during your session so repeated views are instant.' },
+  { q: 'What user roles are available?', a: 'There are three roles: Admin (full access including user management, audit log and Excel export), User (full read/write access to all records), and Readonly (can view all records but cannot create or edit anything).' },
+  { q: 'How do I see who made a change to a record?', a: 'Admins can view the Audit Log (Admin → Audit Log in the sidebar). It shows every create, update and delete action with the user name, timestamp and a before/after comparison of changed fields.' },
+  { q: 'Can I use this on my phone?', a: 'Yes — the system is fully mobile-responsive. On smaller screens the sidebar collapses behind a hamburger menu, tables reflow into card layouts, and modals slide up from the bottom like native mobile sheets.' }
+];
+
+let _guideActiveTab = 'all';
+
+function initUserGuides() {
+  // Render guide cards into each grid
+  const catGrids = { jobs: ['grid-jobs','grid-jobs-tab'], customers: ['grid-customers','grid-customers-tab'], subcontractors: ['grid-subcontractors','grid-subcontractors-tab'], finance: ['grid-finance','grid-finance-tab'], tasks: ['grid-tasks','grid-tasks-tab'] };
+  Object.entries(catGrids).forEach(([cat, ids]) => {
+    const cards = GUIDES.filter(g => g.cat === cat).map(g => guideCardHtml(g)).join('');
+    ids.forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = cards; });
+  });
+  // Render FAQ
+  const faqEl = document.getElementById('faq-list');
+  if (faqEl) faqEl.innerHTML = FAQS.map((f,i) => faqItemHtml(f,i)).join('');
+}
+
+function guideCardHtml(g) {
+  const catLabels = { jobs:'Jobs', customers:'Customers & Addresses', subcontractors:'Subcontractors', finance:'Finance', tasks:'Tasks' };
+  return '<div class="guide-card" onclick="openGuide(\'' + g.id + '\')">' +
+    '<div class="gc-icon">' + g.icon + '</div>' +
+    '<div class="gc-title">' + g.title + '</div>' +
+    '<div class="gc-desc">' + g.desc + '</div>' +
+    '<span class="gc-tag">' + (catLabels[g.cat]||g.cat) + '</span>' +
+    '</div>';
+}
+
+function faqItemHtml(f, i) {
+  return '<div class="faq-item" id="faq-' + i + '">' +
+    '<div class="faq-q" onclick="toggleFaq(' + i + ')">' + f.q + '<span class="faq-chevron">▼</span></div>' +
+    '<div class="faq-a">' + f.a + '</div>' +
+    '</div>';
+}
+
+function toggleFaq(i) {
+  const el = document.getElementById('faq-' + i);
+  if (el) el.classList.toggle('open');
+}
+
+function showGuidesTab(tab) {
+  _guideActiveTab = tab;
+  // Update tab buttons
+  document.querySelectorAll('.guides-tab').forEach((btn, idx) => {
+    const tabs = ['all','jobs','customers','subcontractors','finance','tasks','faq'];
+    btn.classList.toggle('active', tabs[idx] === tab);
+  });
+  // Show correct panel
+  document.querySelectorAll('.guides-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('guides-panel-' + tab);
+  if (panel) panel.classList.add('active');
+  // Ensure list view is showing (not detail view)
+  document.getElementById('guides-list-view').style.display = '';
+  document.getElementById('guide-detail-view').classList.remove('active');
+  // Clear search
+  document.getElementById('guides-search').value = '';
+  document.getElementById('guides-search-results').classList.remove('show');
+}
+
+function searchGuides() {
+  const q = (document.getElementById('guides-search')?.value || '').toLowerCase().trim();
+  const resultsEl = document.getElementById('guides-search-results');
+  if (!q) { resultsEl.classList.remove('show'); return; }
+
+  const catLabels = { jobs:'Jobs', customers:'Customers & Addresses', subcontractors:'Subcontractors', finance:'Finance', tasks:'Tasks' };
+  const matches = GUIDES.filter(g =>
+    g.title.toLowerCase().includes(q) ||
+    g.desc.toLowerCase().includes(q) ||
+    g.steps.some(s => s.h.toLowerCase().includes(q) || s.b.toLowerCase().includes(q)) ||
+    g.cat.toLowerCase().includes(q)
+  );
+  // Also search FAQs
+  const faqMatches = FAQS.filter(f => f.q.toLowerCase().includes(q) || f.a.toLowerCase().includes(q));
+
+  if (!matches.length && !faqMatches.length) {
+    resultsEl.innerHTML = '<div class="guides-no-results">No guides found for "' + q + '". Try a different search term.</div>';
+    resultsEl.classList.add('show');
+    return;
+  }
+
+  let inner = matches.map(g =>
+    '<div class="guides-search-result-item" onclick="openGuide(\'' + g.id + '\')">' +
+    '<span class="sri-icon">' + g.icon + '</span>' +
+    '<div><div class="sri-title">' + g.title + '</div><div class="sri-cat">' + (catLabels[g.cat]||g.cat) + '</div></div>' +
+    '</div>'
+  ).join('');
+
+  if (faqMatches.length) {
+    inner += faqMatches.map((f,i) => {
+      const idx = FAQS.indexOf(f);
+      return '<div class="guides-search-result-item" onclick="showGuidesTab(\'faq\');setTimeout(()=>{const el=document.getElementById(\'faq-'+idx+'\');if(el){el.classList.add(\'open\');el.scrollIntoView({behavior:\'smooth\'})}},100)">' +
+        '<span class="sri-icon">❓</span>' +
+        '<div><div class="sri-title">' + f.q + '</div><div class="sri-cat">FAQ</div></div>' +
+        '</div>';
+    }).join('');
+  }
+
+  resultsEl.innerHTML = inner;
+  resultsEl.classList.add('show');
+}
+
+function openGuide(id) {
+  const g = GUIDES.find(g => g.id === id);
+  if (!g) return;
+  // Hide search results
+  document.getElementById('guides-search-results').classList.remove('show');
+  document.getElementById('guides-search').value = '';
+  // Build detail HTML
+  const stepsHtml = '<div class="guide-steps">' + g.steps.map(s =>
+    '<div class="guide-step"><div class="guide-step-body"><strong>' + s.h + '</strong><p>' + s.b + '</p></div></div>'
+  ).join('') + '</div>';
+  const tipsHtml  = g.tips.map(t  => '<div class="guide-tip">'  + t + '</div>').join('');
+  const warnsHtml = g.warns.map(w => '<div class="guide-warn">' + w + '</div>').join('');
+  document.getElementById('guide-detail-content').innerHTML =
+    '<div class="guide-detail-header">' +
+      '<div class="gdh-icon">' + g.icon + '</div>' +
+      '<div><h2>' + g.title + '</h2><p>' + g.desc + '</p></div>' +
+    '</div>' +
+    warnsHtml +
+    stepsHtml +
+    tipsHtml;
+  // Show detail view
+  document.getElementById('guides-list-view').style.display = 'none';
+  document.getElementById('guide-detail-view').classList.add('active');
+  // Scroll to top of page content
+  document.getElementById('content').scrollTop = 0;
+  window.scrollTo(0, 0);
+}
+
+function closeGuideDetail() {
+  document.getElementById('guides-list-view').style.display = '';
+  document.getElementById('guide-detail-view').classList.remove('active');
+}
+
+// Close search results when clicking outside
+document.addEventListener('click', e => {
+  const sr = document.getElementById('guides-search-results');
+  const si = document.getElementById('guides-search');
+  if (sr && si && !sr.contains(e.target) && e.target !== si) sr.classList.remove('show');
+});
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('click', e => {
