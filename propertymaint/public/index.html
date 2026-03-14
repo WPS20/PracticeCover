@@ -1108,7 +1108,7 @@ function openJobDetail(id) {
       <div id="job-attach-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>
       <div class="upload-zone" id="job-upload-zone" ondragover="handleDragOver(event,'job-upload-zone')" ondragleave="handleDragLeave(event,'job-upload-zone')" ondrop="handleDrop(event,'job','${j.id}')">
         <input type="file" multiple accept="*/*" onchange="uploadAttachments(this.files,'job','${j.id}')">
-        <div class="uz-icon">📎</div>
+        <div class="uz-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mist)"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
         <div class="uz-text"><strong>Click to upload</strong> or drag &amp; drop</div>
         <div class="uz-text" style="margin-top:2px">Multiple files supported · Max 20MB each</div>
       </div>
@@ -1243,7 +1243,7 @@ function openAddressDetail(id) {
       '<div id="addr-attach-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>' +
       '<div class="upload-zone" id="addr-uz" ondragover="handleDragOver(event,&quot;addr-uz&quot;)" ondragleave="handleDragLeave(event,&quot;addr-uz&quot;)" ondrop="handleDrop(event,&quot;address&quot;,&quot;' + a.id + '&quot;)">' +
         '<input type="file" multiple accept="*/*" onchange="uploadAttachments(this.files,&quot;address&quot;,&quot;' + a.id + '&quot;)">' +
-        '<div class="uz-icon">📎</div>' +
+        '<div class="uz-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mist)"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>' +
         '<div class="uz-text"><strong>Click to upload</strong> or drag &amp; drop</div>' +
       '</div>' +
       '<div class="upload-progress" id="addr-upload-progress"><span>⏳</span><span id="addr-upload-status">Uploading…</span></div>' +
@@ -1704,7 +1704,7 @@ function openCustomerDetail(id) {
       '<div id="cust-attach-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>' +
       '<div class="upload-zone" id="cust-uz" ondragover="handleDragOver(event,&quot;cust-uz&quot;)" ondragleave="handleDragLeave(event,&quot;cust-uz&quot;)" ondrop="handleDrop(event,&quot;customer&quot;,&quot;' + c.id + '&quot;)">' +
         '<input type="file" multiple accept="*/*" onchange="uploadAttachments(this.files,&quot;customer&quot;,&quot;' + c.id + '&quot;)">' +
-        '<div class="uz-icon">📎</div>' +
+        '<div class="uz-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mist)"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>' +
         '<div class="uz-text"><strong>Click to upload</strong> or drag &amp; drop</div>' +
       '</div>' +
       '<div class="upload-progress" id="cust-upload-progress"><span>⏳</span><span id="cust-upload-status">Uploading…</span></div>' +
@@ -1752,7 +1752,7 @@ function openTradeDetail(id) {
       '<div id="trade-attach-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>' +
       '<div class="upload-zone" id="trade-uz" ondragover="handleDragOver(event,&quot;trade-uz&quot;)" ondragleave="handleDragLeave(event,&quot;trade-uz&quot;)" ondrop="handleDrop(event,&quot;trade&quot;,&quot;' + t.id + '&quot;)">' +
         '<input type="file" multiple accept="*/*" onchange="uploadAttachments(this.files,&quot;trade&quot;,&quot;' + t.id + '&quot;)">' +
-        '<div class="uz-icon">📎</div>' +
+        '<div class="uz-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mist)"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>' +
         '<div class="uz-text"><strong>Click to upload</strong> or drag &amp; drop</div>' +
       '</div>' +
       '<div class="upload-progress" id="trade-upload-progress"><span>⏳</span><span id="trade-upload-status">Uploading…</span></div>' +
