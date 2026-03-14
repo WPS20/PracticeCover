@@ -292,7 +292,7 @@
       <a onclick="showPage('jobs')" data-page="jobs"><span class="icon">🔧</span> Jobs</a>
       <a onclick="showPage('customers')" data-page="customers"><span class="icon">👥</span> Customers</a>
       <a onclick="showPage('addresses')" data-page="addresses"><span class="icon">📍</span> Addresses</a>
-      <a onclick="showPage('trades')" data-page="trades"><span class="icon">🏗️</span> Trades</a>
+      <a onclick="showPage('trades')" data-page="trades"><span class="icon">🏗️</span> Subcontractors</a>
       <a onclick="showPage('tasks')" data-page="tasks"><span class="icon">✅</span> Tasks</a>
       <a onclick="showPage('log')" data-page="log" class="admin-only" style="display:none"><span class="icon">📋</span> Audit Log</a>
       <div class="nav-section admin-only" style="display:none">Admin</div>
@@ -354,7 +354,7 @@
               </select>
             </div>
           </div>
-          <table><thead><tr><th>Work Order</th><th>Title</th><th>Customer</th><th>Address</th><th>Status</th><th>Received</th><th>Trades</th><th></th></tr></thead>
+          <table><thead><tr><th>Work Order</th><th>Title</th><th>Customer</th><th>Address</th><th>Status</th><th>Received</th><th>Subcontractors</th><th></th></tr></thead>
           <tbody id="jobs-tbody"></tbody></table>
         </div>
       </div>
@@ -384,11 +384,11 @@
         </div>
       </div>
 
-      <!-- TRADES -->
+      <!-- SUBCONTRACTORS -->
       <div class="page" id="page-trades">
         <div class="card">
           <div class="card-header">
-            <div class="search-bar"><input type="text" placeholder="Search trades…" id="trade-search" oninput="renderTrades()"></div>
+            <div class="search-bar"><input type="text" placeholder="Search subcontractors…" id="trade-search" oninput="renderTrades()"></div>
           </div>
           <table><thead><tr><th>Company</th><th>Contact</th><th>Phone</th><th>Email</th><th>Services</th><th>Status</th><th></th></tr></thead>
           <tbody id="trades-tbody"></tbody></table>
@@ -418,7 +418,7 @@
                 <option value="Customer">Customers</option>
                 <option value="Address">Addresses</option>
                 <option value="Job">Jobs</option>
-                <option value="Trade">Trades</option>
+                <option value="Trade">Subcontractors</option>
               </select>
               <select id="log-action-filter" onchange="renderLog()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
                 <option value="">All Actions</option>
@@ -491,7 +491,7 @@
         <div class="form-group"><label>PO Chased Date</label><input type="date" id="jf-poChasedDate"></div>
         <div class="form-group"><label>Date Booked</label><input type="date" id="jf-dateBooked"></div>
         <div class="form-group"><label>Date Paid</label><input type="date" id="jf-datePaid"></div>
-        <div class="form-group full"><label>Assign Trades</label><div class="check-list" id="jf-trades-list"></div></div>
+        <div class="form-group full"><label>Assign Subcontractors</label><div class="check-list" id="jf-trades-list"></div></div>
       </div>
     </div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('job-modal')">Cancel</button><button class="btn btn-primary" onclick="saveJob()">Save Job</button></div>
@@ -546,7 +546,7 @@
   </div>
 </div>
 
-<!-- ── TRADE MODAL ── -->
+<!-- ── SUBCONTRACTOR MODAL ── -->
 <div class="modal-overlay" id="trade-modal">
   <div class="modal" style="max-width:700px">
     <div class="modal-header"><h3 id="trade-modal-title">New Trade</h3><button class="modal-close" onclick="closeModal('trade-modal')">×</button></div>
@@ -682,7 +682,7 @@ async function doLogout() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const pageTitles = { dashboard: 'Dashboard', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Trades', users: 'User Management', tasks: 'Tasks', log: 'Audit Log' };
+const pageTitles = { dashboard: 'Dashboard', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Subcontractors', users: 'User Management', tasks: 'Tasks', log: 'Audit Log' };
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -695,7 +695,7 @@ function showPage(name) {
     jobs: '<button class="btn btn-primary" onclick="openJobModal()">+ New Job</button>',
     customers: '<button class="btn btn-primary" onclick="openCustomerModal()">+ New Customer</button>',
     addresses: '<button class="btn btn-primary" onclick="openAddressModal()">+ New Address</button>',
-    trades: '<button class="btn btn-primary" onclick="openTradeModal()">+ New Trade</button>',
+    trades: '<button class="btn btn-primary" onclick="openTradeModal()">+ New Subcontractor</button>',
     users: isAdmin() ? '<button class="btn btn-primary" onclick="openUserModal()">+ New User</button>' : '',
     tasks: '<button class="btn btn-primary" onclick="openTaskModal()">+ New Task</button>',
     dashboard: ''
@@ -742,7 +742,7 @@ async function renderDashboard() {
     <div class="stat-card accent"><div class="label">Total Jobs</div><div class="value">${stats.totalJobs}</div></div>
     <div class="stat-card"><div class="label">Customers</div><div class="value">${stats.totalCustomers}</div></div>
     <div class="stat-card"><div class="label">Addresses</div><div class="value">${stats.totalAddresses}</div></div>
-    <div class="stat-card"><div class="label">Trades</div><div class="value">${stats.totalTrades}</div></div>
+    <div class="stat-card"><div class="label">Subcontractors</div><div class="value">${stats.totalTrades}</div></div>
   `;
   const colors = { needs_to_be_booked_adc:'var(--amber)',needs_to_be_booked_sub:'var(--amber)',needs_to_be_booked_adc_sub:'var(--amber)',booked_adc:'var(--blue)',booked_adc_need_sub:'var(--blue)',chased_sub:'var(--purple)',booked_sub_need_adc:'var(--blue)',booked_sub_only:'var(--blue)',booked_adc_and_sub:'var(--green)',date_allocated:'var(--green)',tenant_not_responding:'var(--red)',on_hold:'#9ca3af' };
   document.getElementById('status-breakdown').innerHTML = Object.entries(stats.byStatus).map(([s,n])=>
@@ -903,7 +903,7 @@ function openJobDetail(id) {
         ${j.poChasedDate?`<div class="dates-strip" style="margin-top:8px"><div class="date-box"><div class="dlabel">PO Chased Date</div><div class="dval">${fmtDateVal(j.poChasedDate)}</div></div></div>`:''}
       </div>
     </div>
-    ${tnames.length?`<div class="detail-section" style="margin-bottom:16px"><h4>Assigned Trades</h4>
+    ${tnames.length?`<div class="detail-section" style="margin-bottom:16px"><h4>Assigned Subcontractors</h4>
       ${tnames.map(t=>`<div style="display:flex;justify-content:space-between;align-items:center;font-size:0.87rem;padding:6px 0;border-bottom:1px solid var(--surface)">
         <strong>${t.companyName}</strong><span style="color:var(--slate)">${t.contactName} · ${t.contactNumber}</span><span style="color:var(--mist)">${(t.services||[]).join(', ')}</span></div>`).join('')}
     </div>`:''}
@@ -1045,14 +1045,14 @@ function renderTrades() {
   document.getElementById('trades-tbody').innerHTML=trades.length?trades.map(t=>{
     const editBtn=`<button class="btn btn-secondary btn-sm" onclick="openTradeDetail('${t.id}')">View</button><button class="btn btn-ghost btn-sm" onclick="openTradeModal('${t.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteTrade('${t.id}')">Delete</button>`;
     return `<tr><td><strong>${t.companyName}</strong><br><small style="color:var(--mist)">${t.companyAddress||''}</small></td><td>${t.contactName||'—'}</td><td>${t.contactNumber||'—'}</td><td>${t.contactEmail?`<a href="mailto:${t.contactEmail}" style="color:var(--accent)">${t.contactEmail}</a>`:'—'}</td><td>${(t.services||[]).map(s=>`<span style="background:var(--surface);padding:2px 7px;border-radius:4px;font-size:0.78rem;display:inline-block;margin:1px">${s}</span>`).join('')||'—'}</td><td>${badge(t.status,t.status)}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
-  }).join(''):'<tr class="empty-row"><td colspan="7">No trades found</td></tr>';
+  }).join(''):'<tr class="empty-row"><td colspan="7">No subcontractors found</td></tr>';
 }
 const SERVICE_CATEGORIES = ["Access Equipment - Cherry Picker Operators", "Access Equipment - Mobile Elevated Work Platform (MEWP) Technicians", "Access Equipment - Scissor Lift Operators", "Asbestos Management Consultants", "Asbestos Removal Specialists", "Asbestos Surveyors", "Bricklayers", "Civil Engineering - Civil Engineers", "Civil Engineering - Site Engineers", "Cleaning - High-Pressure Cleaning Specialists", "Cleaning - Industrial Cleaners", "Cleaning - Post-Construction Cleaners", "Concrete - Concrete Finishers", "Concrete - Concrete Pump Operators", "Concrete - Ready-Mix Truck Drivers", "Damp and Timber Works - Damp Proofing Specialists", "Damp and Timber Works - Timber Treatment Experts", "Damp and Timber Works - Woodworm and Rot Specialists", "Demolition - Demolition Operatives", "Demolition - Soft Strip Demolition Teams", "Drainage - CCTV Drain Surveyors", "Drainage - Drain Jetting Specialists", "Drainage - Drainage Engineers", "Drilling and Sawing - Concrete Saw Operators", "Drilling and Sawing - Core Drilling Technicians", "Drilling and Sawing - Diamond Drillers", "Dry Lining - Dry Liners", "Dry Lining -Ceiling Fixers", "Dry Lining -Partition Installers", "Electrics – Commercial - Commercial Electricians", "Electrics – Commercial - Electrical Design Engineers", "Electrics – Commercial - Electrical Inspectors", "Electrics – Domestic - Domestic Electricians", "Electrics – Domestic - Electrical Testers", "Electrics – Domestic - Smart Home Installers", "Fabrication - Metal Fabricators", "Fabrication - Sheet Metal Workers", "Fabrication - Welding Specialists", "Fencing - Agricultural Fencing Specialists", "Fencing - Fence Erectors", "Fencing - Security Fencing Installers", "Fenestration (FENSA) - Curtain Walling Specialists", "Fenestration (FENSA) - Glaziers", "Fenestration (FENSA) - Window Installers", "Fire Alarm - Fire Alarm Engineers", "Fire Alarm - Fire Detection System Designers", "Fire Alarm - Maintenance Technicians", "Fire Extinguishers and Equipment - Compliance Inspectors", "Fire Extinguishers and Equipment - Fire Extinguisher Technicians", "Fire Extinguishers and Equipment - Fire Safety Equipment Suppliers", "Fire Protection – Passive - Curtain Walling", "Fire Protection – Passive - Fire Door Installers/Inspectors", "Fire Protection – Passive - Fire Stopping Installers", "Fire Protection – Passive - Intumescent Coating Applicators", "Fitted Interiors – Bathrooms - Bathroom Installers", "Fitted Interiors – Bathrooms - Wet Room Specialists", "Fitted Interiors – Kitchens - Cabinet Makers", "Fitted Interiors – Kitchens - Kitchen Fitters", "Fitted Interiors – Kitchens - Worktop Installers", "Flooring – Cap and Cove Safety Flooring - Commercial Flooring Specialists", "Flooring – Cap and Cove Safety Flooring - Hygienic Flooring Experts", "Flooring – Cap and Cove Safety Flooring - Safety Flooring Installers", "Flooring – Carpets and Lino - Carpet Fitters", "Flooring – Carpets and Lino - Floor Preparation Specialists", "Flooring – Carpets and Lino - Linoleum Installers", "Gas – Commercial - Boiler Installation Technicians", "Gas – Commercial - Commercial Gas Engineers", "Gas – Commercial - Gas Safety Inspectors", "Gas – Domestic - Domestic Gas Engineers", "Gas – Domestic - Gas Appliance Servicers and Testers", "Gas – Domestic - Heating Installers", "General Builders", "General Maintenance and Repair - Handypersons", "General Maintenance and Repair - Property Maintenance Operatives", "General Maintenance and Repair - Reactive Maintenance Teams", "Groundworks - Excavator Operators", "Groundworks - Foundation Specialists", "Groundworks - Groundworkers", "HETAS Engineer - Biomass Boiler Technicians", "HETAS Engineer - Chimney Sweeps", "HETAS Engineer - Solid Fuel Heating Installers", "Health, Safety & Environment - Environmental Consultants", "Health, Safety & Environment - Health and Safety Officers", "Health, Safety & Environment - Site Safety Auditors", "Heritage Works - Conservation Specialists", "Heritage Works - Heritage Bricklayers", "Heritage Works - Restoration Carpenters", "Insulation - Cavity Wall Insulation Specialists", "Insulation - External Wall Insulation Experts", "Insulation - Loft Insulation Installers", "Joinery/Carpentry - Bench Joiners", "Joinery/Carpentry - Shopfitters", "Joinery/Carpentry - Site Carpenters", "Landscaping - Hard Landscaping Specialists", "Landscaping - Landscape Gardeners", "Landscaping - Turf Installers", "Legionella - Compliance Consultants", "Legionella - Legionella Risk Assessors", "Legionella - Water Treatment Engineers", "Locksmith - Emergency Locksmiths", "Locksmith - Safe Engineers", "Locksmith - Security Lock Installers", "Mould - Air Quality Consultants", "Mould - Damp Surveyors", "Mould - Mould Remediation Specialists", "PAT Testing - Compliance Officers", "PAT Testing - Electrical Safety Inspectors", "PAT Testing - Portable Appliance Testing Technicians", "Painting and Decorating - Exterior Painters", "Painting and Decorating - Interior Decorators", "Painting and Decorating - Wallpaper Hangers", "Pest Control - Fumigation Experts", "Pest Control - Pest Control Technicians", "Pest Control - Wildlife Management Specialists", "Plastering - Decorative Plasterers", "Plastering - Skim Coating Specialists", "Plastering - Solid Plasterers", "Plumbing - Bathroom Fitters", "Plumbing - Heating Engineers", "Plumbing - Plumbers General", "Rendering - External Renderers", "Rendering - Monocouche Applicators", "Rendering - Silicone Render Specialists", "Roofing - Flat - Felt Roofers", "Roofing - Flat - Liquid Roofing Specialists", "Roofing - Flat - Single Ply Membrane Installers", "Roofing – Pitched - Roof Tilers", "Roofing – Pitched - Roof Truss Installers", "Roofing – Pitched - Slate Roofers", "Scaffolding - Access Solution Providers", "Scaffolding - Scaffolders", "Scaffolding - Temporary Works Designers", "Security Systems - Access Control Specialists", "Security Systems - Alarm System Engineers", "Security Systems - CCTV Installers", "Shutters and Blinds - Automated Blind Specialists", "Shutters and Blinds - Security Shutter Technicians", "Shutters and Blinds - Window Blind Installers", "Stonemasons", "Structural Engineering - Load-Bearing Assessment Experts", "Structural Engineering - Retaining Wall Designers", "Structural Engineering - Structural Engineers", "Structural Timber Frames - CLT (Cross-Laminated Timber) Installers", "Structural Timber Frames - Off-Site Construction Specialists", "Structural Timber Frames - Timber Frame Erectors", "Sustainability - Air Source Heat Pump Installers", "Sustainability - Biomass Boiler Installation and Maintenance", "Sustainability - EV Charger Installation", "Sustainability - Energy Efficient Lighting", "Sustainability - Rainwater Harvesting", "Sustainability - Solar installers", "Tarmac – Line Markings - Line Marking Technicians", "Tarmac – Line Markings - Road Surfacing Operatives", "Tarmac – Line Markings - Surface Dressing Specialists", "Tiling – Wall and Floor - Floor Tilers", "Tiling – Wall and Floor - Mosaic Specialists", "Tiling – Wall and Floor - Wall Tilers", "Tree Surgeon - Arborists", "Tree Surgeon - Stump Removal Specialists", "Tree Surgeon - Tree Felling Experts", "Unvented Cylinders - G3 Certified Installers", "Unvented Cylinders - Hot Water System Engineers", "Unvented Cylinders - Maintenance Technicians", "Waste Management - Site Clearance", "Waste Management - Skip Hire", "Wood Floor Installation - Hardwood Floor Fitters", "Wood Floor Installation - Laminate Flooring Specialists", "Wood Floor Installation - Parquet Installers", "Other"];
 
 function openTradeModal(id=null) {
   editingId.trade = id;
   serviceTagsArr = [];
-  document.getElementById('trade-modal-title').textContent = id ? 'Edit Trade' : 'New Trade';
+  document.getElementById('trade-modal-title').textContent = id ? 'Edit Subcontractor' : 'New Subcontractor';
   ['companyName','companyAddress','contactName','contactNumber','contactEmail'].forEach(f => document.getElementById('tf-'+f).value = '');
   document.getElementById('tf-status').value = 'active';
   if (id) {
@@ -1141,7 +1141,7 @@ async function saveTrade() {
   else await api('POST','/api/trades',body);
   closeModal('trade-modal'); await loadAll();
 }
-async function deleteTrade(id) { if(!confirm('Delete this trade?')) return; await api('DELETE','/api/trades/'+id); await loadAll(); }
+async function deleteTrade(id) { if(!confirm('Delete this subcontractor?')) return; await api('DELETE','/api/trades/'+id); await loadAll(); }
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 function renderUsers() {
@@ -1653,11 +1653,11 @@ init();
   </div>
 </div>
 
-<!-- ── TRADE DETAIL MODAL ── -->
+<!-- ── SUBCONTRACTOR DETAIL MODAL ── -->
 <div class="modal-overlay" id="trade-detail-modal">
   <div class="modal" style="max-width:780px">
     <div class="modal-header">
-      <div><h3 id="td-name">Trade</h3></div>
+      <div><h3 id="td-name">Subcontractor</h3></div>
       <button class="modal-close" onclick="closeModal('trade-detail-modal')">×</button>
     </div>
     <div class="modal-body" id="td-body"></div>

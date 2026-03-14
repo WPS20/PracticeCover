@@ -263,7 +263,7 @@ app.post('/api/trades', requireAuth, async (req, res) => {
     const { status, companyName, companyAddress, contactName, contactNumber, contactEmail, services } = req.body;
     const result = await query('INSERT INTO trades (id,status,company_name,company_address,contact_name,contact_number,contact_email,services) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [uuidv4(),status,companyName,companyAddress,contactName,contactNumber,contactEmail,services]);
     const t = result.rows[0];
-    await auditLog(req.session.userId, req.session.name, 'created', 'Trade', t.id, `Created trade "${t.company_name}"`);
+    await auditLog(req.session.userId, req.session.name, 'created', 'Trade', t.id, `Created subcontractor "${t.company_name}"`);
     res.status(201).json(normaliseTrade(t));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -279,7 +279,7 @@ app.put('/api/trades/:id', requireAuth, async (req, res) => {
       { status: t.status, name: t.company_name, address: t.company_address, contact: t.contact_name, phone: t.contact_number, email: t.contact_email, services: (t.services||[]).join(', ') },
       { status: 'Status', name: 'Company', address: 'Address', contact: 'Contact', phone: 'Phone', email: 'Email', services: 'Services' }
     ) : null;
-    const desc = `Updated trade "${t.company_name}"${changes ? ' — ' + changes : ''}`;
+    const desc = `Updated subcontractor "${t.company_name}"${changes ? ' — ' + changes : ''}`;
     await auditLog(req.session.userId, req.session.name, 'updated', 'Trade', t.id, desc);
     res.json(normaliseTrade(t));
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -289,7 +289,7 @@ app.delete('/api/trades/:id', requireAuth, async (req, res) => {
     const existing = await query('SELECT company_name FROM trades WHERE id=$1', [req.params.id]);
     const name = existing.rows[0]?.company_name || req.params.id;
     await query('DELETE FROM trades WHERE id=$1', [req.params.id]);
-    await auditLog(req.session.userId, req.session.name, 'deleted', 'Trade', req.params.id, `Deleted trade "${name}"`);
+    await auditLog(req.session.userId, req.session.name, 'deleted', 'Trade', req.params.id, `Deleted subcontractor "${name}"`);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
