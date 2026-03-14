@@ -1695,6 +1695,10 @@ function openCustomerDetail(id) {
       '<div class="detail-section"><h4>Addresses (' + addrs.length + ')</h4>' + addrRows + '</div>' +
     '</div>' +
     '<div class="detail-section" style="margin-bottom:16px"><h4>Jobs (' + jobs.length + ')</h4>' + jobRows + '</div>' +
+    '<div class="detail-section" style="margin-bottom:16px">' +
+      '<h4>Invoices</h4>' +
+      '<div id="cust-inv-list-' + c.id + '"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>' +
+    '</div>' +
     '<div class="detail-section">' +
       '<h4>Attachments</h4>' +
       '<div id="cust-attach-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>' +
@@ -1708,6 +1712,7 @@ function openCustomerDetail(id) {
   document.getElementById('cd-edit-btn').onclick = function() { closeModal('customer-detail-modal'); openCustomerModal(id); };
   document.getElementById('customer-detail-modal').classList.add('open');
   loadAttachments('customer', c.id, 'cust-attach-list');
+  loadCustomerInvoices(c.id);
 }
 
 // ── Trade Detail ───────────────────────────────────────────────────────────────
@@ -2179,6 +2184,15 @@ async function loadJobPOs(jobId) {
 }
 
 // ── Load and render POs for a subcontractor ───────────────────────────────────
+async function loadCustomerInvoices(customerId) {
+  const el = document.getElementById('cust-inv-list-' + customerId);
+  if (!el) return;
+  const data = await api('GET', '/api/invoices?customerId=' + encodeURIComponent(customerId));
+  if (!Array.isArray(data)) { el.innerHTML = '<p style="color:var(--red);font-size:0.85rem">Failed to load invoices</p>'; return; }
+  if (!data.length) { el.innerHTML = '<p style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">No invoices raised for this customer</p>'; return; }
+  el.innerHTML = data.map(inv => invoiceCardHtml(inv, true)).join('');
+}
+
 async function loadTradePOs(tradeId) {
   const el = document.getElementById('trade-po-list-' + tradeId);
   if (!el) return;
