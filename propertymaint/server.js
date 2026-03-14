@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 const multer = require('multer');
+const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, BorderStyle, WidthType, ShadingType, Header, Footer, TabStopType, TabStopPosition, PageNumber, HeadingLevel } = require('docx');
 // Node 18+ has fetch built-in — no need for node-fetch
 
 const app = express();
@@ -787,6 +788,181 @@ app.delete('/api/purchase-orders/:id', requireAuth, async (req, res) => {
     await query('DELETE FROM purchase_orders WHERE id=$1', [req.params.id]);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+
+// ─── PO Stats (for dashboard page) ────────────────────────────────────────────
+app.get('/api/purchase-orders/stats', requireAuth, async (req, res) => {
+  try {
+    const [byStatus, byTrade, byMonth] = await Promise.all([
+      query(`SELECT status, COUNT(*) as count,
+               SUM((SELECT COALESCE(SUM(quantity*unit_cost*(1+vat_rate/100.0)),0) FROM po_items WHERE po_id=purchase_orders.id)) as total
+             FROM purchase_orders GROUP BY status`),
+      query(`SELECT t.company_name, COUNT(p.id) as count,
+               SUM((SELECT COALESCE(SUM(quantity*unit_cost*(1+vat_rate/100.0)),0) FROM po_items WHERE po_id=p.id)) as total
+             FROM purchase_orders p JOIN trades t ON p.trade_id=t.id
+             GROUP BY t.company_name ORDER BY total DESC LIMIT 10`),
+      query(`SELECT TO_CHAR(issue_date,'YYYY-MM') as month, COUNT(*) as count,
+               SUM((SELECT COALESCE(SUM(quantity*unit_cost*(1+vat_rate/100.0)),0) FROM po_items WHERE po_id=purchase_orders.id)) as total
+             FROM purchase_orders WHERE issue_date >= NOW()-INTERVAL '12 months'
+             GROUP BY month ORDER BY month ASC`)
+    ]);
+    res.json({
+      byStatus: byStatus.rows.map(r => ({ status: r.status, count: parseInt(r.count), total: parseFloat(r.total)||0 })),
+      byTrade:  byTrade.rows.map(r  => ({ name: r.company_name, count: parseInt(r.count), total: parseFloat(r.total)||0 })),
+      byMonth:  byMonth.rows.map(r  => ({ month: r.month, count: parseInt(r.count), total: parseFloat(r.total)||0 }))
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── PO Download as DOCX ──────────────────────────────────────────────────────
+app.get('/api/purchase-orders/:id/docx', requireAuth, async (req, res) => {
+  try {
+    const po = await query(PO_JOIN + ' WHERE p.id = $1', [req.params.id]);
+    if (!po.rows.length) return res.status(404).json({ error: 'Not found' });
+    const r = po.rows[0];
+    const items = (await query('SELECT * FROM po_items WHERE po_id=$1 ORDER BY sort_order ASC', [req.params.id])).rows;
+
+    const subtotal = items.reduce((s,i) => s + parseFloat(i.quantity)*parseFloat(i.unit_cost), 0);
+    const vatTotal = items.reduce((s,i) => s + parseFloat(i.quantity)*parseFloat(i.unit_cost)*(parseFloat(i.vat_rate)/100), 0);
+    const grandTotal = subtotal + vatTotal;
+
+    const fmt = (n) => '£' + parseFloat(n||0).toLocaleString('en-GB', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const fmtD = (d) => d ? new Date(d).toLocaleDateString('en-GB') : '—';
+
+    const noBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+    const nb = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+    const tb = { style: BorderStyle.SINGLE, size: 1, color: 'DDE3E8' };
+    const tbs = { top: tb, bottom: tb, left: tb, right: tb };
+    const mc = { top: 80, bottom: 80, left: 120, right: 120 };
+
+    function dc(text, width, opts={}) {
+      return new TableCell({
+        children: [new Paragraph({ alignment: opts.center ? AlignmentType.CENTER : opts.right ? AlignmentType.RIGHT : AlignmentType.LEFT,
+          children: [new TextRun({ text: String(text||''), size: opts.size||18, bold: opts.bold, color: opts.color||'1A2535', font: 'Arial' })] })],
+        borders: opts.nb ? nb : tbs,
+        shading: { fill: opts.fill||'FFFFFF', type: ShadingType.CLEAR },
+        width: width ? { size: width, type: WidthType.DXA } : undefined,
+        margins: mc
+      });
+    }
+
+    function hc(text, width, fill='1C2B3A') {
+      return new TableCell({
+        children: [new Paragraph({ children: [new TextRun({ text, bold: true, size: 18, color: 'FFFFFF', font: 'Arial' })] })],
+        borders: tbs, shading: { fill, type: ShadingType.CLEAR },
+        width: { size: width, type: WidthType.DXA }, margins: mc
+      });
+    }
+
+    const doc = new Document({
+      styles: { default: { document: { run: { font: 'Arial', size: 20 } } } },
+      sections: [{
+        properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 } } },
+        headers: { default: new Header({ children: [
+          new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: '3DB54A', space: 4 } },
+            spacing: { after: 120 },
+            children: [
+              new TextRun({ text: 'ADC Property Desk  ', bold: true, size: 20, color: '1A2535', font: 'Arial' }),
+              new TextRun({ text: 'PURCHASE ORDER', size: 20, color: '6B3FA0', font: 'Arial' })
+            ]})
+        ]})},
+        footers: { default: new Footer({ children: [
+          new Paragraph({ border: { top: { style: BorderStyle.SINGLE, size: 2, color: 'DDE3E8', space: 4 } },
+            spacing: { before: 80 },
+            tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+            children: [
+              new TextRun({ text: 'ADC Property Desk  ·  Confidential', size: 16, color: '8898A8', font: 'Arial' }),
+              new TextRun({ text: '\tPage ', size: 16, color: '8898A8', font: 'Arial' }),
+              new TextRun({ children: [PageNumber.CURRENT], size: 16, color: '8898A8', font: 'Arial' })
+            ]})
+        ]})},
+        children: [
+          // PO number + date header table
+          new Table({ width: { size: 9760, type: WidthType.DXA }, columnWidths: [5800, 3960],
+            rows: [new TableRow({ children: [
+              new TableCell({ children: [
+                new Paragraph({ children: [new TextRun({ text: r.po_number, bold: true, size: 40, color: '1A2535', font: 'Arial' })] }),
+                new Paragraph({ spacing: { before: 40 }, children: [new TextRun({ text: 'PURCHASE ORDER', size: 20, color: '6B3FA0', font: 'Arial' })] })
+              ], borders: nb, margins: mc }),
+              new TableCell({ children: [
+                new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: 'Issued: ' + fmtD(r.issue_date), size: 18, color: '4A5A6A', font: 'Arial' })] }),
+                new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: 'Status: ' + (r.status||'').toUpperCase(), bold: true, size: 18, color: '3DB54A', font: 'Arial' })] })
+              ], borders: nb, margins: mc })
+            ]})]
+          }),
+          new Paragraph({ spacing: { before: 240, after: 0 }, border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: '3DB54A' } }, children: [] }),
+          new Paragraph({ spacing: { before: 240, after: 80 }, children: [] }),
+          // To / For table
+          new Table({ width: { size: 9760, type: WidthType.DXA }, columnWidths: [4880, 4880],
+            rows: [new TableRow({ children: [
+              new TableCell({ children: [
+                new Paragraph({ children: [new TextRun({ text: 'TO (SUBCONTRACTOR)', size: 16, color: '8898A8', bold: true, font: 'Arial' })] }),
+                new Paragraph({ spacing: { before: 60 }, children: [new TextRun({ text: r.trade_name||'', bold: true, size: 22, color: '1A2535', font: 'Arial' })] }),
+                ...(r.trade_address ? [new Paragraph({ children: [new TextRun({ text: r.trade_address, size: 18, color: '4A5A6A', font: 'Arial' })] })] : []),
+                ...(r.trade_contact ? [new Paragraph({ children: [new TextRun({ text: 'Contact: ' + r.trade_contact, size: 18, color: '4A5A6A', font: 'Arial' })] })] : []),
+                ...(r.trade_email   ? [new Paragraph({ children: [new TextRun({ text: r.trade_email, size: 18, color: '3DB54A', font: 'Arial' })] })] : [])
+              ], borders: nb, margins: mc }),
+              new TableCell({ children: [
+                new Paragraph({ children: [new TextRun({ text: 'FOR JOB', size: 16, color: '8898A8', bold: true, font: 'Arial' })] }),
+                new Paragraph({ spacing: { before: 60 }, children: [new TextRun({ text: (r.work_order_id||'') + (r.job_title ? ' – ' + r.job_title : ''), bold: true, size: 20, color: '1A2535', font: 'Arial' })] }),
+                ...(r.customer_name ? [new Paragraph({ children: [new TextRun({ text: 'Customer: ' + r.customer_name, size: 18, color: '4A5A6A', font: 'Arial' })] })] : []),
+                ...(r.address_label ? [new Paragraph({ children: [new TextRun({ text: r.address_label, size: 18, color: '4A5A6A', font: 'Arial' })] })] : [])
+              ], borders: nb, margins: mc })
+            ]})]
+          }),
+          new Paragraph({ spacing: { before: 280, after: 80 }, children: [] }),
+          // Items table
+          new Table({ width: { size: 9760, type: WidthType.DXA }, columnWidths: [5000, 900, 1320, 820, 1720],
+            rows: [
+              new TableRow({ children: [hc('Description',5000,'1C2B3A'), hc('Qty',900,'1C2B3A'), hc('Unit Cost',1320,'1C2B3A'), hc('VAT',820,'1C2B3A'), hc('Line Total',1720,'1C2B3A')] }),
+              ...items.map(i => {
+                const net = parseFloat(i.quantity)*parseFloat(i.unit_cost);
+                const vatAmt = net*(parseFloat(i.vat_rate)/100);
+                return new TableRow({ children: [
+                  dc(i.description, 5000),
+                  dc(String(parseFloat(i.quantity)), 900, { center: true }),
+                  dc(fmt(i.unit_cost), 1320, { right: true }),
+                  dc(parseFloat(i.vat_rate)+'%', 820, { center: true }),
+                  dc(fmt(net+vatAmt), 1720, { right: true })
+                ]});
+              }),
+              // Subtotal
+              new TableRow({ children: [
+                new TableCell({ children: [new Paragraph({ children: [] })], columnSpan: 3, borders: tbs }),
+                dc('Subtotal', 820, { right: true, fill: 'F4F6F8', bold: true }),
+                dc(fmt(subtotal), 1720, { right: true, fill: 'F4F6F8' })
+              ]}),
+              new TableRow({ children: [
+                new TableCell({ children: [new Paragraph({ children: [] })], columnSpan: 3, borders: tbs }),
+                dc('VAT', 820, { right: true, fill: 'F4F6F8', bold: true }),
+                dc(fmt(vatTotal), 1720, { right: true, fill: 'F4F6F8' })
+              ]}),
+              new TableRow({ children: [
+                new TableCell({ children: [new Paragraph({ children: [] })], columnSpan: 3, borders: tbs }),
+                dc('TOTAL', 820, { right: true, fill: '1C2B3A', bold: true, color: 'FFFFFF' }),
+                dc(fmt(grandTotal), 1720, { right: true, fill: '3DB54A', bold: true, color: 'FFFFFF' })
+              ]})
+            ]
+          }),
+          // Instructions
+          ...(r.instructions ? [
+            new Paragraph({ spacing: { before: 320, after: 120 }, children: [new TextRun({ text: 'Instructions / Additional Details', bold: true, size: 22, color: '1A2535', font: 'Arial' })] }),
+            new Paragraph({ children: [new TextRun({ text: r.instructions, size: 19, color: '4A5A6A', font: 'Arial' })] })
+          ] : []),
+          new Paragraph({ spacing: { before: 400 }, alignment: AlignmentType.CENTER, children: [
+            new TextRun({ text: 'ADC Property Desk  ·  Generated ' + new Date().toLocaleDateString('en-GB'), size: 16, color: '8898A8', font: 'Arial' })
+          ]})
+        ]
+      }]
+    });
+
+    const buffer = await Packer.toBuffer(doc);
+    const filename = (r.po_number || 'PO') + '.docx';
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', 'attachment; filename="' + filename + '"');
+    res.send(buffer);
+  } catch (e) { console.error('DOCX error:', e); res.status(500).json({ error: e.message }); }
 });
 
 // ─── Catch-all & start ────────────────────────────────────────────────────────
