@@ -965,6 +965,292 @@ app.delete('/api/purchase-orders/:id', requireAuth, async (req, res) => {
 });
 
 
+
+// ─── Invoices ─────────────────────────────────────────────────────────────────
+
+async function nextInvoiceNumber() {
+  const r = await query("SELECT invoice_number FROM invoices ORDER BY created_at DESC LIMIT 1");
+  if (!r.rows.length) return 'INV-0001';
+  const last = r.rows[0].invoice_number;
+  const m = last.match(/(\d+)$/);
+  const n = m ? parseInt(m[1]) + 1 : 1;
+  return 'INV-' + String(n).padStart(4, '0');
+}
+
+function normaliseInvoice(r, items) {
+  return {
+    id: r.id, invoiceNumber: r.invoice_number,
+    jobId: r.job_id, customerId: r.customer_id,
+    customerName: r.customer_name || null,
+    customerEmail: r.customer_email || null,
+    customerPhone: r.customer_phone || null,
+    jobTitle: r.job_title || null, workOrderId: r.work_order_id || null,
+    addressLabel: r.address_label || null,
+    dateWorkCompleted: r.date_work_completed ? r.date_work_completed.toISOString().split('T')[0] : null,
+    status: r.status,
+    invoiceDate: r.invoice_date ? r.invoice_date.toISOString().split('T')[0] : '',
+    paymentDue:  r.payment_due  ? r.payment_due.toISOString().split('T')[0]  : '',
+    datePaid:    r.date_paid    ? r.date_paid.toISOString().split('T')[0]    : null,
+    notes: r.notes || '',
+    createdBy: r.created_by, createdByName: r.created_by_name || null,
+    createdAt: r.created_at, updatedAt: r.updated_at,
+    items: (items || []).map(i => ({
+      id: i.id, description: i.description,
+      quantity: parseFloat(i.quantity), unitCost: parseFloat(i.unit_cost),
+      vatRate: parseFloat(i.vat_rate), sortOrder: i.sort_order
+    }))
+  };
+}
+
+const INV_JOIN = `
+  SELECT i.*,
+    c.name  AS customer_name, c.email AS customer_email, c.phone AS customer_phone,
+    j.title AS job_title, j.work_order_id, j.date_work_completed,
+    COALESCE(a.label || ' – ' || a.line1, a.line1) || ', ' || a.postcode AS address_label,
+    u.name  AS created_by_name
+  FROM invoices i
+  LEFT JOIN customers c ON i.customer_id = c.id
+  LEFT JOIN jobs j      ON i.job_id      = j.id
+  LEFT JOIN addresses a ON j.address_id  = a.id
+  LEFT JOIN users u     ON i.created_by  = u.id`;
+
+// ── GET stats (MUST be before /:id) ──────────────────────────────────────────
+app.get('/api/invoices/stats', requireAuth, async (req, res) => {
+  try {
+    const [byStatus, byCustomer, byMonth] = await Promise.all([
+      query(`SELECT status, COUNT(*) as count,
+               SUM((SELECT COALESCE(SUM(quantity*unit_cost*(1+vat_rate/100.0)),0)
+                    FROM invoice_items WHERE invoice_id=invoices.id)) as total
+             FROM invoices GROUP BY status`),
+      query(`SELECT c.name, COUNT(i.id) as count,
+               SUM((SELECT COALESCE(SUM(quantity*unit_cost*(1+vat_rate/100.0)),0)
+                    FROM invoice_items WHERE invoice_id=i.id)) as total
+             FROM invoices i JOIN customers c ON i.customer_id=c.id
+             GROUP BY c.name ORDER BY total DESC LIMIT 10`),
+      query(`SELECT TO_CHAR(invoice_date,'YYYY-MM') as month, COUNT(*) as count,
+               SUM((SELECT COALESCE(SUM(quantity*unit_cost*(1+vat_rate/100.0)),0)
+                    FROM invoice_items WHERE invoice_id=invoices.id)) as total
+             FROM invoices WHERE invoice_date >= NOW()-INTERVAL '12 months'
+             GROUP BY month ORDER BY month ASC`)
+    ]);
+    res.json({
+      byStatus:   byStatus.rows.map(r   => ({ status: r.status,  count: parseInt(r.count), total: parseFloat(r.total)||0 })),
+      byCustomer: byCustomer.rows.map(r => ({ name: r.name,      count: parseInt(r.count), total: parseFloat(r.total)||0 })),
+      byMonth:    byMonth.rows.map(r    => ({ month: r.month,    count: parseInt(r.count), total: parseFloat(r.total)||0 }))
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── GET docx (MUST be before /:id) ───────────────────────────────────────────
+app.get('/api/invoices/:id/docx', requireAuth, async (req, res) => {
+  try {
+    const inv = await query(INV_JOIN + ' WHERE i.id = $1', [req.params.id]);
+    if (!inv.rows.length) return res.status(404).json({ error: 'Not found' });
+    const r = inv.rows[0];
+    const items = (await query('SELECT * FROM invoice_items WHERE invoice_id=$1 ORDER BY sort_order ASC', [req.params.id])).rows;
+
+    const subtotal   = items.reduce((s,i) => s + parseFloat(i.quantity)*parseFloat(i.unit_cost), 0);
+    const vatTotal   = items.reduce((s,i) => s + parseFloat(i.quantity)*parseFloat(i.unit_cost)*(parseFloat(i.vat_rate)/100), 0);
+    const grandTotal = subtotal + vatTotal;
+    const fmt  = n => '£' + parseFloat(n||0).toLocaleString('en-GB', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const fmtD = d => d ? new Date(d).toLocaleDateString('en-GB') : '—';
+
+    const noBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+    const nb  = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+    const tb  = { style: BorderStyle.SINGLE, size: 1, color: 'DDE3E8' };
+    const tbs = { top: tb, bottom: tb, left: tb, right: tb };
+    const mc  = { top: 80, bottom: 80, left: 120, right: 120 };
+
+    const dc = (text, width, opts={}) => new TableCell({
+      children: [new Paragraph({ alignment: opts.center ? AlignmentType.CENTER : opts.right ? AlignmentType.RIGHT : AlignmentType.LEFT,
+        children: [new TextRun({ text: String(text||''), size: opts.size||18, bold: opts.bold, color: opts.color||'1A2535', font: 'Arial' })] })],
+      borders: opts.nb ? nb : tbs,
+      shading: { fill: opts.fill||'FFFFFF', type: ShadingType.CLEAR },
+      width: width ? { size: width, type: WidthType.DXA } : undefined,
+      margins: mc
+    });
+
+    const hc = (text, width, fill='1C2B3A') => new TableCell({
+      children: [new Paragraph({ children: [new TextRun({ text, bold: true, size: 18, color: 'FFFFFF', font: 'Arial' })] })],
+      borders: tbs, shading: { fill, type: ShadingType.CLEAR },
+      width: { size: width, type: WidthType.DXA }, margins: mc
+    });
+
+    const statusColor = { draft:'8898A8', sent:'2563EB', paid:'1A9467', overdue:'DC2626', cancelled:'9CA3AF' };
+
+    const doc = new Document({
+      styles: { default: { document: { run: { font: 'Arial', size: 20 } } } },
+      sections: [{
+        properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 } } },
+        headers: { default: new Header({ children: [new Paragraph({
+          border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: '3DB54A', space: 4 } },
+          spacing: { after: 120 },
+          children: [
+            new TextRun({ text: 'ADC Property Desk  ', bold: true, size: 20, color: '1A2535', font: 'Arial' }),
+            new TextRun({ text: 'INVOICE', size: 20, color: '6B3FA0', font: 'Arial' })
+          ]
+        })]}) },
+        footers: { default: new Footer({ children: [new Paragraph({
+          border: { top: { style: BorderStyle.SINGLE, size: 2, color: 'DDE3E8', space: 4 } },
+          spacing: { before: 80 },
+          tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+          children: [
+            new TextRun({ text: 'ADC Property Desk  ·  Confidential', size: 16, color: '8898A8', font: 'Arial' }),
+            new TextRun({ text: '\tPage ', size: 16, color: '8898A8', font: 'Arial' }),
+            new TextRun({ children: [PageNumber.CURRENT], size: 16, color: '8898A8', font: 'Arial' })
+          ]
+        })]}) },
+        children: [
+          new Table({ width: { size: 9760, type: WidthType.DXA }, columnWidths: [5800, 3960],
+            rows: [new TableRow({ children: [
+              new TableCell({ children: [
+                new Paragraph({ children: [new TextRun({ text: r.invoice_number, bold: true, size: 40, color: '1A2535', font: 'Arial' })] }),
+                new Paragraph({ spacing: { before: 40 }, children: [new TextRun({ text: 'INVOICE', size: 20, color: '6B3FA0', font: 'Arial' })] })
+              ], borders: nb, margins: mc }),
+              new TableCell({ children: [
+                new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: 'Invoice Date: ' + fmtD(r.invoice_date), size: 18, color: '4A5A6A', font: 'Arial' })] }),
+                new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: 'Payment Due: '  + fmtD(r.payment_due),  bold: true, size: 18, color: '1A2535', font: 'Arial' })] }),
+                new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: (r.status||'').toUpperCase(), bold: true, size: 18, color: statusColor[r.status]||'8898A8', font: 'Arial' })] })
+              ], borders: nb, margins: mc })
+            ]})]
+          }),
+          new Paragraph({ spacing: { before: 240, after: 0 }, border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: '3DB54A' } }, children: [] }),
+          new Paragraph({ spacing: { before: 240, after: 80 }, children: [] }),
+          new Table({ width: { size: 9760, type: WidthType.DXA }, columnWidths: [4880, 4880],
+            rows: [new TableRow({ children: [
+              new TableCell({ children: [
+                new Paragraph({ children: [new TextRun({ text: 'TO (CUSTOMER)', size: 16, color: '8898A8', bold: true, font: 'Arial' })] }),
+                new Paragraph({ spacing: { before: 60 }, children: [new TextRun({ text: r.customer_name||'', bold: true, size: 22, color: '1A2535', font: 'Arial' })] }),
+                ...(r.customer_email ? [new Paragraph({ children: [new TextRun({ text: r.customer_email, size: 18, color: '3DB54A', font: 'Arial' })] })] : []),
+                ...(r.customer_phone ? [new Paragraph({ children: [new TextRun({ text: r.customer_phone, size: 18, color: '4A5A6A', font: 'Arial' })] })] : [])
+              ], borders: nb, margins: mc }),
+              new TableCell({ children: [
+                new Paragraph({ children: [new TextRun({ text: 'FOR JOB', size: 16, color: '8898A8', bold: true, font: 'Arial' })] }),
+                new Paragraph({ spacing: { before: 60 }, children: [new TextRun({ text: (r.work_order_id||'') + (r.job_title ? ' – ' + r.job_title : ''), bold: true, size: 20, color: '1A2535', font: 'Arial' })] }),
+                ...(r.address_label ? [new Paragraph({ children: [new TextRun({ text: r.address_label, size: 18, color: '4A5A6A', font: 'Arial' })] })] : []),
+                ...(r.date_work_completed ? [new Paragraph({ children: [new TextRun({ text: 'Work Completed: ' + fmtD(r.date_work_completed), size: 18, color: '4A5A6A', font: 'Arial' })] })] : [])
+              ], borders: nb, margins: mc })
+            ]})]
+          }),
+          new Paragraph({ spacing: { before: 280, after: 80 }, children: [] }),
+          new Table({ width: { size: 9760, type: WidthType.DXA }, columnWidths: [5000, 900, 1320, 820, 1720],
+            rows: [
+              new TableRow({ children: [hc('Description',5000), hc('Qty',900), hc('Unit Cost',1320), hc('VAT',820), hc('Line Total',1720)] }),
+              ...items.map(i => {
+                const net = parseFloat(i.quantity)*parseFloat(i.unit_cost);
+                const vatAmt = net*(parseFloat(i.vat_rate)/100);
+                return new TableRow({ children: [
+                  dc(i.description,5000), dc(String(parseFloat(i.quantity)),900,{center:true}),
+                  dc(fmt(i.unit_cost),1320,{right:true}), dc(parseFloat(i.vat_rate)+'%',820,{center:true}),
+                  dc(fmt(net+vatAmt),1720,{right:true})
+                ]});
+              }),
+              new TableRow({ children: [new TableCell({children:[new Paragraph({children:[]})],columnSpan:3,borders:tbs}), dc('Subtotal',820,{right:true,fill:'F4F6F8',bold:true}), dc(fmt(subtotal),1720,{right:true,fill:'F4F6F8'})] }),
+              new TableRow({ children: [new TableCell({children:[new Paragraph({children:[]})],columnSpan:3,borders:tbs}), dc('VAT',820,{right:true,fill:'F4F6F8',bold:true}), dc(fmt(vatTotal),1720,{right:true,fill:'F4F6F8'})] }),
+              new TableRow({ children: [new TableCell({children:[new Paragraph({children:[]})],columnSpan:3,borders:tbs}), dc('TOTAL DUE',820,{right:true,fill:'1C2B3A',bold:true,color:'FFFFFF'}), dc(fmt(grandTotal),1720,{right:true,fill:'3DB54A',bold:true,color:'FFFFFF'})] })
+            ]
+          }),
+          ...(r.notes ? [
+            new Paragraph({ spacing:{before:320,after:120}, children:[new TextRun({text:'Notes',bold:true,size:22,color:'1A2535',font:'Arial'})] }),
+            new Paragraph({ children:[new TextRun({text:r.notes,size:19,color:'4A5A6A',font:'Arial'})] })
+          ] : []),
+          new Paragraph({ spacing:{before:400}, alignment:AlignmentType.CENTER, children:[
+            new TextRun({text:'ADC Property Desk  ·  Generated ' + new Date().toLocaleDateString('en-GB'), size:16, color:'8898A8', font:'Arial'})
+          ]})
+        ]
+      }]
+    });
+
+    const buffer = await Packer.toBuffer(doc);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', 'attachment; filename="' + r.invoice_number + '.docx"');
+    res.send(buffer);
+  } catch (e) { console.error('Invoice DOCX error:', e); res.status(500).json({ error: e.message }); }
+});
+
+// ── List invoices ─────────────────────────────────────────────────────────────
+app.get('/api/invoices', requireAuth, async (req, res) => {
+  try {
+    const { jobId, customerId } = req.query;
+    let where = ''; const params = [];
+    if (jobId)      { where = ' WHERE i.job_id = $1';      params.push(jobId); }
+    else if (customerId) { where = ' WHERE i.customer_id = $1'; params.push(customerId); }
+    const invs = await query(INV_JOIN + where + ' ORDER BY i.created_at DESC', params);
+    const ids = invs.rows.map(r => r.id);
+    const itemsMap = {};
+    if (ids.length) {
+      const items = await query('SELECT * FROM invoice_items WHERE invoice_id = ANY($1) ORDER BY sort_order ASC', [ids]);
+      items.rows.forEach(i => { if (!itemsMap[i.invoice_id]) itemsMap[i.invoice_id] = []; itemsMap[i.invoice_id].push(i); });
+    }
+    res.json(invs.rows.map(r => normaliseInvoice(r, itemsMap[r.id] || [])));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Get single invoice ────────────────────────────────────────────────────────
+app.get('/api/invoices/:id', requireAuth, async (req, res) => {
+  try {
+    const inv = await query(INV_JOIN + ' WHERE i.id = $1', [req.params.id]);
+    if (!inv.rows.length) return res.status(404).json({ error: 'Not found' });
+    const items = await query('SELECT * FROM invoice_items WHERE invoice_id=$1 ORDER BY sort_order ASC', [req.params.id]);
+    res.json(normaliseInvoice(inv.rows[0], items.rows));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Create invoice ────────────────────────────────────────────────────────────
+app.post('/api/invoices', requireAuth, async (req, res) => {
+  try {
+    const { jobId, customerId, invoiceDate, paymentDue, status, notes, items } = req.body;
+    if (!jobId || !customerId) return res.status(400).json({ error: 'jobId and customerId required' });
+    const invoiceNumber = await nextInvoiceNumber();
+    const id = uuidv4();
+    const today = new Date().toISOString().split('T')[0];
+    await query(
+      'INSERT INTO invoices (id,invoice_number,job_id,customer_id,status,invoice_date,payment_due,notes,created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+      [id, invoiceNumber, jobId, customerId, status||'draft', invoiceDate||today, paymentDue||today, notes||'', req.session.userId]
+    );
+    if (items && items.length) {
+      await Promise.all(items.map((item, idx) =>
+        query('INSERT INTO invoice_items (id,invoice_id,description,quantity,unit_cost,vat_rate,sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+          [uuidv4(), id, item.description, item.quantity||1, item.unitCost||0, item.vatRate??20, idx])
+      ));
+    }
+    const inv = await query(INV_JOIN + ' WHERE i.id = $1', [id]);
+    const invItems = await query('SELECT * FROM invoice_items WHERE invoice_id=$1 ORDER BY sort_order ASC', [id]);
+    res.status(201).json(normaliseInvoice(inv.rows[0], invItems.rows));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Update invoice ────────────────────────────────────────────────────────────
+app.put('/api/invoices/:id', requireAuth, async (req, res) => {
+  try {
+    const { status, invoiceDate, paymentDue, datePaid, notes, items } = req.body;
+    await query(
+      'UPDATE invoices SET status=$1,invoice_date=$2,payment_due=$3,date_paid=$4,notes=$5,updated_at=NOW() WHERE id=$6',
+      [status, invoiceDate, paymentDue, datePaid||null, notes||'', req.params.id]
+    );
+    await query('DELETE FROM invoice_items WHERE invoice_id=$1', [req.params.id]);
+    if (items && items.length) {
+      await Promise.all(items.map((item, idx) =>
+        query('INSERT INTO invoice_items (id,invoice_id,description,quantity,unit_cost,vat_rate,sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+          [uuidv4(), req.params.id, item.description, item.quantity||1, item.unitCost||0, item.vatRate??20, idx])
+      ));
+    }
+    const inv = await query(INV_JOIN + ' WHERE i.id = $1', [req.params.id]);
+    if (!inv.rows.length) return res.status(404).json({ error: 'Not found' });
+    const invItems = await query('SELECT * FROM invoice_items WHERE invoice_id=$1 ORDER BY sort_order ASC', [req.params.id]);
+    res.json(normaliseInvoice(inv.rows[0], invItems.rows));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Delete invoice ────────────────────────────────────────────────────────────
+app.delete('/api/invoices/:id', requireAuth, async (req, res) => {
+  try {
+    await query('DELETE FROM invoice_items WHERE invoice_id=$1', [req.params.id]);
+    await query('DELETE FROM invoices WHERE id=$1', [req.params.id]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ─── Catch-all & start ────────────────────────────────────────────────────────
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 

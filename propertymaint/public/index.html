@@ -228,6 +228,8 @@
   .po-meta { font-size: 0.8rem; color: var(--mist); margin-top: 2px; }
   .po-actions { display: flex; gap: 6px; }
   .badge-draft        { background: #f3f4f6; color: #6b7280; }
+  .badge-overdue      { background: #fef2f2; color: var(--red); }
+  .badge-paid         { background: #f0fdf4; color: var(--green); }
   .badge-sent         { background: #eff6ff; color: var(--blue); }
   .badge-acknowledged { background: #f0fdf4; color: var(--green); }
   .badge-cancelled    { background: #fef2f2; color: var(--red); }
@@ -361,6 +363,7 @@
       <a onclick="showPage('trades')" data-page="trades"><span class="icon">🔩</span> Subcontractors</a>
       <a onclick="showPage('tasks')" data-page="tasks"><span class="icon">✅</span> Tasks</a>
       <a onclick="showPage('purchase-orders')" data-page="purchase-orders"><span class="icon">📄</span> Purchase Orders</a>
+      <a onclick="showPage('invoices')" data-page="invoices"><span class="icon">🧾</span> Invoicing</a>
       <a onclick="showPage('log')" data-page="log" class="admin-only" style="display:none"><span class="icon">📋</span> Audit Log</a>
       <div class="nav-section admin-only" style="display:none">Admin</div>
       <a onclick="showPage('users')" data-page="users" class="admin-only" style="display:none"><span class="icon">🔑</span> Users</a>
@@ -537,6 +540,53 @@
           <div style="padding:16px" id="all-tasks-list"></div>
         </div>
       </div>
+      <!-- INVOICES PAGE -->
+      <div class="page" id="page-invoices">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header" style="flex-wrap:wrap;gap:10px">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <div class="search-bar"><input type="text" id="inv-page-search" placeholder="Search invoice number, customer, job…" oninput="renderInvoicePage()" style="min-width:260px"></div>
+              <select id="inv-page-status" onchange="renderInvoicePage()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
+                <option value="">All Statuses</option>
+                <option value="draft">Draft</option>
+                <option value="sent">Sent</option>
+                <option value="paid">Paid</option>
+                <option value="overdue">Overdue</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+              <select id="inv-page-customer" onchange="renderInvoicePage()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
+                <option value="">All Customers</option>
+              </select>
+              <div style="display:flex;gap:6px;align-items:center">
+                <input type="date" id="inv-page-from" onchange="renderInvoicePage()" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem" title="Invoice date from">
+                <span style="color:var(--mist);font-size:0.82rem">to</span>
+                <input type="date" id="inv-page-to" onchange="renderInvoicePage()" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem" title="Invoice date to">
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="clearInvoiceFilters()">Clear filters</button>
+          </div>
+        </div>
+        <div id="inv-stat-cards" class="stats-grid" style="margin-bottom:20px"></div>
+        <div class="dashboard-grid" style="margin-bottom:20px">
+          <div class="card">
+            <div class="card-header"><h3>Monthly Invoice Value (£)</h3></div>
+            <div style="padding:16px;height:240px"><canvas id="inv-chart-monthly"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Invoices by Status</h3></div>
+            <div style="padding:16px;height:240px;display:flex;justify-content:center"><canvas id="inv-chart-status" style="max-width:240px"></canvas></div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><h3>Top Customers by Invoice Value</h3></div>
+          <div style="padding:16px;height:220px"><canvas id="inv-chart-customer"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3 id="inv-page-count">Invoices</h3></div>
+          <div style="padding:16px" id="inv-page-list"><div style="text-align:center;padding:40px;color:var(--mist)">Loading…</div></div>
+        </div>
+      </div>
+
       <!-- PURCHASE ORDERS PAGE -->
       <div class="page" id="page-purchase-orders">
         <!-- Filters bar -->
@@ -640,7 +690,7 @@
       <button class="modal-close" onclick="closeModal('job-detail-modal')">×</button>
     </div>
     <div class="modal-body" id="job-detail-body"></div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('job-detail-modal')">Close</button><button class="btn btn-ghost" id="jd-po-btn" onclick="openPoModal()" style="display:none">📄 Raise PO</button><button class="btn btn-primary" id="jd-edit-btn" style="display:none">Edit Job</button></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('job-detail-modal')">Close</button><button class="btn btn-ghost" id="jd-po-btn" onclick="openPoModal()" style="display:none">📄 Raise PO</button><button class="btn btn-ghost" id="jd-inv-btn" onclick="openInvoiceModal()" style="display:none">🧾 Raise Invoice</button><button class="btn btn-primary" id="jd-edit-btn" style="display:none">Edit Job</button></div>
   </div>
 </div>
 
@@ -816,7 +866,7 @@ async function doLogout() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const pageTitles = { dashboard: 'Dashboard', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Subcontractors', users: 'User Management', tasks: 'Tasks', 'purchase-orders': 'Purchase Orders', log: 'Audit Log' };
+const pageTitles = { dashboard: 'Dashboard', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Subcontractors', users: 'User Management', tasks: 'Tasks', 'purchase-orders': 'Purchase Orders', invoices: 'Invoicing', log: 'Audit Log' };
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -838,6 +888,7 @@ function showPage(name) {
   if (name === 'dashboard') { renderDashboard(); }
   if (name === 'tasks') { populateTaskFilters(); loadAllTasks(); }
   if (name === 'purchase-orders') { loadPoPage(); }
+  if (name === 'invoices') { loadInvoicePage(); }
   if (name === 'log') { loadLog(); }
 }
 
@@ -1069,11 +1120,19 @@ function openJobDetail(id) {
       </h4>
       <div id="job-po-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>
     </div>
-  `;
+    <div class="detail-section" style="margin-top:16px">
+      <h4 style="display:flex;justify-content:space-between;align-items:center">Invoices
+        <button class="btn btn-secondary btn-sm" onclick="openInvoiceModal()">+ Raise Invoice</button>
+      </h4>
+      <div id="job-inv-list"><div style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">Loading…</div></div>
+    </div>
+  \`;
   document.getElementById('jd-po-btn').style.display = '';
+  document.getElementById('jd-inv-btn').style.display = '';
   document.getElementById('job-detail-modal').classList.add('open');
   loadAttachments('job', j.id, 'job-attach-list');
   loadJobPOs(j.id);
+  loadJobInvoices(j.id);
   const jobAddrObj = state.addresses.find(a => a.id === j.addressId);
   if (jobAddrObj) {
     const jobAddrStr = [jobAddrObj.line1, jobAddrObj.line2, jobAddrObj.city, jobAddrObj.postcode].filter(Boolean).join(', ');
@@ -2611,6 +2670,423 @@ function downloadPoDocxById(poId) {
   window.location.href = '/api/purchase-orders/' + poId + '/docx';
 }
 
+
+// ── Invoices ───────────────────────────────────────────────────────────────────
+let _currentInvJobId = null;
+let _currentInvId    = null;
+let _invItemCounter  = 0;
+let _allInvoices     = [];
+let _invCharts       = {};
+
+// ── Load invoices for a job ────────────────────────────────────────────────────
+async function loadJobInvoices(jobId) {
+  const el = document.getElementById('job-inv-list');
+  if (!el) return;
+  const data = await api('GET', '/api/invoices?jobId=' + encodeURIComponent(jobId));
+  if (!Array.isArray(data)) { el.innerHTML = '<p style="color:var(--red);font-size:0.85rem">Failed to load invoices</p>'; return; }
+  if (!data.length) { el.innerHTML = '<p style="color:var(--mist);font-size:0.85rem;text-align:center;padding:12px">No invoices yet</p>'; return; }
+  el.innerHTML = data.map(inv => invoiceCardHtml(inv)).join('');
+}
+
+function invoiceCardHtml(inv, showJob = false) {
+  const subtotal = (inv.items||[]).reduce((s,i) => s + i.quantity * i.unitCost, 0);
+  const vat      = (inv.items||[]).reduce((s,i) => s + i.quantity * i.unitCost * (i.vatRate/100), 0);
+  const total    = subtotal + vat;
+  const jobRef   = showJob && inv.jobTitle ? '<span style="color:var(--slate)"> · ' + inv.workOrderId + ' ' + inv.jobTitle + '</span>' : '';
+  const overdueIndicator = inv.status === 'sent' && inv.paymentDue && inv.paymentDue < todayStr()
+    ? '<span style="color:var(--red);font-size:0.78rem;font-weight:600"> ⚠ OVERDUE</span>' : '';
+  return '<div class="po-card">' +
+    '<div class="po-card-header">' +
+      '<div>' +
+        '<span class="po-number">' + inv.invoiceNumber + '</span>' + jobRef + overdueIndicator +
+        '<div class="po-meta">Issued ' + fmtDateVal(inv.invoiceDate) + ' · Due ' + fmtDateVal(inv.paymentDue) + ' · ' + (inv.customerName||'') + ' · Total: <strong>£' + total.toLocaleString('en-GB',{minimumFractionDigits:2}) + '</strong></div>' +
+      '</div>' +
+      '<div class="po-actions">' +
+        badge(inv.status, inv.status) +
+        '<button class="btn btn-ghost btn-sm" onclick="editInvoice(\'' + inv.id + '\')">Edit</button>' +
+        '<button class="btn btn-ghost btn-sm" onclick="viewPrintInvoice(\'' + inv.id + '\')">🖨 Print</button>' +
+        '<button class="btn btn-ghost btn-sm" onclick="downloadInvoiceDocxById(\'' + inv.id + '\')">⬇ Word</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="deleteInvoice(\'' + inv.id + '\')">Del</button>' +
+      '</div>' +
+    '</div>' +
+    (inv.items && inv.items.length ?
+      '<table class="po-items-table"><thead><tr><th>Description</th><th style="text-align:right">Qty</th><th style="text-align:right">Unit Cost</th><th style="text-align:right">VAT</th><th style="text-align:right">Line Total</th></tr></thead><tbody>' +
+      inv.items.map(i => {
+        const lineNet = i.quantity * i.unitCost;
+        const lineVat = lineNet * (i.vatRate/100);
+        return '<tr><td>' + i.description + '</td><td class="td-num">' + i.quantity + '</td><td class="td-num">£' + parseFloat(i.unitCost).toLocaleString('en-GB',{minimumFractionDigits:2}) + '</td><td class="td-num">' + i.vatRate + '%</td><td class="td-num">£' + (lineNet+lineVat).toLocaleString('en-GB',{minimumFractionDigits:2}) + '</td></tr>';
+      }).join('') +
+      '</tbody></table>' +
+      '<div class="po-total-row">' +
+        '<div><span class="total-label">Subtotal </span><span class="total-value">£' + subtotal.toLocaleString('en-GB',{minimumFractionDigits:2}) + '</span></div>' +
+        '<div><span class="total-label">VAT </span><span class="total-value">£' + vat.toLocaleString('en-GB',{minimumFractionDigits:2}) + '</span></div>' +
+        '<div><span class="total-label grand-total">Total Due </span><span class="total-value grand-total">£' + total.toLocaleString('en-GB',{minimumFractionDigits:2}) + '</span></div>' +
+      '</div>'
+    : '') +
+    (inv.notes ? '<div style="margin-top:8px;font-size:0.83rem;color:var(--slate);border-top:1px solid var(--surface);padding-top:8px"><strong>Notes: </strong>' + inv.notes + '</div>' : '') +
+  '</div>';
+}
+
+// ── Open invoice modal ─────────────────────────────────────────────────────────
+async function openInvoiceModal(existingInvId) {
+  const jobTitle = document.getElementById('jd-title')?.textContent;
+  const jobWO    = document.getElementById('jd-workorder')?.textContent?.replace('Work Order: ', '');
+  const j = state.jobs.find(j => j.workOrderId === jobWO) || state.jobs.find(j => j.title === jobTitle);
+  if (!j) return alert('No job context found. Please open a job first.');
+  _currentInvJobId = j.id;
+  _currentInvId    = existingInvId || null;
+
+  const today = new Date().toISOString().split('T')[0];
+
+  // Check date work completed
+  const warnEl = document.getElementById('inv-no-completion-warn');
+  if (warnEl) warnEl.style.display = j.dateWorkCompleted ? 'none' : '';
+
+  // Set customer banner
+  const cust = state.customers.find(c => c.id === j.customerId);
+  if (cust) {
+    document.getElementById('inv-customer-name').textContent = cust.name;
+    document.getElementById('inv-customer-contact').textContent = [cust.contactName, cust.email, cust.phone].filter(Boolean).join(' · ');
+    document.getElementById('inv-customer-banner').style.display = '';
+  }
+
+  // Reset form
+  document.getElementById('inv-invoice-date').value = today;
+  document.getElementById('inv-payment-due').value  = today;
+  document.getElementById('inv-status').value = 'draft';
+  document.getElementById('inv-notes').value  = '';
+  document.getElementById('inv-items-container').innerHTML = '';
+  document.getElementById('inv-print-btn').style.display = 'none';
+  document.getElementById('inv-docx-btn').style.display  = 'none';
+  document.getElementById('inv-date-paid-group').style.display = 'none';
+  _invItemCounter = 0;
+
+  // Status change listener — show date paid when status = paid
+  document.getElementById('inv-status').onchange = function() {
+    document.getElementById('inv-date-paid-group').style.display = this.value === 'paid' ? '' : 'none';
+  };
+
+  if (existingInvId) {
+    const inv = await api('GET', '/api/invoices/' + existingInvId);
+    if (!inv || inv.error) return alert('Failed to load invoice');
+    document.getElementById('inv-modal-title').textContent = 'Edit Invoice';
+    document.getElementById('inv-number').value       = inv.invoiceNumber;
+    document.getElementById('inv-invoice-date').value = inv.invoiceDate;
+    document.getElementById('inv-payment-due').value  = inv.paymentDue;
+    document.getElementById('inv-status').value       = inv.status;
+    document.getElementById('inv-notes').value        = inv.notes || '';
+    document.getElementById('inv-print-btn').style.display = '';
+    document.getElementById('inv-docx-btn').style.display  = '';
+    if (inv.status === 'paid') {
+      document.getElementById('inv-date-paid-group').style.display = '';
+      document.getElementById('inv-date-paid').value = inv.datePaid || '';
+    }
+    (inv.items || []).forEach(i => addInvItem(i));
+  } else {
+    document.getElementById('inv-modal-title').textContent = 'Raise Invoice';
+    document.getElementById('inv-number').value = '(auto)';
+    document.getElementById('inv-modal-subtitle').textContent = j.workOrderId + ' – ' + j.title;
+    // Pre-fill from job
+    const desc = j.title + (j.actionRequired ? ' – ' + j.actionRequired : '');
+    addInvItem({ description: desc, quantity: 1, unitCost: j.priceQuotedExclVat || 0, vatRate: 20 });
+  }
+
+  if (!_invItemCounter) addInvItem();
+  updateInvTotals();
+  document.getElementById('invoice-modal').classList.add('open');
+}
+
+// ── Invoice line items ─────────────────────────────────────────────────────────
+function addInvItem(item) {
+  const idx  = _invItemCounter++;
+  const row  = document.createElement('div');
+  row.className = 'po-item-row';
+  row.id = 'inv-row-' + idx;
+  const desc = item ? (item.description || '') : '';
+  const qty  = item ? (item.quantity  ?? 1)  : 1;
+  const cost = item ? (item.unitCost  ?? 0)  : 0;
+  const vat  = item ? (item.vatRate   ?? 20) : 20;
+  row.innerHTML =
+    '<input type="text"   class="inv-item-desc" placeholder="Description of work…" value="' + desc.replace(/"/g,'&quot;') + '" oninput="updateInvTotals()">' +
+    '<input type="number" class="inv-item-qty"  value="' + qty  + '" min="0" step="0.01" oninput="updateInvTotals()" style="text-align:center">' +
+    '<input type="number" class="inv-item-cost" value="' + cost + '" min="0" step="0.01" oninput="updateInvTotals()" style="text-align:right">' +
+    '<select class="inv-item-vat" onchange="updateInvTotals()">' +
+      '<option value="20"' + (vat==20?' selected':'') + '>20% Standard</option>' +
+      '<option value="5"'  + (vat==5 ?' selected':'') + '>5% Reduced</option>' +
+      '<option value="0"'  + (vat==0 ?' selected':'') + '>0% Zero / Exempt</option>' +
+    '</select>' +
+    '<button class="item-del" onclick="removeInvItem(' + idx + ')" title="Remove">×</button>';
+  document.getElementById('inv-items-container').appendChild(row);
+  updateInvTotals();
+}
+
+function removeInvItem(idx) {
+  const row = document.getElementById('inv-row-' + idx);
+  if (row) row.remove();
+  updateInvTotals();
+}
+
+function updateInvTotals() {
+  let sub = 0, vatT = 0;
+  document.querySelectorAll('#inv-items-container .po-item-row').forEach(row => {
+    const qty  = parseFloat(row.querySelector('.inv-item-qty')?.value)  || 0;
+    const cost = parseFloat(row.querySelector('.inv-item-cost')?.value) || 0;
+    const vat  = parseFloat(row.querySelector('.inv-item-vat')?.value)  || 0;
+    const net  = qty * cost;
+    sub  += net;
+    vatT += net * (vat/100);
+  });
+  document.getElementById('inv-subtotal').textContent    = '£' + sub.toLocaleString('en-GB',{minimumFractionDigits:2});
+  document.getElementById('inv-vat-total').textContent   = '£' + vatT.toLocaleString('en-GB',{minimumFractionDigits:2});
+  document.getElementById('inv-grand-total').textContent = '£' + (sub+vatT).toLocaleString('en-GB',{minimumFractionDigits:2});
+}
+
+function collectInvItems() {
+  const items = [];
+  document.querySelectorAll('#inv-items-container .po-item-row').forEach((row, idx) => {
+    const desc = row.querySelector('.inv-item-desc')?.value?.trim();
+    if (!desc) return;
+    items.push({
+      description: desc,
+      quantity:    parseFloat(row.querySelector('.inv-item-qty')?.value)  || 1,
+      unitCost:    parseFloat(row.querySelector('.inv-item-cost')?.value) || 0,
+      vatRate:     parseFloat(row.querySelector('.inv-item-vat')?.value)  ?? 20,
+      sortOrder:   idx
+    });
+  });
+  return items;
+}
+
+async function saveInvoice() {
+  const j = state.jobs.find(j => j.id === _currentInvJobId);
+  if (!j) return alert('Job not found');
+  if (!j.dateWorkCompleted) {
+    if (!confirm('Date Work Completed is not set on this job. Are you sure you want to raise this invoice?')) return;
+  }
+  const items = collectInvItems();
+  if (!items.length) { alert('Please add at least one item line.'); return; }
+  const status = document.getElementById('inv-status').value;
+  const body = {
+    jobId:       _currentInvJobId,
+    customerId:  j.customerId,
+    invoiceDate: document.getElementById('inv-invoice-date').value,
+    paymentDue:  document.getElementById('inv-payment-due').value,
+    datePaid:    status === 'paid' ? document.getElementById('inv-date-paid').value : null,
+    status,
+    notes:       document.getElementById('inv-notes').value.trim(),
+    items
+  };
+  const result = _currentInvId
+    ? await api('PUT',  '/api/invoices/' + _currentInvId, body)
+    : await api('POST', '/api/invoices', body);
+  if (!result || result.error) { alert(result?.error || 'Save failed'); return; }
+  closeModal('invoice-modal');
+  await loadJobInvoices(_currentInvJobId);
+  showToast('✅ Invoice ' + result.invoiceNumber + ' saved');
+}
+
+async function editInvoice(invId) { await openInvoiceModal(invId); }
+
+async function deleteInvoice(invId) {
+  if (!confirm('Delete this invoice? This cannot be undone.')) return;
+  await api('DELETE', '/api/invoices/' + invId);
+  await loadJobInvoices(_currentInvJobId);
+  showToast('Invoice deleted');
+}
+
+// ── Print invoice ──────────────────────────────────────────────────────────────
+async function viewPrintInvoice(invId) {
+  const inv = await api('GET', '/api/invoices/' + invId);
+  if (!inv || inv.error) return alert('Failed to load invoice');
+  const subtotal = (inv.items||[]).reduce((s,i) => s + i.quantity * i.unitCost, 0);
+  const vat      = (inv.items||[]).reduce((s,i) => s + i.quantity * i.unitCost * (i.vatRate/100), 0);
+  const total    = subtotal + vat;
+  const statusColor = { draft:'#8898a8', sent:'#2563eb', paid:'#1a9467', overdue:'#dc2626', cancelled:'#9ca3af' };
+  const printHtml =
+    '<div style="font-family:Arial,sans-serif;max-width:750px;margin:0 auto;padding:40px 32px;color:#1a2535">' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;border-bottom:3px solid #3db54a;padding-bottom:20px">' +
+      '<div>' +
+        '<div style="font-size:1.8rem;font-weight:800">ADC <span style="color:#6b3fa0">Property Desk</span></div>' +
+        '<div style="font-size:0.85rem;color:#8898a8;margin-top:2px">INVOICE</div>' +
+      '</div>' +
+      '<div style="text-align:right">' +
+        '<div style="font-size:1.4rem;font-weight:700;color:#3db54a">' + inv.invoiceNumber + '</div>' +
+        '<div style="font-size:0.85rem;color:#8898a8">Invoice Date: ' + fmtDateVal(inv.invoiceDate) + '</div>' +
+        '<div style="font-size:0.85rem;font-weight:700;color:#1a2535">Payment Due: ' + fmtDateVal(inv.paymentDue) + '</div>' +
+        '<div style="color:' + (statusColor[inv.status]||'#8898a8') + ';font-weight:700;margin-top:4px">' + inv.status.toUpperCase() + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px">' +
+      '<div>' +
+        '<div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:#8898a8;margin-bottom:6px">To (Customer)</div>' +
+        '<div style="font-weight:700;font-size:1rem">' + (inv.customerName||'') + '</div>' +
+        (inv.customerEmail ? '<div style="font-size:0.87rem;color:#3db54a">' + inv.customerEmail + '</div>' : '') +
+        (inv.customerPhone ? '<div style="font-size:0.87rem;color:#4a5a6a">' + inv.customerPhone + '</div>' : '') +
+      '</div>' +
+      '<div>' +
+        '<div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:#8898a8;margin-bottom:6px">For Job</div>' +
+        '<div style="font-weight:700">' + (inv.workOrderId||'') + ' – ' + (inv.jobTitle||'') + '</div>' +
+        (inv.addressLabel ? '<div style="font-size:0.87rem;color:#4a5a6a">' + inv.addressLabel + '</div>' : '') +
+        (inv.dateWorkCompleted ? '<div style="font-size:0.87rem;color:#4a5a6a">Work Completed: ' + fmtDateVal(inv.dateWorkCompleted) + '</div>' : '') +
+      '</div>' +
+    '</div>' +
+    '<table style="width:100%;border-collapse:collapse;margin-bottom:16px">' +
+    '<thead><tr style="background:#f4f6f8">' +
+      ['Description','Qty','Unit Cost','VAT','Total'].map((h,i) => '<th style="text-align:' + (i===0?'left':'right') + ';padding:10px 12px;font-size:0.78rem;text-transform:uppercase;color:#8898a8;border-bottom:1px solid #dde3e8">' + h + '</th>').join('') +
+    '</tr></thead><tbody>' +
+    (inv.items||[]).map(i => {
+      const net = i.quantity * i.unitCost;
+      const vatAmt = net * (i.vatRate/100);
+      return '<tr><td style="padding:10px 12px;border-bottom:1px solid #f4f6f8">' + i.description + '</td>' +
+        '<td style="text-align:right;padding:10px 12px;border-bottom:1px solid #f4f6f8">' + i.quantity + '</td>' +
+        '<td style="text-align:right;padding:10px 12px;border-bottom:1px solid #f4f6f8">£' + parseFloat(i.unitCost).toLocaleString('en-GB',{minimumFractionDigits:2}) + '</td>' +
+        '<td style="text-align:right;padding:10px 12px;border-bottom:1px solid #f4f6f8">' + i.vatRate + '%</td>' +
+        '<td style="text-align:right;padding:10px 12px;border-bottom:1px solid #f4f6f8">£' + (net+vatAmt).toLocaleString('en-GB',{minimumFractionDigits:2}) + '</td></tr>';
+    }).join('') + '</tbody></table>' +
+    '<div style="display:flex;justify-content:flex-end;margin-bottom:28px">' +
+      '<table style="border-collapse:collapse;font-size:0.88rem">' +
+        '<tr><td style="padding:5px 20px;color:#4a5a6a">Subtotal</td><td style="padding:5px 12px;text-align:right;font-weight:500">£' + subtotal.toLocaleString('en-GB',{minimumFractionDigits:2}) + '</td></tr>' +
+        '<tr><td style="padding:5px 20px;color:#4a5a6a">VAT</td><td style="padding:5px 12px;text-align:right;font-weight:500">£' + vat.toLocaleString('en-GB',{minimumFractionDigits:2}) + '</td></tr>' +
+        '<tr style="border-top:2px solid #1a2535"><td style="padding:8px 20px;font-weight:700;font-size:1rem">TOTAL DUE</td><td style="padding:8px 12px;text-align:right;font-weight:700;font-size:1rem;color:#3db54a">£' + total.toLocaleString('en-GB',{minimumFractionDigits:2}) + '</td></tr>' +
+      '</table>' +
+    '</div>' +
+    (inv.notes ? '<div style="background:#f4f6f8;border-radius:8px;padding:14px 16px;margin-bottom:20px"><div style="font-weight:600;font-size:0.85rem;margin-bottom:6px">Notes / Payment Terms</div><div style="font-size:0.87rem;color:#4a5a6a">' + inv.notes + '</div></div>' : '') +
+    '<div style="font-size:0.78rem;color:#8898a8;text-align:center;border-top:1px solid #dde3e8;padding-top:14px">ADC Property Desk · Generated ' + new Date().toLocaleDateString('en-GB') + '</div>' +
+    '</div>';
+
+  const pw = window.open('', '_blank', 'width=900,height=700');
+  pw.document.write('<!DOCTYPE html><html><head><title>' + inv.invoiceNumber + '</title><style>@media print{body{margin:0}}</style></head><body>' + printHtml + '<script>window.onload=function(){window.print()}<\/script></body></html>');
+  pw.document.close();
+}
+
+function printInvoice() { if (_currentInvId) viewPrintInvoice(_currentInvId); }
+
+function downloadInvoiceDocx() { if (_currentInvId) downloadInvoiceDocxById(_currentInvId); }
+function downloadInvoiceDocxById(invId) { window.location.href = '/api/invoices/' + invId + '/docx'; }
+
+// ── Invoices page ──────────────────────────────────────────────────────────────
+async function loadInvoicePage() {
+  const custSel = document.getElementById('inv-page-customer');
+  if (custSel) {
+    custSel.innerHTML = '<option value="">All Customers</option>' +
+      (state.customers || []).slice().sort((a,b) => a.name.localeCompare(b.name))
+        .map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('');
+  }
+  const data = await api('GET', '/api/invoices');
+  _allInvoices = Array.isArray(data) ? data : [];
+  renderInvoicePage();
+  await loadInvoiceStats();
+}
+
+function clearInvoiceFilters() {
+  ['inv-page-search','inv-page-from','inv-page-to'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['inv-page-status','inv-page-customer'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  renderInvoicePage();
+}
+
+function renderInvoicePage() {
+  const q        = (document.getElementById('inv-page-search')?.value || '').toLowerCase();
+  const status   = document.getElementById('inv-page-status')?.value   || '';
+  const custId   = document.getElementById('inv-page-customer')?.value || '';
+  const from     = document.getElementById('inv-page-from')?.value     || '';
+  const to       = document.getElementById('inv-page-to')?.value       || '';
+
+  const filtered = _allInvoices.filter(inv => {
+    if (status && inv.status !== status)       return false;
+    if (custId && inv.customerId !== custId)   return false;
+    if (from   && inv.invoiceDate < from)       return false;
+    if (to     && inv.invoiceDate > to)         return false;
+    if (q && !(inv.invoiceNumber||'').toLowerCase().includes(q) &&
+             !(inv.customerName||'').toLowerCase().includes(q) &&
+             !(inv.jobTitle||'').toLowerCase().includes(q) &&
+             !(inv.workOrderId||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const countEl = document.getElementById('inv-page-count');
+  if (countEl) countEl.textContent = 'Invoices (' + filtered.length + ')';
+
+  const listEl = document.getElementById('inv-page-list');
+  if (!listEl) return;
+  if (!filtered.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--mist)">No invoices match the current filters</div>';
+    return;
+  }
+  listEl.innerHTML = filtered.map(inv => invoiceCardHtml(inv, true)).join('');
+}
+
+async function loadInvoiceStats() {
+  const stats = await api('GET', '/api/invoices/stats');
+  if (!stats || stats.error) return;
+  renderInvoiceStatCards(stats);
+  renderInvoiceCharts(stats);
+}
+
+function renderInvoiceStatCards(stats) {
+  const el = document.getElementById('inv-stat-cards');
+  if (!el) return;
+  const totalValue = _allInvoices.reduce((s, inv) =>
+    s + (inv.items||[]).reduce((si,i) => si + i.quantity * i.unitCost * (1 + i.vatRate/100), 0), 0);
+  const paidValue = _allInvoices.filter(i => i.status === 'paid').reduce((s, inv) =>
+    s + (inv.items||[]).reduce((si,i) => si + i.quantity * i.unitCost * (1 + i.vatRate/100), 0), 0);
+  const outstanding = _allInvoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, inv) =>
+    s + (inv.items||[]).reduce((si,i) => si + i.quantity * i.unitCost * (1 + i.vatRate/100), 0), 0);
+  const overdue = _allInvoices.filter(i => i.status === 'sent' && i.paymentDue < todayStr()).length;
+  const byStatus = {};
+  (stats.byStatus||[]).forEach(r => { byStatus[r.status] = r; });
+  el.innerHTML =
+    '<div class="stat-card accent"><div class="label">Total Invoices</div><div class="value">' + _allInvoices.length + '</div></div>' +
+    '<div class="stat-card"><div class="label">Total Value (inc. VAT)</div><div class="value" style="font-size:1.4rem">£' + totalValue.toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:0}) + '</div></div>' +
+    '<div class="stat-card" style="border-top:3px solid var(--green)"><div class="label">Paid</div><div class="value" style="color:var(--green);font-size:1.4rem">£' + paidValue.toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:0}) + '</div></div>' +
+    '<div class="stat-card" style="border-top:3px solid var(--amber)"><div class="label">Outstanding</div><div class="value" style="color:var(--amber);font-size:1.4rem">£' + outstanding.toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:0}) + '</div></div>' +
+    '<div class="stat-card" style="border-top:3px solid var(--red)"><div class="label">Overdue</div><div class="value" style="color:var(--red)">' + overdue + '</div></div>' +
+    '<div class="stat-card"><div class="label">Draft</div><div class="value">' + (byStatus.draft?.count||0) + '</div></div>';
+}
+
+function renderInvoiceCharts(stats) {
+  Object.values(_invCharts).forEach(c => c.destroy());
+  _invCharts = {};
+
+  const monthCtx = document.getElementById('inv-chart-monthly');
+  if (monthCtx && stats.byMonth && stats.byMonth.length) {
+    _invCharts.monthly = new Chart(monthCtx, {
+      type: 'bar',
+      data: {
+        labels: stats.byMonth.map(m => { const [y,mo] = m.month.split('-'); return new Date(parseInt(y),parseInt(mo)-1).toLocaleDateString('en-GB',{month:'short',year:'2-digit'}); }),
+        datasets: [{ label: 'Invoice Value (£)', data: stats.byMonth.map(m => parseFloat(m.total)||0), backgroundColor: 'rgba(107,63,160,0.75)', borderColor: '#6b3fa0', borderWidth: 1.5, borderRadius: 5 }]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+        scales: { y: { ticks: { callback: v => '£' + v.toLocaleString('en-GB') }, grid:{color:'#f0f0f0'} }, x: { grid:{display:false} } } }
+    });
+  }
+
+  const statusCtx = document.getElementById('inv-chart-status');
+  if (statusCtx && stats.byStatus && stats.byStatus.length) {
+    const colors = { draft:'#9ca3af', sent:'#2563eb', paid:'#1a9467', overdue:'#dc2626', cancelled:'#e5e7eb' };
+    _invCharts.status = new Chart(statusCtx, {
+      type: 'doughnut',
+      data: {
+        labels: stats.byStatus.map(s => s.status.charAt(0).toUpperCase() + s.status.slice(1)),
+        datasets: [{ data: stats.byStatus.map(s => s.count), backgroundColor: stats.byStatus.map(s => colors[s.status]||'#8898a8'), borderWidth:2, borderColor:'#ffffff' }]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:12,font:{size:12}}}}, cutout:'65%' }
+    });
+  }
+
+  const custCtx = document.getElementById('inv-chart-customer');
+  if (custCtx && stats.byCustomer && stats.byCustomer.length) {
+    _invCharts.customer = new Chart(custCtx, {
+      type: 'bar',
+      data: {
+        labels: stats.byCustomer.map(c => c.name),
+        datasets: [{ label: 'Invoice Value (£)', data: stats.byCustomer.map(c => parseFloat(c.total)||0), backgroundColor: 'rgba(61,181,74,0.75)', borderColor: '#3db54a', borderWidth:1.5, borderRadius:4 }]
+      },
+      options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+        scales: { x:{ ticks:{callback: v => '£' + v.toLocaleString('en-GB')}, grid:{color:'#f0f0f0'} }, y:{grid:{display:false}} } }
+    });
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('click', e => {
   const dd = document.getElementById('trade-cat-dropdown');
@@ -2777,6 +3253,84 @@ init();
 
 <!-- Print area for PO -->
 <div id="po-print-area"></div>
+
+<!-- ── INVOICE MODAL ── -->
+<div class="modal-overlay" id="invoice-modal">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-header">
+      <div>
+        <h3 id="inv-modal-title">Raise Invoice</h3>
+        <div id="inv-modal-subtitle" style="font-size:0.8rem;color:var(--mist);margin-top:2px"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('invoice-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- Work completed warning -->
+      <div id="inv-no-completion-warn" style="display:none;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.87rem;color:#92400e">
+        ⚠️ <strong>Date Work Completed is not set on this job.</strong> Please update the job before raising an invoice.
+      </div>
+      <!-- Customer info banner -->
+      <div id="inv-customer-banner" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.87rem">
+        <strong id="inv-customer-name"></strong>
+        <span id="inv-customer-contact" style="color:var(--slate);margin-left:10px"></span>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Invoice Number</label>
+          <input id="inv-number" readonly style="background:var(--surface);color:var(--slate)">
+        </div>
+        <div class="form-group">
+          <label>Invoice Date</label>
+          <input type="date" id="inv-invoice-date">
+        </div>
+        <div class="form-group">
+          <label>Payment Due Date</label>
+          <input type="date" id="inv-payment-due">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="inv-status">
+            <option value="draft">Draft</option>
+            <option value="sent">Sent</option>
+            <option value="paid">Paid</option>
+            <option value="overdue">Overdue</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="form-group" id="inv-date-paid-group" style="display:none">
+          <label>Date Paid</label>
+          <input type="date" id="inv-date-paid">
+        </div>
+      </div>
+      <!-- Items -->
+      <div style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <label style="font-size:0.8rem;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:1px">Items</label>
+          <button class="btn btn-secondary btn-sm" onclick="addInvItem()">+ Add Line</button>
+        </div>
+        <div class="po-items-header">
+          <span>Description</span><span style="text-align:center">Qty</span><span style="text-align:right">Unit Cost</span><span style="text-align:center">VAT %</span><span></span>
+        </div>
+        <div id="inv-items-container"></div>
+        <div class="po-running-total" id="inv-running-total">
+          <div><span>Subtotal: </span><strong id="inv-subtotal">£0.00</strong></div>
+          <div><span>VAT: </span><strong id="inv-vat-total">£0.00</strong></div>
+          <div><span class="grand">Total Due: </span><strong class="grand" id="inv-grand-total">£0.00</strong></div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:14px">
+        <label>Notes / Payment Terms</label>
+        <textarea id="inv-notes" rows="3" placeholder="Payment terms, bank details, reference numbers…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('invoice-modal')">Cancel</button>
+      <button class="btn btn-ghost" onclick="printInvoice()" id="inv-print-btn" style="display:none">🖨 Print / PDF</button>
+      <button class="btn btn-ghost" onclick="downloadInvoiceDocx()" id="inv-docx-btn" style="display:none">⬇ Download Word</button>
+      <button class="btn btn-primary" onclick="saveInvoice()">Save Invoice</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── COMPLIANCE PROMPT MODAL ── -->
 <div class="modal-overlay" id="compliance-modal">
