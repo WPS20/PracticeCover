@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ADC Property Desk</title>
+<title>PracticeCover</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -13,11 +13,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #1a2535; --ink2: #243040; --slate: #4a5a6a; --mist: #8898a8;
-    --border: #dde3e8; --surface: #f4f6f8; --white: #ffffff;
-    --accent: #3db54a; --accent2: #6b3fa0;
-    --green: #3db54a; --amber: #d97706; --red: #dc2626; --blue: #1e90d4; --purple: #6b3fa0;
-    --sidebar: #6b3fa0; --sidebar-accent: #3db54a;
+    --ink: #0d2133; --ink2: #1a3a52; --slate: #3d5a72; --mist: #7a9ab0;
+    --border: #d8e4ec; --surface: #f0f5f8; --white: #ffffff;
+    --accent: #00b4a2; --accent2: #0d6eaa;
+    --green: #22c55e; --amber: #d97706; --red: #dc2626; --blue: #0d6eaa; --purple: #6941c6;
+    --sidebar: #0c2d48; --sidebar-accent: #00b4a2;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Inter', sans-serif; background: var(--surface); color: var(--ink); min-height: 100vh; display: flex; }
@@ -67,7 +67,7 @@
   #topbar h2 { font-family: 'Raleway', sans-serif; font-size: 1.4rem; color: var(--ink); font-weight: 700; letter-spacing: -0.3px; }
   .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; font-family: 'Inter', sans-serif; }
   .btn-primary { background: var(--accent); color: #fff; letter-spacing: 0.2px; }
-  .btn-primary:hover { background: #2d9e3a; }
+  .btn-primary:hover { background: #009688; }
   .btn-secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--border); }
   .btn-secondary:hover { background: var(--border); }
   .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
@@ -619,10 +619,15 @@
 <div id="login-screen" class="active">
   <div class="login-box">
     <div class="login-logo">
-      <img src="https://adcpropertysolutions.co.uk/wp-content/uploads/2015/09/ADC_Property_Logo_main2.png"
-           alt="ADC Property Solutions" class="login-logo-img">
-      <h1>ADC <span>Property Desk</span></h1>
-      <p>Property Management System</p>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="44" height="44" rx="10" fill="#0c2d48"/>
+          <path d="M22 8L10 16v4h2v12h4V22h12v10h4V20h2v-4L22 8z" fill="#00b4a2"/>
+          <rect x="18" y="26" width="8" height="6" rx="1" fill="#ffffff"/>
+        </svg>
+        <h1 style="font-family:Raleway,sans-serif;font-size:1.8rem;font-weight:800;color:#0c2d48;letter-spacing:-0.5px">Practice<span style="color:#00b4a2">Cover</span></h1>
+      </div>
+      <p style="color:#7a9ab0;font-size:0.82rem;letter-spacing:1px;text-transform:uppercase">Client Management System</p>
     </div>
     <div class="login-error" id="login-error"></div>
     <div class="form-grid cols-1" style="gap:12px">
@@ -644,17 +649,24 @@
 <div id="app">
   <div id="sidebar">
     <div class="logo">
-      <img src="https://adcpropertysolutions.co.uk/wp-content/uploads/2015/09/ADC_Property_Logo_main2.png"
-           alt="ADC Property Solutions" class="logo-img">
-      <div class="logo-title">Property <span>Desk</span></div>
-      <small>Property Management System</small>
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:4px">
+        <svg width="32" height="32" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="44" height="44" rx="10" fill="rgba(255,255,255,0.12)"/>
+          <path d="M22 8L10 16v4h2v12h4V22h12v10h4V20h2v-4L22 8z" fill="#00b4a2"/>
+          <rect x="18" y="26" width="8" height="6" rx="1" fill="#ffffff"/>
+        </svg>
+        <div>
+          <div class="logo-title">Practice<span>Cover</span></div>
+          <small>Client Management</small>
+        </div>
+      </div>
     </div>
     <nav>
       <div class="nav-section">Overview</div>
       <a class="active" onclick="showPage('dashboard')" data-page="dashboard"><span class="icon">📊</span> Dashboard</a>
       <div class="nav-section">Management</div>
       <a onclick="showPage('jobs')" data-page="jobs"><span class="icon">🔧</span> Jobs</a>
-      <a onclick="showPage('customers')" data-page="customers"><span class="icon">🏢</span> Customers</a>
+      <a onclick="showPage('customers')" data-page="customers"><span class="icon">🏥</span> Practices</a>
       <a onclick="showPage('addresses')" data-page="addresses"><span class="icon">📍</span> Addresses</a>
       <a onclick="showPage('trades')" data-page="trades"><span class="icon">🔩</span> Subcontractors</a>
       <a onclick="showPage('tasks')" data-page="tasks"><span class="icon">✅</span> Tasks</a>
@@ -740,7 +752,7 @@
           <div class="card-header">
             <div class="search-bar"><input type="text" placeholder="Search customers…" id="cust-search" oninput="renderCustomers()"></div>
           </div>
-          <table><thead><tr><th>Name</th><th>Type</th><th>Contact</th><th>Email</th><th>Phone / Mobile</th><th>Addresses</th><th></th></tr></thead>
+          <table><thead><tr><th>Full Name</th><th>Practice Name</th><th>Business Type</th><th>Status</th><th>Email</th><th>Telephone</th><th></th></tr></thead>
           <tbody id="customers-tbody"></tbody></table>
         </div>
       </div>
@@ -1097,19 +1109,110 @@
 
 <!-- ── CUSTOMER MODAL ── -->
 <div class="modal-overlay" id="customer-modal">
-  <div class="modal">
-    <div class="modal-header"><h3 id="cust-modal-title">New Customer</h3><button class="modal-close" onclick="closeModal('customer-modal')">×</button></div>
+  <div class="modal" style="max-width:860px">
+    <div class="modal-header"><h3 id="cust-modal-title">New Practice</h3><button class="modal-close" onclick="closeModal('customer-modal')">×</button></div>
     <div class="modal-body">
-      <div class="form-grid">
-        <div class="form-group"><label>Type *</label><select id="cf-type"><option value="managing_agent">Managing Agent</option><option value="individual">Individual</option></select></div>
-        <div class="form-group"><label>Name *</label><input id="cf-name"></div>
-        <div class="form-group"><label>Email</label><input id="cf-email" type="email" placeholder="email@example.com"></div>
-        <div class="form-group"><label>Phone</label><input id="cf-phone" type="tel" placeholder="Office or main number"></div>
-        <div class="form-group"><label>Contact Name</label><input id="cf-contactName" placeholder="Primary contact person"></div>
-        <div class="form-group"><label>Contact Mobile</label><input id="cf-contactMobile" type="tel" placeholder="Mobile number"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px">
+        <!-- LEFT COLUMN -->
+        <div>
+          <div style="font-size:0.7rem;font-weight:700;color:var(--mist);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)">Contact Details</div>
+          <div class="form-grid cols-1" style="gap:10px">
+            <div class="form-group"><label>Full Name *</label><input id="cf-name" placeholder="e.g. Dr Jane Smith"></div>
+            <div class="form-group"><label>Name of Contact</label><input id="cf-contactName" placeholder="Primary contact person"></div>
+            <div class="form-group"><label>Email Address</label><input id="cf-email" type="email" placeholder="email@example.com"></div>
+            <div class="form-group"><label>Telephone Number</label><input id="cf-phone" type="tel" placeholder="e.g. 01234 567890"></div>
+            <div class="form-group"><label>Mobile Number</label><input id="cf-contactMobile" type="tel" placeholder="Mobile number"></div>
+            <div class="form-group"><label>Status</label>
+              <select id="cf-status">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="prospect">Prospect</option>
+                <option value="lapsed">Lapsed</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>ERN Number / Exempt?</label>
+              <div style="display:grid;grid-template-columns:1fr auto;gap:8px">
+                <input id="cf-ernNumber" placeholder="ERN number">
+                <select id="cf-ernExempt" style="width:80px">
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group"><label>Year Business Established</label><input id="cf-yearEstablished" type="number" min="1800" max="2099" placeholder="e.g. 1995"></div>
+            <div class="form-group"><label>Number of Subsidiaries</label>
+              <select id="cf-numSubsidiaries">
+                <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                <option value="6">6</option><option value="7">7</option><option value="8">8</option>
+                <option value="9">9</option><option value="10">10+</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <!-- RIGHT COLUMN -->
+        <div>
+          <div style="font-size:0.7rem;font-weight:700;color:var(--mist);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)">Practice Details</div>
+          <div class="form-grid cols-1" style="gap:10px">
+            <div class="form-group"><label>Practice Name</label><input id="cf-practiceName" placeholder="e.g. Ringo's Test Practice"></div>
+            <div class="form-group"><label>Correspondence Address Line 1</label><input id="cf-corrLine1" placeholder="Street address"></div>
+            <div class="form-group"><label>Correspondence Address Line 2</label><input id="cf-corrLine2" placeholder="Area, district (optional)"></div>
+            <div class="form-group"><label>City / Town</label><input id="cf-corrCity" placeholder="e.g. Liverpool"></div>
+            <div class="form-group"><label>County</label><input id="cf-corrCounty" placeholder="e.g. Merseyside"></div>
+            <div class="form-group"><label>Country</label>
+              <select id="cf-corrCountry">
+                <option value="United Kingdom">United Kingdom</option>
+                <option value="England">England</option>
+                <option value="Scotland">Scotland</option>
+                <option value="Wales">Wales</option>
+                <option value="Northern Ireland">Northern Ireland</option>
+                <option value="Republic of Ireland">Republic of Ireland</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Postcode</label><input id="cf-corrPostcode" placeholder="e.g. MK40 3JG" style="text-transform:uppercase"></div>
+            <div class="form-group"><label>Business Description</label>
+              <select id="cf-businessDescription">
+                <option value="">— Select —</option>
+                <option value="GP Practice/Surgery">GP Practice / Surgery</option>
+                <option value="Dental Practice">Dental Practice</option>
+                <option value="Veterinary Practice">Veterinary Practice</option>
+                <option value="Optician Practice">Optician Practice</option>
+                <option value="Allied Health Professional">Allied Health Professional</option>
+                <option value="Solicitor/Legal">Solicitor / Legal</option>
+                <option value="Architect">Architect</option>
+                <option value="Private Healthcare">Private Healthcare</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Entity Type</label>
+              <select id="cf-entityType">
+                <option value="">— Select —</option>
+                <option value="Limited">Limited Company</option>
+                <option value="Limited Liability Partnership">Limited Liability Partnership</option>
+                <option value="Partnership">Partnership</option>
+                <option value="Sole Trader">Sole Trader</option>
+                <option value="NHS Body">NHS Body</option>
+                <option value="Charity">Charity</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Type *</label>
+              <select id="cf-type">
+                <option value="gp_practice">GP Practice</option>
+                <option value="dental_practice">Dental Practice</option>
+                <option value="vet_practice">Vet Practice</option>
+                <option value="allied_health">Allied Health</option>
+                <option value="other_healthcare">Other Healthcare</option>
+                <option value="managing_agent">Managing Agent</option>
+                <option value="individual">Individual</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('customer-modal')">Cancel</button><button class="btn btn-primary" onclick="saveCustomer()">Save</button></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('customer-modal')">Cancel</button><button class="btn btn-primary" onclick="saveCustomer()">Save Practice</button></div>
   </div>
 </div>
 
@@ -1269,7 +1372,7 @@ async function doLogout() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const pageTitles = { dashboard: 'Dashboard', jobs: 'Jobs', customers: 'Customers', addresses: 'Addresses', trades: 'Subcontractors', users: 'User Management', tasks: 'Tasks', 'purchase-orders': 'Purchase Orders', invoices: 'Invoicing', log: 'Audit Log', 'user-guides': 'User Guides' };
+const pageTitles = { dashboard: 'Dashboard', jobs: 'Jobs', customers: 'Practices', addresses: 'Addresses', trades: 'Subcontractors', users: 'User Management', tasks: 'Tasks', 'purchase-orders': 'Purchase Orders', invoices: 'Invoicing', log: 'Audit Log', 'user-guides': 'User Guides' };
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -1280,7 +1383,7 @@ function showPage(name) {
 
   const actions = {
     jobs: '<button class="btn btn-primary" onclick="openJobModal()">+ New Job</button>',
-    customers: '<button class="btn btn-primary" onclick="openCustomerModal()">+ New Customer</button>',
+    customers: '<button class="btn btn-primary" onclick="openCustomerModal()">+ New Practice</button>',
     addresses: '<button class="btn btn-primary" onclick="openAddressModal()">+ New Address</button>',
     trades: '<button class="btn btn-primary" onclick="openTradeModal()">+ New Subcontractor</button>',
     users: isAdmin() ? '<button class="btn btn-primary" onclick="openUserModal()">+ New User</button>' : '',
@@ -1330,7 +1433,7 @@ async function renderDashboard() {
   if (!stats) return;
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card accent"><div class="label">Total Jobs</div><div class="value">${stats.totalJobs}</div></div>
-    <div class="stat-card"><div class="label">Customers</div><div class="value">${stats.totalCustomers}</div></div>
+    <div class="stat-card"><div class="label">Practices</div><div class="value">${stats.totalCustomers}</div></div>
     <div class="stat-card"><div class="label">Addresses</div><div class="value">${stats.totalAddresses}</div></div>
     <div class="stat-card"><div class="label">Subcontractors</div><div class="value">${stats.totalTrades}</div></div>
   `;
@@ -1557,25 +1660,78 @@ async function saveComm() {
 // ── Customers ─────────────────────────────────────────────────────────────────
 function renderCustomers() {
   const q=(document.getElementById('cust-search')?.value||'').toLowerCase();
-  const custs=state.customers.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q)||(c.contactName||'').toLowerCase().includes(q)||(c.contactMobile||'').toLowerCase().includes(q));
+  const custs=state.customers.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.practiceName||'').toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q)||(c.contactName||'').toLowerCase().includes(q)||(c.corrCity||'').toLowerCase().includes(q));
   document.getElementById('customers-tbody').innerHTML=custs.length?custs.map(c=>{
-    const addrCount=state.addresses.filter(a=>a.customerId===c.id).length;
+    const statusBadge = c.status==='active'?'<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:20px;font-size:0.75rem;font-weight:600">Active</span>':c.status==='inactive'?'<span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:20px;font-size:0.75rem;font-weight:600">Inactive</span>':c.status==='prospect'?'<span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:20px;font-size:0.75rem;font-weight:600">Prospect</span>':'<span style="background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:20px;font-size:0.75rem;font-weight:600">'+(c.status||'—')+'</span>';
     const editBtn=`<button class="btn btn-secondary btn-sm" onclick="openCustomerDetail('${c.id}')">View</button><button class="btn btn-ghost btn-sm" onclick="openCustomerModal('${c.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.id}')">Delete</button>`;
-    return `<tr><td><strong>${c.name}</strong></td><td>${badge(c.type,c.type)}</td><td>${c.contactName||'—'}</td><td>${c.email||'—'}</td><td style="font-size:0.83rem">${[c.phone,c.contactMobile].filter(Boolean).join(' / ')||'—'}</td><td>${addrCount} address${addrCount!==1?'es':''}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
-  }).join(''):'<tr class="empty-row"><td colspan="7">No customers found</td></tr>';
+    return `<tr><td><strong>${c.name}</strong></td><td>${c.practiceName||'—'}</td><td>${badge(c.type,c.type)}</td><td>${statusBadge}</td><td>${c.email||'—'}</td><td style="font-size:0.83rem">${c.phone||'—'}</td><td><div class="actions-col">${editBtn}</div></td></tr>`;
+  }).join(''):'<tr class="empty-row"><td colspan="7">No practices found</td></tr>';
 }
 
 function openCustomerModal(id=null) {
   editingId.customer=id;
-  document.getElementById('cust-modal-title').textContent=id?'Edit Customer':'New Customer';
-  ['name','email','phone','contactName','contactMobile'].forEach(f=>document.getElementById('cf-'+f).value='');
-  document.getElementById('cf-type').value='managing_agent';
-  if (id) { const c=state.customers.find(c=>c.id===id); if(c){document.getElementById('cf-name').value=c.name||'';document.getElementById('cf-email').value=c.email||'';document.getElementById('cf-phone').value=c.phone||'';document.getElementById('cf-contactName').value=c.contactName||'';document.getElementById('cf-contactMobile').value=c.contactMobile||'';document.getElementById('cf-type').value=c.type||'managing_agent';} }
+  document.getElementById('cust-modal-title').textContent=id?'Edit Practice':'New Practice';
+  // Reset all fields
+  ['name','contactName','email','phone','contactMobile','ernNumber','yearEstablished','practiceName','corrLine1','corrLine2','corrCity','corrCounty','corrPostcode'].forEach(f=>{const el=document.getElementById('cf-'+f);if(el)el.value='';});
+  document.getElementById('cf-type').value='gp_practice';
+  document.getElementById('cf-status').value='active';
+  document.getElementById('cf-ernExempt').value='no';
+  document.getElementById('cf-numSubsidiaries').value='0';
+  document.getElementById('cf-corrCountry').value='United Kingdom';
+  document.getElementById('cf-businessDescription').value='';
+  document.getElementById('cf-entityType').value='';
+  if (id) {
+    const c=state.customers.find(c=>c.id===id);
+    if(c){
+      document.getElementById('cf-name').value=c.name||'';
+      document.getElementById('cf-contactName').value=c.contactName||'';
+      document.getElementById('cf-email').value=c.email||'';
+      document.getElementById('cf-phone').value=c.phone||'';
+      document.getElementById('cf-contactMobile').value=c.contactMobile||'';
+      document.getElementById('cf-status').value=c.status||'active';
+      document.getElementById('cf-ernNumber').value=c.ernNumber||'';
+      document.getElementById('cf-ernExempt').value=c.ernExempt||'no';
+      document.getElementById('cf-yearEstablished').value=c.yearEstablished||'';
+      document.getElementById('cf-numSubsidiaries').value=String(c.numSubsidiaries??0);
+      document.getElementById('cf-practiceName').value=c.practiceName||'';
+      document.getElementById('cf-corrLine1').value=c.corrAddressLine1||'';
+      document.getElementById('cf-corrLine2').value=c.corrAddressLine2||'';
+      document.getElementById('cf-corrCity').value=c.corrCity||'';
+      document.getElementById('cf-corrCounty').value=c.corrCounty||'';
+      document.getElementById('cf-corrCountry').value=c.corrCountry||'United Kingdom';
+      document.getElementById('cf-corrPostcode').value=c.corrPostcode||'';
+      document.getElementById('cf-businessDescription').value=c.businessDescription||'';
+      document.getElementById('cf-entityType').value=c.entityType||'';
+      document.getElementById('cf-type').value=c.type||'gp_practice';
+    }
+  }
   document.getElementById('customer-modal').classList.add('open');
 }
 async function saveCustomer() {
-  const body={type:document.getElementById('cf-type').value,name:document.getElementById('cf-name').value.trim(),email:document.getElementById('cf-email').value.trim(),phone:document.getElementById('cf-phone').value.trim(),contactName:document.getElementById('cf-contactName').value.trim(),contactMobile:document.getElementById('cf-contactMobile').value.trim()};
-  if(!body.name) return alert('Name is required.');
+  const gv=id=>document.getElementById(id)?.value||'';
+  const body={
+    type:gv('cf-type'),
+    name:gv('cf-name').trim(),
+    email:gv('cf-email').trim(),
+    phone:gv('cf-phone').trim(),
+    contactName:gv('cf-contactName').trim(),
+    contactMobile:gv('cf-contactMobile').trim(),
+    practiceName:gv('cf-practiceName').trim(),
+    status:gv('cf-status'),
+    ernNumber:gv('cf-ernNumber').trim(),
+    ernExempt:gv('cf-ernExempt'),
+    yearEstablished:gv('cf-yearEstablished')?parseInt(gv('cf-yearEstablished')):null,
+    numSubsidiaries:parseInt(gv('cf-numSubsidiaries')||'0'),
+    corrAddressLine1:gv('cf-corrLine1').trim(),
+    corrAddressLine2:gv('cf-corrLine2').trim(),
+    corrCity:gv('cf-corrCity').trim(),
+    corrCounty:gv('cf-corrCounty').trim(),
+    corrCountry:gv('cf-corrCountry'),
+    corrPostcode:gv('cf-corrPostcode').trim().toUpperCase(),
+    businessDescription:gv('cf-businessDescription'),
+    entityType:gv('cf-entityType'),
+  };
+  if(!body.name) return alert('Full Name is required.');
   if(editingId.customer) await api('PUT','/api/customers/'+editingId.customer,body);
   else await api('POST','/api/customers',body);
   closeModal('customer-modal'); await loadAll();
@@ -2094,24 +2250,38 @@ function openCustomerDetail(id) {
   if (!c) return;
   const addrs = state.addresses.filter(a => a.customerId === id);
   const jobs  = state.jobs.filter(j => j.customerId === id);
-  document.getElementById('cd-name').textContent = c.name;
+  document.getElementById('cd-name').textContent = c.practiceName ? c.name + ' — ' + c.practiceName : c.name;
   const addrRows = addrs.length
     ? addrs.map(a => '<div style="font-size:0.87rem;padding:5px 0;border-bottom:1px solid var(--surface)">' + (a.label ? '<strong>' + a.label + '</strong> – ' : '') + a.line1 + (a.line2 ? ', ' + a.line2 : '') + ', ' + a.city + ', ' + a.postcode + '</div>').join('')
     : '<p style="color:var(--mist);font-size:0.87rem;padding:8px">No addresses</p>';
   const jobRows = jobs.length
     ? '<table style="width:100%"><thead><tr><th>Work Order</th><th>Title</th><th>Status</th></tr></thead><tbody>' + jobs.map(j => '<tr><td><strong>' + j.workOrderId + '</strong></td><td>' + j.title + '</td><td>' + badge(j.status, j.status) + '</td></tr>').join('') + '</tbody></table>'
     : '<p style="color:var(--mist);font-size:0.87rem;padding:8px">No jobs</p>';
+  const statusColour = c.status==='active'?'#dcfce7;color:#166534':c.status==='inactive'?'#fee2e2;color:#991b1b':c.status==='prospect'?'#dbeafe;color:#1e40af':'#f3f4f6;color:#6b7280';
+  const statusBadge = '<span style="background:' + statusColour + ';padding:2px 10px;border-radius:20px;font-size:0.78rem;font-weight:600">' + (c.status||'—') + '</span>';
+  const corrAddr = [c.corrAddressLine1,c.corrAddressLine2,c.corrCity,c.corrCounty,c.corrPostcode,c.corrCountry].filter(Boolean).join(', ');
   document.getElementById('cd-body').innerHTML =
     '<div class="detail-grid">' +
-      '<div class="detail-section"><h4>Contact Info</h4>' +
-        '<div class="detail-row"><span class="key">Type</span><span>' + badge(c.type, c.type) + '</span></div>' +
-        (c.contactName   ? '<div class="detail-row"><span class="key">Contact</span><strong>' + c.contactName + '</strong></div>' : '') +
-        (c.contactMobile ? '<div class="detail-row"><span class="key">Mobile</span><a href="tel:' + c.contactMobile + '" style="color:var(--accent)">' + c.contactMobile + '</a></div>' : '') +
+      '<div class="detail-section"><h4>Contact Details</h4>' +
+        '<div class="detail-row"><span class="key">Full Name</span><strong>' + c.name + '</strong></div>' +
+        (c.contactName   ? '<div class="detail-row"><span class="key">Contact</span><span>' + c.contactName + '</span></div>' : '') +
         (c.email ? '<div class="detail-row"><span class="key">Email</span><a href="mailto:' + c.email + '" style="color:var(--accent)">' + c.email + '</a></div>' : '') +
-        (c.phone ? '<div class="detail-row"><span class="key">Phone</span><span>' + c.phone + '</span></div>' : '') +
+        (c.phone ? '<div class="detail-row"><span class="key">Telephone</span><a href="tel:' + c.phone + '" style="color:var(--accent)">' + c.phone + '</a></div>' : '') +
+        (c.contactMobile ? '<div class="detail-row"><span class="key">Mobile</span><a href="tel:' + c.contactMobile + '" style="color:var(--accent)">' + c.contactMobile + '</a></div>' : '') +
+        '<div class="detail-row"><span class="key">Status</span>' + statusBadge + '</div>' +
+        (c.ernNumber ? '<div class="detail-row"><span class="key">ERN Number</span><span>' + c.ernNumber + (c.ernExempt==='yes'?' (Exempt)':'') + '</span></div>' : '') +
+        (c.yearEstablished ? '<div class="detail-row"><span class="key">Est.</span><span>' + c.yearEstablished + '</span></div>' : '') +
+        (c.numSubsidiaries!=null ? '<div class="detail-row"><span class="key">Subsidiaries</span><span>' + c.numSubsidiaries + '</span></div>' : '') +
       '</div>' +
-      '<div class="detail-section"><h4>Addresses (' + addrs.length + ')</h4>' + addrRows + '</div>' +
+      '<div class="detail-section"><h4>Practice Details</h4>' +
+        (c.practiceName ? '<div class="detail-row"><span class="key">Practice</span><strong>' + c.practiceName + '</strong></div>' : '') +
+        (corrAddr ? '<div class="detail-row"><span class="key">Address</span><span>' + corrAddr + '</span></div>' : '') +
+        (c.businessDescription ? '<div class="detail-row"><span class="key">Business</span><span>' + c.businessDescription + '</span></div>' : '') +
+        (c.entityType ? '<div class="detail-row"><span class="key">Entity</span><span>' + c.entityType + '</span></div>' : '') +
+        '<div class="detail-row"><span class="key">Type</span><span>' + badge(c.type, c.type) + '</span></div>' +
+      '</div>' +
     '</div>' +
+    '<div class="detail-section" style="margin-bottom:16px"><h4>Addresses (' + addrs.length + ')</h4>' + addrRows + '</div>' +
     '<div class="detail-section" style="margin-bottom:16px"><h4>Jobs (' + jobs.length + ')</h4>' + jobRows + '</div>' +
     '<div class="detail-section" style="margin-bottom:16px">' +
       '<h4>Invoices</h4>' +
@@ -4446,7 +4616,7 @@ init();
     <div class="modal-body" id="cd-body"></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('customer-detail-modal')">Close</button>
-      <button class="btn btn-primary" id="cd-edit-btn">Edit Customer</button>
+      <button class="btn btn-primary" id="cd-edit-btn">Edit Practice</button>
     </div>
   </div>
 </div>
