@@ -1813,7 +1813,6 @@ function showPage(name) {
   document.getElementById('topbar-action').innerHTML = actions[name] || '';
   if (name === 'dashboard') { renderDashboard(); }
   if (name === 'quotes') { loadQuotesPage(); }
-  if (name === 'log') { loadLog(); }
   if (name === 'user-guides') { initUserGuides(); }
 }
 
@@ -1875,7 +1874,7 @@ async function renderDashboard() {
   const greetEl = document.getElementById('dashboard-greeting');
   if (greetEl) greetEl.textContent = greet + ', ' + (currentUser ? currentUser.name : '') + '.';
   const stats = await api('GET', '/api/stats');
-  if (!stats) return;
+  if (!stats || stats.error) return;
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card accent"><div class="label">Practices</div><div class="value">${stats.totalCustomers}</div></div>
     <div class="stat-card"><div class="label">Active</div><div class="value">${stats.activeCustomers}</div></div>
@@ -1973,6 +1972,7 @@ async function deleteCustomer(id) { if(!confirm('Delete this customer?')) return
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 function renderUsers() {
+  if (!Array.isArray(state.users)) return;
   const q=(document.getElementById('user-search')?.value||'').toLowerCase();
   const users=state.users.filter(u=>!q||u.name.toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q));
   document.getElementById('users-tbody').innerHTML=users.length?users.map(u=>`
@@ -2247,16 +2247,7 @@ function handleDrop(e, entityType, entityId) {
 // ── Audit Log ─────────────────────────────────────────────────────────────────
 let logData = [];
 
-async function loadLog() {
-  const entity = document.getElementById('log-entity-filter')?.value || 'all';
-  const search = document.getElementById('log-search')?.value || '';
-  const params = new URLSearchParams({ entity, limit: 500 });
-  if (search) params.set('search', search);
-  const data = await api('GET', '/api/audit-log?' + params.toString());
-  if (!data) return;
-  logData = data;
-  renderLog();
-}
+async 
 
 function renderLog() {
   const q = (document.getElementById('log-search')?.value || '').toLowerCase();
