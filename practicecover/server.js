@@ -384,92 +384,6 @@ const INV_JOIN = `
 // ── Update invoice ────────────────────────────────────────────────────────────
 // ── Delete invoice ────────────────────────────────────────────────────────────
 // ─── AI Subcontractor Finder ──────────────────────────────────────────────────
-// ─── Catch-all & start ────────────────────────────────────────────────────────
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-// ─── Normalisers ──────────────────────────────────────────────────────────────
-function normaliseCustomer(r) {
-  return {
-    id: r.id,
-    type: r.type,
-    name: r.name,
-    email: r.email,
-    phone: r.phone,
-    contactName: r.contact_name || '',
-    contactMobile: r.contact_mobile || '',
-    createdAt: r.created_at,
-    // PracticeCover fields
-    practiceName:        r.practice_name        || '',
-    status:              r.status               || 'active',
-    ernNumber:           r.ern_number           || '',
-    ernExempt:           r.ern_exempt           || 'no',
-    yearEstablished:     r.year_established     || null,
-    numSubsidiaries:     r.num_subsidiaries     != null ? r.num_subsidiaries : 0,
-    corrAddressLine1:    r.corr_address_line1   || '',
-    corrAddressLine2:    r.corr_address_line2   || '',
-    corrCity:            r.corr_city            || '',
-    corrCounty:          r.corr_county          || '',
-    corrCountry:         r.corr_country         || 'United Kingdom',
-    corrPostcode:        r.corr_postcode        || '',
-    businessDescription: r.business_description || '',
-    entityType:          r.entity_type          || '',
-  };
-}
-function normaliseTrade(r) { return { id: r.id, status: r.status, companyName: r.company_name, companyAddress: r.company_address, contactName: r.contact_name, contactNumber: r.contact_number, contactEmail: r.contact_email, services: r.services || [] }; }
-function normaliseJob(r, tradeIds, communications) {
-  return {
-    id: r.id, workOrderId: r.work_order_id, customerId: r.customer_id, addressId: r.address_id,
-    title: r.title, status: r.status, actionRequired: r.action_required,
-    dateReceived: fmtDate(r.date_received),
-    deadlineForCompletion: fmtDate(r.deadline_for_completion),
-    dateWorkCompleted: fmtDate(r.date_work_completed),
-    dateInvoiced: fmtDate(r.date_invoiced),
-    invoiceNumber: r.invoice_number,
-    priceQuotedExclVat: r.price_quoted_excl_vat,
-    priceQuotedInclVat: r.price_quoted_incl_vat,
-    complianceStandard: r.compliance_standard,
-    poSentSubcontractor: fmtDate(r.po_sent_subcontractor),
-    chasedSubcontractor: fmtDate(r.chased_subcontractor),
-    proposedDateTenant: fmtDate(r.proposed_date_tenant),
-    bookedAdc: fmtDate(r.booked_adc),
-    bookedSubcontractor: fmtDate(r.booked_subcontractor),
-    tenantNotResponding: fmtDate(r.tenant_not_responding),
-    onHold: fmtDate(r.on_hold),
-    rejectedCancelled: fmtDate(r.rejected_cancelled),
-    poChasedDate: fmtDate(r.po_chased_date),
-    dateBooked: fmtDate(r.date_booked), datePaid: fmtDate(r.date_paid),
-    createdAt: r.created_at, tradeIds, communications
-  };
-}
-function normaliseComm(r) { return { id: r.id, jobId: r.job_id, note: r.note, author: r.author, date: r.date }; }
-function normaliseTask(r) {
-  return {
-    id: r.id, description: r.description,
-    targetDate: r.target_date ? r.target_date.toISOString().split('T')[0] : '',
-    assignedTo: r.assigned_to, assignedToName: r.assigned_to_name,
-    assignedBy: r.assigned_by, assignedByName: r.assigned_by_name,
-    customerId: r.customer_id, customerName: r.customer_name,
-    jobId: r.job_id, jobTitle: r.job_title, workOrderId: r.work_order_id,
-    tradeId: r.trade_id, tradeName: r.trade_name || null,
-    status: r.status, createdAt: r.created_at
-  };
-}
-function fmtDate(d) { return d ? d.toISOString().split('T')[0] : ''; }
-function normaliseAttachment(r) {
-  return {
-    id: r.id, entityType: r.entity_type, entityId: r.entity_id,
-    fileName: r.file_name, fileSize: r.file_size, mimeType: r.mime_type,
-    publicUrl: r.public_url, uploadedBy: r.uploaded_by,
-    uploaderName: r.uploader_name || null,
-    isCompliance: r.is_compliance || false,
-    expiryDate: r.expiry_date ? r.expiry_date.toISOString().split('T')[0] : null,
-    createdAt: r.created_at
-  };
-}
-function orNull(v) { return v && v.trim() !== '' ? v : null; }
-
 // ─── Quotes ───────────────────────────────────────────────────────────────────
 async function nextQuoteRef() {
   const r = await query("SELECT quote_ref FROM quotes ORDER BY created_at DESC LIMIT 1");
@@ -636,3 +550,89 @@ app.delete('/api/quotes/:id', requireAuth, async (req, res) => {
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
+// ─── Catch-all & start ────────────────────────────────────────────────────────
+app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// ─── Normalisers ──────────────────────────────────────────────────────────────
+function normaliseCustomer(r) {
+  return {
+    id: r.id,
+    type: r.type,
+    name: r.name,
+    email: r.email,
+    phone: r.phone,
+    contactName: r.contact_name || '',
+    contactMobile: r.contact_mobile || '',
+    createdAt: r.created_at,
+    // PracticeCover fields
+    practiceName:        r.practice_name        || '',
+    status:              r.status               || 'active',
+    ernNumber:           r.ern_number           || '',
+    ernExempt:           r.ern_exempt           || 'no',
+    yearEstablished:     r.year_established     || null,
+    numSubsidiaries:     r.num_subsidiaries     != null ? r.num_subsidiaries : 0,
+    corrAddressLine1:    r.corr_address_line1   || '',
+    corrAddressLine2:    r.corr_address_line2   || '',
+    corrCity:            r.corr_city            || '',
+    corrCounty:          r.corr_county          || '',
+    corrCountry:         r.corr_country         || 'United Kingdom',
+    corrPostcode:        r.corr_postcode        || '',
+    businessDescription: r.business_description || '',
+    entityType:          r.entity_type          || '',
+  };
+}
+function normaliseTrade(r) { return { id: r.id, status: r.status, companyName: r.company_name, companyAddress: r.company_address, contactName: r.contact_name, contactNumber: r.contact_number, contactEmail: r.contact_email, services: r.services || [] }; }
+function normaliseJob(r, tradeIds, communications) {
+  return {
+    id: r.id, workOrderId: r.work_order_id, customerId: r.customer_id, addressId: r.address_id,
+    title: r.title, status: r.status, actionRequired: r.action_required,
+    dateReceived: fmtDate(r.date_received),
+    deadlineForCompletion: fmtDate(r.deadline_for_completion),
+    dateWorkCompleted: fmtDate(r.date_work_completed),
+    dateInvoiced: fmtDate(r.date_invoiced),
+    invoiceNumber: r.invoice_number,
+    priceQuotedExclVat: r.price_quoted_excl_vat,
+    priceQuotedInclVat: r.price_quoted_incl_vat,
+    complianceStandard: r.compliance_standard,
+    poSentSubcontractor: fmtDate(r.po_sent_subcontractor),
+    chasedSubcontractor: fmtDate(r.chased_subcontractor),
+    proposedDateTenant: fmtDate(r.proposed_date_tenant),
+    bookedAdc: fmtDate(r.booked_adc),
+    bookedSubcontractor: fmtDate(r.booked_subcontractor),
+    tenantNotResponding: fmtDate(r.tenant_not_responding),
+    onHold: fmtDate(r.on_hold),
+    rejectedCancelled: fmtDate(r.rejected_cancelled),
+    poChasedDate: fmtDate(r.po_chased_date),
+    dateBooked: fmtDate(r.date_booked), datePaid: fmtDate(r.date_paid),
+    createdAt: r.created_at, tradeIds, communications
+  };
+}
+function normaliseComm(r) { return { id: r.id, jobId: r.job_id, note: r.note, author: r.author, date: r.date }; }
+function normaliseTask(r) {
+  return {
+    id: r.id, description: r.description,
+    targetDate: r.target_date ? r.target_date.toISOString().split('T')[0] : '',
+    assignedTo: r.assigned_to, assignedToName: r.assigned_to_name,
+    assignedBy: r.assigned_by, assignedByName: r.assigned_by_name,
+    customerId: r.customer_id, customerName: r.customer_name,
+    jobId: r.job_id, jobTitle: r.job_title, workOrderId: r.work_order_id,
+    tradeId: r.trade_id, tradeName: r.trade_name || null,
+    status: r.status, createdAt: r.created_at
+  };
+}
+function fmtDate(d) { return d ? d.toISOString().split('T')[0] : ''; }
+function normaliseAttachment(r) {
+  return {
+    id: r.id, entityType: r.entity_type, entityId: r.entity_id,
+    fileName: r.file_name, fileSize: r.file_size, mimeType: r.mime_type,
+    publicUrl: r.public_url, uploadedBy: r.uploaded_by,
+    uploaderName: r.uploader_name || null,
+    isCompliance: r.is_compliance || false,
+    expiryDate: r.expiry_date ? r.expiry_date.toISOString().split('T')[0] : null,
+    createdAt: r.created_at
+  };
+}
+function orNull(v) { return v && v.trim() !== '' ? v : null; }
