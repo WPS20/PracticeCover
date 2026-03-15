@@ -1841,10 +1841,13 @@ const isAdmin = () => currentUser && currentUser.role === 'admin';
 
 async function loadAll() {
   const customers = await api('GET', '/api/customers');
-  if (!customers) return;
+  if (!Array.isArray(customers)) {
+    if (customers?.error) console.error('Customers API error:', customers.error);
+    return;
+  }
   state = { ...state, customers };
   const users = await api('GET', '/api/users');
-  if (users) { state.users = users; }
+  if (Array.isArray(users)) { state.users = users; }
   renderCustomers();
   if (isAdmin()) renderUsers();
   if (document.getElementById('page-dashboard')?.classList.contains('active')) renderDashboard();
@@ -1874,6 +1877,7 @@ async function renderDashboard() {
 
 // ── Customers ─────────────────────────────────────────────────────────────────
 function renderCustomers() {
+  if (!Array.isArray(state.customers)) return;
   const q=(document.getElementById('cust-search')?.value||'').toLowerCase();
   const custs=state.customers.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.practiceName||'').toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q)||(c.contactName||'').toLowerCase().includes(q)||(c.corrCity||'').toLowerCase().includes(q));
   document.getElementById('customers-tbody').innerHTML=custs.length?custs.map(c=>{
