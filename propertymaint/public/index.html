@@ -4273,8 +4273,7 @@ async function runAISearch() {
 
     if (!res.ok || data.error) {
       document.getElementById('ai-results-area').innerHTML =
-        '<div class="ai-error">⚠️ ' + (data.error || 'Search failed. Please try again.') + '</div>' +
-        '<div style="text-align:center;font-size:0.82rem;color:var(--mist);padding:12px">Make sure ANTHROPIC_API_KEY is set in your Render environment variables.</div>';
+        '<div class="ai-error">⚠️ AI search failed. Please try again later.</div>';
       return;
     }
 
@@ -4644,14 +4643,6 @@ init();
       <button class="modal-close" onclick="closeModal('ai-finder-modal')">×</button>
     </div>
     <div class="modal-body">
-      <!-- Header banner -->
-      <div class="ai-finder-header">
-        <div class="ai-icon">🤖</div>
-        <div>
-          <h4>Powered by Claude AI + Web Search</h4>
-          <p>Searches the internet for real, currently trading subcontractors near the job address. Results can be saved directly as Pre-qualified subcontractors.</p>
-        </div>
-      </div>
       <!-- Search form -->
       <div class="ai-search-form">
         <div class="ai-location-row">
