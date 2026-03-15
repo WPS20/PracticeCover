@@ -3963,6 +3963,27 @@ const GUIDES = [
     tips:['You can combine the company name search with the category filter to narrow results further.'],
     warns:[]
   },
+  { id:'trade-ai-finder', cat:'subcontractors', icon:'🤖', title:'Find Subcontractors with AI',
+    desc:'Use the built-in AI agent to search the internet for local subcontractors near a job address.',
+    steps:[
+      { h:'Open a Job detail view', b:'Click any job title on the Jobs page to open the detail panel.' },
+      { h:'Click "🤖 Find Subcontractors" in the footer', b:'This button appears at the bottom of the job detail alongside Raise PO and Raise Invoice.' },
+      { h:'Check the pre-filled location', b:'The postcode from the job address is automatically filled in. You can edit this to broaden or change the search area — e.g. replace a postcode with a town name like "Bedford" or "Milton Keynes".' },
+      { h:'Enter a type of subcontractor (optional)', b:'Type the trade you need in the "Type of Subcontractor" box, e.g. "Gas engineer", "NICEIC electrician" or "flat roofer". If you leave this blank, the AI will automatically determine the trade type from the job title and action required.' },
+      { h:'Click "Search" or press Enter', b:'The AI searches the internet in real time for currently trading businesses near the location. This usually takes 10–20 seconds.' },
+      { h:'Review the results', b:'Up to 6 subcontractors are returned, each showing company name, address, phone number, email, website and a description of their services. A service category is automatically matched from the system standard list.' },
+      { h:'Click "⭐ Add as Pre-qualified"', b:'Clicking this button on any result immediately creates a subcontractor record in the system with a status of Prequalified. The card turns green and the button changes to "✓ Added".' },
+      { h:'Repeat for other results', b:'You can add multiple subcontractors from the same search. A counter at the bottom of the modal tracks how many have been added.' },
+      { h:'Close the modal', b:'The newly added subcontractors appear immediately on the Subcontractors page with a blue Prequalified badge. They can now be assigned to jobs and included on Purchase Orders.' }
+    ],
+    tips:[
+      'Pre-qualified means found and recorded but not yet formally vetted. Once you have confirmed a subcontractor is suitable, edit their record and change the status to Active.',
+      'You can run multiple searches from the same modal — change the trade type or location and click Search again without closing.'
+    ],
+    warns:[
+      'This feature requires an Anthropic API key with available credits set in the system environment variables. If you see an error message, contact your system administrator.'
+    ]
+  },
   // ── PURCHASE ORDERS ───────────────────────────────────────────────────────
   { id:'po-raise', cat:'finance', icon:'📄', title:'Raise a Purchase Order',
     desc:'Create a PO for a subcontractor from within a job.',
@@ -4063,6 +4084,8 @@ const FAQS = [
   { q: 'Why can\'t I raise an invoice for this job?', a: 'The most common reason is that Date Work Completed has not been set on the job. Open Edit Job, fill in the Date Work Completed field and save. You can then raise the invoice.' },
   { q: 'How do I export jobs to Excel?', a: 'Admin users will see an "Export Excel" button on the Jobs page header (next to the status filter). It exports the currently filtered jobs — so you can filter by status first to export a specific subset.' },
   { q: 'How do I find all subcontractors who do Gas work?', a: 'Go to Subcontractors and type "gas" in the "Filter by service category…" search box. A dropdown will appear showing matching categories with the count of subcontractors for each. Click a category to filter the list.' },
+  { q: 'What is the AI Subcontractor Finder and how does it work?', a: 'The AI Subcontractor Finder is built into every job detail view. Click the "🤖 Find Subcontractors" button in the job footer. The AI searches the internet in real time for local, currently trading businesses near the job postcode. Results show the company name, address, phone, email and website. You can add any result directly to the system as a Pre-qualified subcontractor with one click.' },
+  { q: 'What does the Prequalified status mean for a subcontractor?', a: 'Prequalified means the subcontractor was found via the AI search and added to the system, but has not yet been formally vetted or approved. Once you have confirmed they are suitable — checked their credentials, insurance or compliance documents — edit their record and change the status to Active. Until then, Prequalified is a useful holding status to flag them as a candidate.' },
   { q: 'Can I link a task to both a job and a subcontractor?', a: 'Yes — the task form has separate optional dropdowns for Link to Customer, Link to Job, and Link to Subcontractor. You can fill in any combination of these.' },
   { q: 'Where can I see all purchase orders for a specific subcontractor?', a: 'Open the subcontractor\'s detail view by clicking "View" on the Subcontractors page. The Purchase Orders section shows all POs raised for that subcontractor across all jobs.' },
   { q: 'What user roles are available?', a: 'There are three roles: Admin (full access including user management, audit log and Excel export), User (full read/write access to all records), and Readonly (can view all records but cannot create or edit anything).', adminOnly: true },
