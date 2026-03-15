@@ -3353,24 +3353,24 @@ function renderPremisesRows() {
     const progressCircles = PREMISES_STEPS.map(s => {
       const done = p.stepsComplete.includes(s.n);
       return done
-        ? \`<div class="prog-circle done"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>\`
-        : \`<div class="prog-circle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--border)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>\`;
+        ? `<div class="prog-circle done"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
+        : `<div class="prog-circle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--border)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
     }).join('');
-    const houseIcon = \`<svg width="36" height="36" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    const houseIcon = `<svg width="36" height="36" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M22 6L8 17v3h2v14h6V24h12v10h6V20h2v-3L22 6z" fill="#00b4a2" opacity="0.9"/>
       <rect x="17" y="28" width="10" height="7" rx="1" fill="#fff" opacity="0.9"/>
       <rect x="4" y="36" width="36" height="2.5" rx="1" fill="#f59e0b"/>
-    </svg>\`;
-    return \`<div class="premises-row">
-      <div class="premises-icon">\${houseIcon}</div>
-      <div class="premises-status \${statusClass}">\${statusLabel}</div>
-      <div class="premises-address">\${addrText || '<span style="color:var(--mist);font-style:italic">Not entered</span>'}</div>
-      <div class="premises-progress">\${progressCircles}</div>
-      <div><button class="premises-update-btn" onclick="openPremisesDetail(\${i})">
-        Update Premises \${num}
+    </svg>`;
+    return `<div class="premises-row">
+      <div class="premises-icon">${houseIcon}</div>
+      <div class="premises-status ${statusClass}">${statusLabel}</div>
+      <div class="premises-address">${addrText || '<span style="color:var(--mist);font-style:italic">Not entered</span>'}</div>
+      <div class="premises-progress">${progressCircles}</div>
+      <div><button class="premises-update-btn" onclick="openPremisesDetail(${i})">
+        Update Premises ${num}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8l4 4-4 4M8 12h8"/></svg>
       </button></div>
-    </div>\`;
+    </div>`;
   }).join('');
 }
 
@@ -3409,11 +3409,11 @@ function renderPremisesProgress(step) {
     const cls = s.n < step ? 'done' : s.n === step ? 'active' : '';
     const dot = s.n < step ? '✓' : s.n;
     const lineClass = s.n < step ? 'done' : '';
-    return \`<div class="qp-step \${cls}">
-      \${i > 0 ? \`<div class="qp-line \${lineClass}"></div>\` : ''}
-      <div class="qp-dot">\${dot}</div>
-      <div class="qp-label">\${s.label}</div>
-    </div>\`;
+    return `<div class="qp-step ${cls}">
+      ${i > 0 ? `<div class="qp-line ${lineClass}"></div>` : ''}
+      <div class="qp-dot">${dot}</div>
+      <div class="qp-label">${s.label}</div>
+    </div>`;
   }).join('');
 }
 
@@ -3423,12 +3423,12 @@ function buildPremisesStepHTML() {
   const p = premisesData[currentPremisesIdx] || {};
   const sv = (field, fallback='') => p[field] !== undefined ? p[field] : fallback;
 
-  container.innerHTML = \`
+  container.innerHTML = `
     <!-- PS1: Premises Details -->
     <div class="premises-step active" id="ps-step-1">
       <div class="quote-card">
         <div class="quote-card-header">
-          <div><h4>Premises \${currentPremisesIdx + 1}: Step 1 of 8 — Premises Details</h4><div class="qch-sub">Enter the address and activity details for this premises</div></div>
+          <div><h4>Premises ${currentPremisesIdx + 1}: Step 1 of 8 — Premises Details</h4><div class="qch-sub">Enter the address and activity details for this premises</div></div>
         </div>
         <div class="quote-card-body">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
@@ -3437,30 +3437,30 @@ function buildPremisesStepHTML() {
             <div>
               <div class="qf-section-title">1.1 Enter Premises Address:</div>
               <div class="form-grid cols-1" style="gap:10px">
-                <div class="form-group"><label>Trading Name</label><input type="text" id="ps-tradingName" value="\${sv('tradingName')}" placeholder="e.g. Ringo's Test Practice"></div>
-                <div class="form-group"><label>Premises Address First Line <span class="req">*</span></label><input type="text" id="ps-addr1" value="\${sv('addr1')}" placeholder="Street address"></div>
-                <div class="form-group"><label>Premises Address Second Line</label><input type="text" id="ps-addr2" value="\${sv('addr2')}" placeholder="Optional"></div>
-                <div class="form-group"><label>Premises Address Town <span class="req">*</span></label><input type="text" id="ps-town" value="\${sv('town')}" placeholder="e.g. Liverpool"></div>
-                <div class="form-group"><label>Premises Address County</label><input type="text" id="ps-county" value="\${sv('county')}" placeholder="e.g. Merseyside"></div>
+                <div class="form-group"><label>Trading Name</label><input type="text" id="ps-tradingName" value="${sv('tradingName')}" placeholder="e.g. Ringo's Test Practice"></div>
+                <div class="form-group"><label>Premises Address First Line <span class="req">*</span></label><input type="text" id="ps-addr1" value="${sv('addr1')}" placeholder="Street address"></div>
+                <div class="form-group"><label>Premises Address Second Line</label><input type="text" id="ps-addr2" value="${sv('addr2')}" placeholder="Optional"></div>
+                <div class="form-group"><label>Premises Address Town <span class="req">*</span></label><input type="text" id="ps-town" value="${sv('town')}" placeholder="e.g. Liverpool"></div>
+                <div class="form-group"><label>Premises Address County</label><input type="text" id="ps-county" value="${sv('county')}" placeholder="e.g. Merseyside"></div>
                 <div class="form-group"><label>Premises Address Country</label>
                   <select id="ps-country">
-                    <option value="United Kingdom" \${sv('country','United Kingdom')==='United Kingdom'?'selected':''}>United Kingdom</option>
-                    <option value="England" \${sv('country')==='England'?'selected':''}>England</option>
-                    <option value="Scotland" \${sv('country')==='Scotland'?'selected':''}>Scotland</option>
-                    <option value="Wales" \${sv('country')==='Wales'?'selected':''}>Wales</option>
-                    <option value="Northern Ireland" \${sv('country')==='Northern Ireland'?'selected':''}>Northern Ireland</option>
-                    <option value="Channel Islands" \${sv('country')==='Channel Islands'?'selected':''}>Channel Islands</option>
-                    <option value="Isle of Man" \${sv('country')==='Isle of Man'?'selected':''}>Isle of Man</option>
+                    <option value="United Kingdom" ${sv('country','United Kingdom')==='United Kingdom'?'selected':''}>United Kingdom</option>
+                    <option value="England" ${sv('country')==='England'?'selected':''}>England</option>
+                    <option value="Scotland" ${sv('country')==='Scotland'?'selected':''}>Scotland</option>
+                    <option value="Wales" ${sv('country')==='Wales'?'selected':''}>Wales</option>
+                    <option value="Northern Ireland" ${sv('country')==='Northern Ireland'?'selected':''}>Northern Ireland</option>
+                    <option value="Channel Islands" ${sv('country')==='Channel Islands'?'selected':''}>Channel Islands</option>
+                    <option value="Isle of Man" ${sv('country')==='Isle of Man'?'selected':''}>Isle of Man</option>
                   </select>
                 </div>
                 <div class="form-group">
                   <label>Premises Address Postcode <span class="req">*</span></label>
                   <div style="display:flex;align-items:center;gap:10px">
-                    <input type="text" id="ps-postcode" value="\${sv('postcode')}" placeholder="e.g. MK40 3JG" style="text-transform:uppercase;flex:1">
+                    <input type="text" id="ps-postcode" value="${sv('postcode')}" placeholder="e.g. MK40 3JG" style="text-transform:uppercase;flex:1">
                     <span style="font-size:0.78rem;color:var(--mist);white-space:nowrap">Valid Postcode</span>
                   </div>
                 </div>
-                <div class="form-group"><label>Year Established at Address</label><input type="number" id="ps-yearEstablished" value="\${sv('yearEstablished')}" placeholder="e.g. 1970" min="1800" max="2099"></div>
+                <div class="form-group"><label>Year Established at Address</label><input type="number" id="ps-yearEstablished" value="${sv('yearEstablished')}" placeholder="e.g. 1970" min="1800" max="2099"></div>
               </div>
             </div>
 
@@ -3477,28 +3477,28 @@ function buildPremisesStepHTML() {
                     </tr>
                   </thead>
                   <tbody>
-                    \${Array.from({length:8},(_,i) => {
+                    ${Array.from({length:8},(_,i) => {
                       const act = (sv('activities')||[])[i] || {};
                       const isFirst = i === 0 && currentPremisesIdx === 0;
                       const defDesc = isFirst ? (quoteData.businessDesc || 'None') : 'None';
                       const actDesc = act.activity || defDesc;
                       const actBy   = act.carriedOutBy || 'You';
                       const actPct  = act.pct !== undefined ? act.pct : (i===0 ? 100 : 0);
-                      return \`<tr style="border-top:\${i>0?'1px solid var(--border)':'none'};background:\${i%2===1?'var(--surface)':'var(--white)'}">
+                      return `<tr style="border-top:${i>0?'1px solid var(--border)':'none'};background:${i%2===1?'var(--surface)':'var(--white)'}">
                         <td style="padding:6px 8px">
-                          <select id="ps-act-desc-\${i}" onchange="updateActivityTotal()" style="width:100%;border:1.5px solid var(--sidebar);border-radius:6px;padding:6px 8px;font-size:0.82rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                            \${activityOptionsHTML(actDesc)}
+                          <select id="ps-act-desc-${i}" onchange="updateActivityTotal()" style="width:100%;border:1.5px solid var(--sidebar);border-radius:6px;padding:6px 8px;font-size:0.82rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                            ${activityOptionsHTML(actDesc)}
                           </select>
                         </td>
                         <td style="padding:6px 8px">
-                          <select id="ps-act-by-\${i}" style="width:100%;border:1.5px solid var(--sidebar);border-radius:6px;padding:6px 8px;font-size:0.82rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                            \${carriedOutByHTML(actBy)}
+                          <select id="ps-act-by-${i}" style="width:100%;border:1.5px solid var(--sidebar);border-radius:6px;padding:6px 8px;font-size:0.82rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                            ${carriedOutByHTML(actBy)}
                           </select>
                         </td>
                         <td style="padding:6px 8px">
-                          <input type="number" id="ps-act-pct-\${i}" value="\${actPct}" min="0" max="100" oninput="updateActivityTotal()" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:0.88rem;text-align:right">
+                          <input type="number" id="ps-act-pct-${i}" value="${actPct}" min="0" max="100" oninput="updateActivityTotal()" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:0.88rem;text-align:right">
                         </td>
-                      </tr>\`;
+                      </tr>`;
                     }).join('')}
                   </tbody>
                 </table>
@@ -3520,7 +3520,7 @@ function buildPremisesStepHTML() {
     <div class="premises-step" id="ps-step-2">
       <div class="quote-card">
         <div class="quote-card-header">
-          <div><h4>Premises \${currentPremisesIdx + 1}: Step 2 of 8 — Declarations</h4><div class="qch-sub">Premises-specific declarations</div></div>
+          <div><h4>Premises ${currentPremisesIdx + 1}: Step 2 of 8 — Declarations</h4><div class="qch-sub">Premises-specific declarations</div></div>
         </div>
         <div class="quote-card-body">
 
@@ -3528,14 +3528,14 @@ function buildPremisesStepHTML() {
 
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
             <select id="ps2-noneOfBelow" onchange="handlePS2NoneOfBelow()" style="width:100px;padding:8px 10px;border:1.5px solid var(--sidebar);border-radius:6px;font-weight:600;color:var(--sidebar);background:var(--white)">
-              <option value="Yes" \${sv('ps2NoneOfBelow','Yes')==='Yes'?'selected':''}>Yes</option>
-              <option value="No"  \${sv('ps2NoneOfBelow')==='No'?'selected':''}>No</option>
+              <option value="Yes" ${sv('ps2NoneOfBelow','Yes')==='Yes'?'selected':''}>Yes</option>
+              <option value="No"  ${sv('ps2NoneOfBelow')==='No'?'selected':''}>No</option>
             </select>
             <span style="font-size:0.88rem;font-weight:600;color:var(--slate)">None of the below</span>
           </div>
 
           <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
-            \${[
+            ${[
               ['ps2-d1', sv('ps2D1','No'), 'Premises has a history of flooding'],
               ['ps2-d2', sv('ps2D2','No'), 'Premises is in an area subject to an increased risk of flooding'],
               ['ps2-d3', sv('ps2D3','No'), 'Premises is of non-standard construction'],
@@ -3543,14 +3543,14 @@ function buildPremisesStepHTML() {
               ['ps2-d5', sv('ps2D5','No'), 'Proposer is not the sole occupant of the premises'],
               ['ps2-d6', sv('ps2D6','No'), 'Business is not self contained with its own means of access'],
               ['ps2-d7', sv('ps2D7','No'), 'Building has an ATM for which you are responsible'],
-            ].map(([id, val, label], i) => \\`
-              <div class="decl-row" style="display:flex;align-items:center;\${i>0?'border-top:1px solid var(--border)':''};background:\${i%2===0?'var(--surface)':'var(--white)'}">
-                <select id="\${id}" onchange="handlePS2DeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
-                  <option value="No"  \${val==='No' ?'selected':''}>No</option>
-                  <option value="Yes" \${val==='Yes'?'selected':''}>Yes</option>
+            ].map(([id, val, label], i) => `
+              <div class="decl-row" style="display:flex;align-items:center;${i>0?'border-top:1px solid var(--border)':''};background:${i%2===0?'var(--surface)':'var(--white)'}">
+                <select id="${id}" onchange="handlePS2DeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
+                  <option value="No"  ${val==='No' ?'selected':''}>No</option>
+                  <option value="Yes" ${val==='Yes'?'selected':''}>Yes</option>
                 </select>
-                <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink);line-height:1.5">\${label}</span>
-              </div>\\`
+                <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink);line-height:1.5">${label}</span>
+              </div>`
             ).join('')}
           </div>
 
@@ -3575,7 +3575,7 @@ function buildPremisesStepHTML() {
         <div class="quote-card-body">
           <div class="qf-section-title">3.1 If confirmed as non-standard construction in material facts, amend below:</div>
 
-          \${['roof','walls','floor'].map((part, pi) => {
+          ${['roof','walls','floor'].map((part, pi) => {
             const labels = ['Please describe the construction of the roof :', 'Please describe the construction of the walls:', 'Please describe the construction of the floor:'];
             const optFns = [() => ROOF_OPTIONS, () => WALL_OPTIONS, () => FLOOR_OPTIONS];
             const defFirst = ['Tile','Brick &or Block','Timber'];
@@ -3585,12 +3585,12 @@ function buildPremisesStepHTML() {
               { type: rows[1]?.type || 'N/A',        pct: rows[1]?.pct !== undefined ? rows[1].pct : 0  },
               { type: rows[2]?.type || 'N/A',        pct: rows[2]?.pct !== undefined ? rows[2].pct : 0  },
             ];
-            const flatRoofRow = part === 'roof' ? \`
+            const flatRoofRow = part === 'roof' ? `
               <div style="display:flex;align-items:center;gap:12px;margin:12px 0">
                 <span style="font-size:0.85rem;color:var(--slate);white-space:nowrap">If flat roof, which year was the roof installed:</span>
-                <input type="text" id="ps-flatRoofYear" value="\${sv('flatRoofYear','N/A')}" style="width:100px;border:1.5px solid var(--border);border-radius:6px;padding:7px 10px;font-size:0.85rem">
-              </div>\` : '';
-            return \`
+                <input type="text" id="ps-flatRoofYear" value="${sv('flatRoofYear','N/A')}" style="width:100px;border:1.5px solid var(--border);border-radius:6px;padding:7px 10px;font-size:0.85rem">
+              </div>` : '';
+            return `
             <div style="display:flex;align-items:flex-start;gap:24px;margin-bottom:28px">
               <div style="width:240px;padding-top:10px;flex-shrink:0">
                 <span style="font-size:0.85rem;color:var(--slate)">${labels[pi]}</span>
@@ -3598,21 +3598,21 @@ function buildPremisesStepHTML() {
               </div>
               <div style="flex:1">
                 <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
-                  ${rowData.map((row, i) => \`
+                  ${rowData.map((row, i) => `
                     <div style="display:flex;align-items:center;${i>0?'border-top:1px solid var(--border)':''}">
                       <select id="ps-${part}-type-${i}" onchange="updateConstructionTotal('ps-${part}')"
                         style="flex:1;border:none;border-right:1px solid var(--border);border-radius:0;padding:10px 12px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                        \${constructionOptionsHTML(optFns[pi](), row.type)}
+                        ${constructionOptionsHTML(optFns[pi](), row.type)}
                       </select>
                       <input type="number" id="ps-${part}-pct-${i}" value="${row.pct}" min="0" max="100"
                         oninput="updateConstructionTotal('ps-${part}')"
                         style="width:80px;border:none;padding:10px 12px;font-size:0.88rem;text-align:right">
                     </div>
-                  \`).join('')}
+                  `).join('')}
                 </div>
               </div>
               <div style="font-family:'Raleway',sans-serif;font-size:1.4rem;font-weight:800;color:#22c55e;white-space:nowrap;padding-top:8px" id="ps-${part}-total">100%</div>
-            </div>\`;
+            </div>`;
           }).join('')}
 
           <div class="quote-nav">
@@ -3635,86 +3635,85 @@ function buildPremisesStepHTML() {
                     <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Are the premises a listed building? If so, what grade?</div>
                     <div style="padding:8px 16px;flex-shrink:0">
                       <select id="ps4-listedBuilding" style="width:240px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                        <option value="Not on cover" \${sv(\'ps4-listedBuilding\',\'not listed\')===\'Not on cover\'?\'selected\':\'\'}>Not on cover</option>
-<option value="not listed" \${sv(\'ps4-listedBuilding\',\'not listed\')===\'not listed\'?\'selected\':\'\'}>not listed</option>
-<option value="2 / ll / C / B2" \${sv(\'ps4-listedBuilding\',\'not listed\')===\'2 / ll / C / B2\'?\'selected\':\'\'}>2 / ll / C / B2</option>
-<option value=". / . / . / B1" \${sv(\'ps4-listedBuilding\',\'not listed\')===\'. / . / . / B1\'?\'selected\':\'\'}>. / . / . / B1</option>
-<option value=". / . / B / ." \${sv(\'ps4-listedBuilding\',\'not listed\')===\'. / . / B / .\'?\'selected\':\'\'}>. / . / B / .</option>
-<option value="2* / ll* / . / B+" \${sv(\'ps4-listedBuilding\',\'not listed\')===\'2* / ll* / . / B+\'?\'selected\':\'\'}>2* / ll* / . / B+</option>
-<option value="1 / I / A / A" \${sv(\'ps4-listedBuilding\',\'not listed\')===\'1 / I / A / A\'?\'selected\':\'\'}>1 / I / A / A</option>
+                        <option value="Not on cover">Not on cover</option>
+<option value="not listed">not listed</option>
+<option value="2 / ll / C / B2">2 / ll / C / B2</option>
+<option value=". / . / . / B1">. / . / . / B1</option>
+<option value=". / . / B / .">. / . / B / .</option>
+<option value="2* / ll* / . / B+">2* / ll* / . / B+</option>
+<option value="1 / I / A / A">1 / I / A / A</option>
                       </select>
                     </div>
                   </div>                  <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
                     <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Do you have any portable heating?</div>
                     <div style="padding:8px 16px;flex-shrink:0">
                       <select id="ps4-portableHeating" style="width:240px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                        <option value="Yes" \${sv(\'ps4-portableHeating\',\'No\')===\'Yes\'?\'selected\':\'\'}>Yes</option>
-<option value="No" \${sv(\'ps4-portableHeating\',\'No\')===\'No\'?\'selected\':\'\'}>No</option>
+                        <option value="Yes">Yes</option>
+<option value="No">No</option>
                       </select>
                     </div>
                   </div>                  <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
                     <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Do your premises meet our minimum level of security?</div>
                     <div style="padding:8px 16px;flex-shrink:0">
                       <select id="ps4-meetsMinSecurity" style="width:240px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                        <option value="Yes" \${sv(\'ps4-meetsMinSecurity\',\'Yes\')===\'Yes\'?\'selected\':\'\'}>Yes</option>
-<option value="No" \${sv(\'ps4-meetsMinSecurity\',\'Yes\')===\'No\'?\'selected\':\'\'}>No</option>
+                        <option value="Yes">Yes</option>
+<option value="No">No</option>
                       </select>
                     </div>
                   </div>                  <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
                     <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Does the premises have an intruder alarm?</div>
                     <div style="padding:8px 16px;flex-shrink:0">
                       <select id="ps4-intruderAlarm" style="width:240px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                        <option value="Yes" \${sv(\'ps4-intruderAlarm\',\'Yes\')===\'Yes\'?\'selected\':\'\'}>Yes</option>
-<option value="No" \${sv(\'ps4-intruderAlarm\',\'Yes\')===\'No\'?\'selected\':\'\'}>No</option>
+                        <option value="Yes">Yes</option>
+<option value="No">No</option>
                       </select>
                     </div>
                   </div>                  <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
                     <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Is the Alarm Monitored?</div>
                     <div style="padding:8px 16px;flex-shrink:0">
                       <select id="ps4-alarmMonitored" style="width:240px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                        <option value="None" \${sv(\'ps4-alarmMonitored\',\'None\')===\'None\'?\'selected\':\'\'}>None</option>
-<option value="ABC" \${sv(\'ps4-alarmMonitored\',\'None\')===\'ABC\'?\'selected\':\'\'}>ABC</option>
-<option value="Audible" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Audible\'?\'selected\':\'\'}>Audible</option>
-<option value="Central Station Dial-up Line" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Central Station Dial-up Line\'?\'selected\':\'\'}>Central Station Dial-up Line</option>
-<option value="Central Station Direct Line" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Central Station Direct Line\'?\'selected\':\'\'}>Central Station Direct Line</option>
-<option value="Digicom" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Digicom\'?\'selected\':\'\'}>Digicom</option>
-<option value="Dualcom" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Dualcom\'?\'selected\':\'\'}>Dualcom</option>
-<option value="High Decibel Internal Sounder" \${sv(\'ps4-alarmMonitored\',\'None\')===\'High Decibel Internal Sounder\'?\'selected\':\'\'}>High Decibel Internal Sounder</option>
-<option value="Line to Site Security Office" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Line to Site Security Office\'?\'selected\':\'\'}>Line to Site Security Office</option>
-<option value="PAKNET" \${sv(\'ps4-alarmMonitored\',\'None\')===\'PAKNET\'?\'selected\':\'\'}>PAKNET</option>
-<option value="Police Direct Line" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Police Direct Line\'?\'selected\':\'\'}>Police Direct Line</option>
-<option value="REDCARE" \${sv(\'ps4-alarmMonitored\',\'None\')===\'REDCARE\'?\'selected\':\'\'}>REDCARE</option>
-<option value="RedcareGSM" \${sv(\'ps4-alarmMonitored\',\'None\')===\'RedcareGSM\'?\'selected\':\'\'}>RedcareGSM</option>
-<option value="Visual" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Visual\'?\'selected\':\'\'}>Visual</option>
+                        <option value="None">None</option>
+<option value="ABC">ABC</option>
+<option value="Audible">Audible</option>
+<option value="Central Station Dial-up Line">Central Station Dial-up Line</option>
+<option value="Central Station Direct Line">Central Station Direct Line</option>
+<option value="Digicom">Digicom</option>
+<option value="Dualcom">Dualcom</option>
+<option value="High Decibel Internal Sounder">High Decibel Internal Sounder</option>
+<option value="Line to Site Security Office">Line to Site Security Office</option>
+<option value="PAKNET">PAKNET</option>
+<option value="Police Direct Line">Police Direct Line</option>
+<option value="REDCARE">REDCARE</option>
+<option value="RedcareGSM">RedcareGSM</option>
+<option value="Visual">Visual</option>
                       </select>
                     </div>
                   </div>                  <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
                     <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">What grade is the alarm system and its signalling? (as specified in EN 50131)</div>
                     <div style="padding:8px 16px;flex-shrink:0">
                       <select id="ps4-alarmGrade" style="width:240px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                        <option value="None" \${sv(\'ps4-alarmGrade\',\'None\')===\'None\'?\'selected\':\'\'}>None</option>
-<option value="Unknown" \${sv(\'ps4-alarmGrade\',\'None\')===\'Unknown\'?\'selected\':\'\'}>Unknown</option>
-<option value="3" \${sv(\'ps4-alarmGrade\',\'None\')===\'3\'?\'selected\':\'\'}>3</option>
-<option value="2" \${sv(\'ps4-alarmGrade\',\'None\')===\'2\'?\'selected\':\'\'}>2</option>
-<option value="1" \${sv(\'ps4-alarmGrade\',\'None\')===\'1\'?\'selected\':\'\'}>1</option>
+                        <option value="None">None</option>
+<option value="Unknown">Unknown</option>
+<option value="3">3</option>
+<option value="2">2</option>
+<option value="1">1</option>
                       </select>
                     </div>
                   </div>                  <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
                     <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Is the alarm under your sole control?</div>
                     <div style="padding:8px 16px;flex-shrink:0">
                       <select id="ps4-alarmSoleControl" style="width:240px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                        <option value="Yes" \${sv(\'ps4-alarmSoleControl\',\'Yes\')===\'Yes\'?\'selected\':\'\'}>Yes</option>
-<option value="No" \${sv(\'ps4-alarmSoleControl\',\'Yes\')===\'No\'?\'selected\':\'\'}>No</option>
+                        <option value="Yes">Yes</option>
+<option value="No">No</option>
                       </select>
                     </div>
                   </div>
-                  <!-- Additional security features — 3 rows -->
+                  <!-- Additional security features - 3 rows -->
                   <div style="display:flex;align-items:flex-start;border-top:1px solid var(--border)">
                     <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Please give details of any additional security features</div>
                     <div style="padding:8px 16px;flex-shrink:0;display:flex;flex-direction:column;gap:6px">
-                      ${[0,1,2].map(i => `
-                        <select id="ps4-secFeature-${i}" style="width:340px;padding:9px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:0.85rem;color:var(--slate)">
-                          <option value="None">None</option>
+                      <select id="ps4-secFeature-0" style="width:340px;padding:9px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:0.85rem;color:var(--slate)">
+                        <option value="None">None</option>
 <option value="Anti Ram Raid Bollards">Anti Ram Raid Bollards</option>
 <option value="Shutters - Metal">Shutters - Metal</option>
 <option value="Fixed External Bars/Grills: on all accessible windows">Fixed External Bars/Grills: on all accessible windows</option>
@@ -3730,7 +3729,43 @@ function buildPremisesStepHTML() {
 <option value="24 Hour Site on site Security">24 Hour Site on site Security</option>
 <option value="Security Patrols visiting periodically">Security Patrols visiting periodically</option>
 <option value="Guard Dog(s)">Guard Dog(s)</option>
-                        </select>`).join('')}
+                      </select>
+                      <select id="ps4-secFeature-1" style="width:340px;padding:9px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:0.85rem;color:var(--slate)">
+                        <option value="None">None</option>
+<option value="Anti Ram Raid Bollards">Anti Ram Raid Bollards</option>
+<option value="Shutters - Metal">Shutters - Metal</option>
+<option value="Fixed External Bars/Grills: on all accessible windows">Fixed External Bars/Grills: on all accessible windows</option>
+<option value="Fixed Internal Bars/Grills: on all accessible windows & doors">Fixed Internal Bars/Grills: on all accessible windows & doors</option>
+<option value="Hinge Bolts">Hinge Bolts</option>
+<option value="Steel Lined Doors">Steel Lined Doors</option>
+<option value="Onsite CCTV">Onsite CCTV</option>
+<option value="Other Monitored CCTV">Other Monitored CCTV</option>
+<option value="anti Ram Raid Bollards">anti Ram Raid Bollards</option>
+<option value="Encasement & entrapment devices on all computer equipment">Encasement & entrapment devices on all computer equipment</option>
+<option value="Smoke Cloak">Smoke Cloak</option>
+<option value="Proposer/family members or employees residing above premises">Proposer/family members or employees residing above premises</option>
+<option value="24 Hour Site on site Security">24 Hour Site on site Security</option>
+<option value="Security Patrols visiting periodically">Security Patrols visiting periodically</option>
+<option value="Guard Dog(s)">Guard Dog(s)</option>
+                      </select>
+                      <select id="ps4-secFeature-2" style="width:340px;padding:9px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:0.85rem;color:var(--slate)">
+                        <option value="None">None</option>
+<option value="Anti Ram Raid Bollards">Anti Ram Raid Bollards</option>
+<option value="Shutters - Metal">Shutters - Metal</option>
+<option value="Fixed External Bars/Grills: on all accessible windows">Fixed External Bars/Grills: on all accessible windows</option>
+<option value="Fixed Internal Bars/Grills: on all accessible windows & doors">Fixed Internal Bars/Grills: on all accessible windows & doors</option>
+<option value="Hinge Bolts">Hinge Bolts</option>
+<option value="Steel Lined Doors">Steel Lined Doors</option>
+<option value="Onsite CCTV">Onsite CCTV</option>
+<option value="Other Monitored CCTV">Other Monitored CCTV</option>
+<option value="anti Ram Raid Bollards">anti Ram Raid Bollards</option>
+<option value="Encasement & entrapment devices on all computer equipment">Encasement & entrapment devices on all computer equipment</option>
+<option value="Smoke Cloak">Smoke Cloak</option>
+<option value="Proposer/family members or employees residing above premises">Proposer/family members or employees residing above premises</option>
+<option value="24 Hour Site on site Security">24 Hour Site on site Security</option>
+<option value="Security Patrols visiting periodically">Security Patrols visiting periodically</option>
+<option value="Guard Dog(s)">Guard Dog(s)</option>
+                      </select>
                     </div>
                   </div>
           </div>
@@ -3760,8 +3795,8 @@ function buildPremisesStepHTML() {
                 <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Cover included for Subsidence (include as default)?</div>
                 <div style="padding:8px 16px;flex-shrink:0">
                   <select id="ps5-subsidence" style="width:120px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                    <option value="Yes" \${sv('ps5Subsidence','Yes')==='Yes'?'selected':''}>Yes</option>
-                    <option value="No"  \${sv('ps5Subsidence')==='No'?'selected':''}>No</option>
+                    <option value="Yes" ${sv('ps5Subsidence','Yes')==='Yes'?'selected':''}>Yes</option>
+                    <option value="No"  ${sv('ps5Subsidence')==='No'?'selected':''}>No</option>
                   </select>
                 </div>
               </div>
@@ -3769,8 +3804,8 @@ function buildPremisesStepHTML() {
                 <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Cover included for Flood (include as default)?</div>
                 <div style="padding:8px 16px;flex-shrink:0">
                   <select id="ps5-flood" style="width:120px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                    <option value="Yes" \${sv('ps5Flood','Yes')==='Yes'?'selected':''}>Yes</option>
-                    <option value="No"  \${sv('ps5Flood')==='No'?'selected':''}>No</option>
+                    <option value="Yes" ${sv('ps5Flood','Yes')==='Yes'?'selected':''}>Yes</option>
+                    <option value="No"  ${sv('ps5Flood')==='No'?'selected':''}>No</option>
                   </select>
                 </div>
               </div>
@@ -3787,21 +3822,21 @@ function buildPremisesStepHTML() {
                 <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">How much buildings cover is required? (this is the amount to rebuild the premises)</div>
                 <div style="padding:8px 16px;flex-shrink:0;display:flex;align-items:center;gap:4px">
                   <span style="font-size:0.85rem;color:var(--slate)">£</span>
-                  <input type="text" id="ps5-buildingsCover" value="\${sv('ps5BuildingsCover','0')}" oninput="formatGBPInput(this)" style="width:120px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem">
+                  <input type="text" id="ps5-buildingsCover" value="${sv('ps5BuildingsCover','0')}" oninput="formatGBPInput(this)" style="width:120px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem">
                 </div>
               </div>
               <div style="display:flex;align-items:center;border-top:1px solid var(--border)">
                 <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">How much cover is required for tenants improvements?</div>
                 <div style="padding:8px 16px;flex-shrink:0;display:flex;align-items:center;gap:4px">
                   <span style="font-size:0.85rem;color:var(--slate)">£</span>
-                  <input type="text" id="ps5-tenantImprovements" value="\${sv('ps5TenantImprovements','0')}" oninput="formatGBPInput(this)" style="width:120px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem">
+                  <input type="text" id="ps5-tenantImprovements" value="${sv('ps5TenantImprovements','0')}" oninput="formatGBPInput(this)" style="width:120px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem">
                 </div>
               </div>
               <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
                 <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">How much cover is required for general contents and machinery?</div>
                 <div style="padding:8px 16px;flex-shrink:0;display:flex;align-items:center;gap:4px">
                   <span style="font-size:0.85rem;color:var(--slate)">£</span>
-                  <input type="text" id="ps5-generalContents" value="\${sv('ps5GeneralContents','0')}" oninput="formatGBPInput(this)" style="width:120px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem">
+                  <input type="text" id="ps5-generalContents" value="${sv('ps5GeneralContents','0')}" oninput="formatGBPInput(this)" style="width:120px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem">
                 </div>
               </div>
             </div>
@@ -3817,15 +3852,15 @@ function buildPremisesStepHTML() {
                 <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">How much cover is required for computer equipment at the premises?</div>
                 <div style="padding:8px 16px;flex-shrink:0;display:flex;align-items:center;gap:4px">
                   <span style="font-size:0.85rem;color:var(--slate)">£</span>
-                  <input type="text" id="ps5-computerCover" value="\${sv('ps5ComputerCover','0')}" oninput="formatGBPInput(this)" style="width:120px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem">
+                  <input type="text" id="ps5-computerCover" value="${sv('ps5ComputerCover','0')}" oninput="formatGBPInput(this)" style="width:120px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem">
                 </div>
               </div>
               <div style="display:flex;align-items:center;border-top:1px solid var(--border)">
                 <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Cover can be extended to include computer breakdown</div>
                 <div style="padding:8px 16px;flex-shrink:0">
                   <select id="ps5-computerBreakdown" style="width:120px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                    <option value="No"  \${sv('ps5ComputerBreakdown','No')==='No'?'selected':''}>No</option>
-                    <option value="Yes" \${sv('ps5ComputerBreakdown')==='Yes'?'selected':''}>Yes</option>
+                    <option value="No"  ${sv('ps5ComputerBreakdown','No')==='No'?'selected':''}>No</option>
+                    <option value="Yes" ${sv('ps5ComputerBreakdown')==='Yes'?'selected':''}>Yes</option>
                   </select>
                 </div>
               </div>
@@ -3843,21 +3878,22 @@ function buildPremisesStepHTML() {
               </div>
               ${[0,1,2].map(i => {
                 const row = (sv('ps5SpecifiedContents')||[])[i] || {type:'N/A', value:'0'};
-                return \`<div style="display:flex;align-items:center;\${i>0?'border-top:1px solid var(--border)':''}">
+                return `<div style="display:flex;align-items:center;${i>0?'border-top:1px solid var(--border)':''}">
                   <select id="ps5-specType-${i}" style="flex:1;border:none;border-right:1px solid var(--border);border-radius:0;padding:10px 12px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                    <option value="N/A" \${row.type==='N/A'?'selected':''}>N/A</option>
-                    <option value="Art" \${row.type==='Art'?'selected':''}>Art</option>
-                    <option value="Jewellery" \${row.type==='Jewellery'?'selected':''}>Jewellery</option>
-                    <option value="Antiques" \${row.type==='Antiques'?'selected':''}>Antiques</option>
-                    <option value="Portable Medical Equipment" \${row.type==='Portable Medical Equipment'?'selected':''}>Portable Medical Equipment</option>
-                    <option value="Other Specified Item" \${row.type==='Other Specified Item'?'selected':''}>Other Specified Item</option>
+                    <option value="N/A" ${row.type==='N/A'?'selected':''}>N/A</option>
+                    <option value="Art" ${row.type==='Art'?'selected':''}>Art</option>
+                    <option value="Jewellery" ${row.type==='Jewellery'?'selected':''}>Jewellery</option>
+                    <option value="Antiques" ${row.type==='Antiques'?'selected':''}>Antiques</option>
+                    <option value="Portable Medical Equipment" ${row.type==='Portable Medical Equipment'?'selected':''}>Portable Medical Equipment</option>
+                    <option value="Other Specified Item" ${row.type==='Other Specified Item'?'selected':''}>Other Specified Item</option>
                   </select>
                   <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;flex-shrink:0">
                     <span style="font-size:0.85rem;color:var(--slate)">£</span>
                     <input type="text" id="ps5-specValue-${i}" value="${row.value||'0'}" oninput="formatGBPInput(this)"
                       style="width:100px;border:1.5px solid var(--border);border-radius:6px;padding:8px 10px;font-size:0.88rem;text-align:right">
                   </div>
-                </div>\`;
+                </div>`;
+
               }).join('')}
             </div>
           </div>
@@ -3887,31 +3923,31 @@ function buildPremisesStepHTML() {
                   <div style="font-size:0.87rem;color:var(--ink)">How much cover is required for refrigerated stock - (inc. drugs for MD loss/damage)?</div>
                   
                 </div>
-                <div style="padding:8px 16px;flex-shrink:0"><div style="display:flex;align-items:center;gap:4px"><span style="font-size:0.85rem;color:var(--slate)">£</span><input type="text" id="ps6-refrigStock" value="\${sv('ps6-refrigStock','0')}" oninput="formatGBPInput(this)" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem;text-align:right"></div></div>
+                <div style="padding:8px 16px;flex-shrink:0"><div style="display:flex;align-items:center;gap:4px"><span style="font-size:0.85rem;color:var(--slate)">£</span><input type="text" id="ps6-refrigStock" value="${sv('ps6-refrigStock','0')}" oninput="formatGBPInput(this)" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem;text-align:right"></div></div>
               </div>              <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--white)">
                 <div style="flex:1;padding:13px 16px">
                   <div style="font-size:0.87rem;color:var(--ink)">How many refrigeration units do you have?</div>
                   <div style="font-size:0.81rem;color:var(--mist);margin-top:3px">The maximum that we will pay is £10,000 any one refrigeration unit</div>
                 </div>
-                <div style="padding:8px 16px;flex-shrink:0"><select id="ps6-refrigUnits" style="width:160px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)"><option value="1" \${sv(\'ps6-refrigUnits\',\'1\')==='1'?'selected':''>1</option>
-<option value="2" \${sv(\'ps6-refrigUnits\',\'1\')==='2'?'selected':''>2</option>
-<option value="3" \${sv(\'ps6-refrigUnits\',\'1\')==='3'?'selected':''>3</option>
-<option value="4" \${sv(\'ps6-refrigUnits\',\'1\')==='4'?'selected':''>4</option>
-<option value="5 &more" \${sv(\'ps6-refrigUnits\',\'1\')==='5 &more'?'selected':''>5 &more</option></select></div>
+                <div style="padding:8px 16px;flex-shrink:0"><select id="ps6-refrigUnits" style="width:160px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)"><option value="1" ${sv(\'ps6-refrigUnits\',\'1\')==='1'?'selected':''>1</option>
+<option value="2" ${sv(\'ps6-refrigUnits\',\'1\')==='2'?'selected':''>2</option>
+<option value="3" ${sv(\'ps6-refrigUnits\',\'1\')==='3'?'selected':''>3</option>
+<option value="4" ${sv(\'ps6-refrigUnits\',\'1\')==='4'?'selected':''>4</option>
+<option value="5 &more" ${sv(\'ps6-refrigUnits\',\'1\')==='5 &more'?'selected':''>5 &more</option></select></div>
               </div>              <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
                 <div style="flex:1;padding:13px 16px">
                   <div style="font-size:0.87rem;color:var(--ink)">If they all have temperature alarms what type: audible / &amp; remote signalling?</div>
                   
                 </div>
-                <div style="padding:8px 16px;flex-shrink:0"><select id="ps6-tempAlarm" style="width:160px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)"><option value="None" \${sv(\'ps6-tempAlarm\',\'None\')==='None'?'selected':''>None</option>
-<option value="Audible" \${sv(\'ps6-tempAlarm\',\'None\')==='Audible'?'selected':''>Audible</option>
-<option value="Audible & Remote Signalling" \${sv(\'ps6-tempAlarm\',\'None\')==='Audible & Remote Signalling'?'selected':''>Audible & Remote Signalling</option></select></div>
+                <div style="padding:8px 16px;flex-shrink:0"><select id="ps6-tempAlarm" style="width:160px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)"><option value="None" ${sv(\'ps6-tempAlarm\',\'None\')==='None'?'selected':''>None</option>
+<option value="Audible" ${sv(\'ps6-tempAlarm\',\'None\')==='Audible'?'selected':''>Audible</option>
+<option value="Audible & Remote Signalling" ${sv(\'ps6-tempAlarm\',\'None\')==='Audible & Remote Signalling'?'selected':''>Audible & Remote Signalling</option></select></div>
               </div>              <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--white)">
                 <div style="flex:1;padding:13px 16px">
                   <div style="font-size:0.87rem;color:var(--ink)">How much cover is required for ambient stock (inc. drugs)?</div>
                   
                 </div>
-                <div style="padding:8px 16px;flex-shrink:0"><div style="display:flex;align-items:center;gap:4px"><span style="font-size:0.85rem;color:var(--slate)">£</span><input type="text" id="ps6-ambientStock" value="\${sv('ps6-ambientStock','0')}" oninput="formatGBPInput(this)" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem;text-align:right"></div></div>
+                <div style="padding:8px 16px;flex-shrink:0"><div style="display:flex;align-items:center;gap:4px"><span style="font-size:0.85rem;color:var(--slate)">£</span><input type="text" id="ps6-ambientStock" value="${sv('ps6-ambientStock','0')}" oninput="formatGBPInput(this)" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem;text-align:right"></div></div>
               </div>
             </div>
           </div>
@@ -3925,19 +3961,19 @@ function buildPremisesStepHTML() {
                   <div style="font-size:0.87rem;color:var(--ink)">How much money is held on the premises during business hours?</div>
                   <div style="font-size:0.81rem;color:var(--mist);margin-top:3px">The default cover is £10,000. Our minimum cover is £2,000.</div>
                 </div>
-                <div style="padding:8px 16px;flex-shrink:0"><div style="display:flex;align-items:center;gap:4px"><span style="font-size:0.85rem;color:var(--slate)">£</span><input type="text" id="ps6-moneyBusHours" value="\${sv('ps6-moneyBusHours','10000')}" oninput="formatGBPInput(this)" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem;text-align:right"></div></div>
+                <div style="padding:8px 16px;flex-shrink:0"><div style="display:flex;align-items:center;gap:4px"><span style="font-size:0.85rem;color:var(--slate)">£</span><input type="text" id="ps6-moneyBusHours" value="${sv('ps6-moneyBusHours','10000')}" oninput="formatGBPInput(this)" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem;text-align:right"></div></div>
               </div>              <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--white)">
                 <div style="flex:1;padding:13px 16px">
                   <div style="font-size:0.87rem;color:var(--ink)">How much money is held on the premises after business hours in a single locked safe?</div>
                   <div style="font-size:0.81rem;color:var(--mist);margin-top:3px">Our minimum cover is £2,000 per safe</div>
                 </div>
-                <div style="padding:8px 16px;flex-shrink:0"><div style="display:flex;align-items:center;gap:4px"><span style="font-size:0.85rem;color:var(--slate)">£</span><input type="text" id="ps6-moneyAfterHours" value="\${sv('ps6-moneyAfterHours','10000')}" oninput="formatGBPInput(this)" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem;text-align:right"></div></div>
+                <div style="padding:8px 16px;flex-shrink:0"><div style="display:flex;align-items:center;gap:4px"><span style="font-size:0.85rem;color:var(--slate)">£</span><input type="text" id="ps6-moneyAfterHours" value="${sv('ps6-moneyAfterHours','10000')}" oninput="formatGBPInput(this)" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem;text-align:right"></div></div>
               </div>              <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
                 <div style="flex:1;padding:13px 16px">
                   <div style="font-size:0.87rem;color:var(--ink)">How many safes do you have?</div>
                   
                 </div>
-                <div style="padding:8px 16px;flex-shrink:0"><input type="number" id="ps6-numSafes" value="\${sv('ps6-numSafes','1')}" min="0" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 12px;font-size:0.88rem"></div>
+                <div style="padding:8px 16px;flex-shrink:0"><input type="number" id="ps6-numSafes" value="${sv('ps6-numSafes','1')}" min="0" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 12px;font-size:0.88rem"></div>
               </div>
             </div>
           </div>
@@ -4154,7 +4190,7 @@ function buildPremisesStepHTML() {
             <div id="ps8-endorsements-list" style="max-height:500px;overflow-y:auto">
               ${PREMISES_ENDORSEMENTS.map((e, i) => {
                 const checked = (sv('endorsements') || []).includes(e.code) ? 'checked' : '';
-                return \`<div class="ps8-row" data-code="${e.code}" data-name="${e.name.toLowerCase()}" data-text="${e.text.toLowerCase().substring(0,100)}"
+                return `<div class="ps8-row" data-code="${e.code}" data-name="${e.name.toLowerCase()}" data-text="${e.text.toLowerCase().substring(0,100)}"
                   style="display:flex;align-items:flex-start;padding:14px 16px;border-bottom:1px solid var(--border);gap:16px;cursor:pointer"
                   onclick="toggleEndorsement('${e.code}')">
                   <div style="flex-shrink:0;width:100px;font-size:0.82rem;font-weight:700;color:var(--sidebar);padding-top:1px">${e.code}</div>
@@ -4165,7 +4201,7 @@ function buildPremisesStepHTML() {
                       onclick="event.stopPropagation();toggleEndorsement('${e.code}')"
                       style="width:18px;height:18px;cursor:pointer;accent-color:var(--sidebar)">
                   </div>
-                </div>\`;
+                </div>`;
               }).join('')}
             </div>
           </div>
@@ -4177,7 +4213,7 @@ function buildPremisesStepHTML() {
         </div>
       </div>
     </div>
-  \`;
+  `;
 
   // Show the current step
   showPremisesStep(currentPremisesStep);
@@ -4338,40 +4374,40 @@ function buildPremisesSummary() {
   const fmtBool = v => v ? 'Yes' : 'No';
   const body = document.getElementById('ps-summary-body');
   if (!body) return;
-  body.innerHTML = \`
+  body.innerHTML = `
     <div class="detail-grid" style="margin-bottom:16px">
       <div class="detail-section"><h4>Risk Address</h4>
-        <div class="detail-row"><span class="key">Address</span><span>\${[p.addr1,p.addr2,p.town,p.county,p.postcode].filter(Boolean).join(', ')}</span></div>
-        <div class="detail-row"><span class="key">Type</span><span>\${fmt(p.premisesType)}</span></div>
-        <div class="detail-row"><span class="key">Year Built</span><span>\${fmt(p.yearBuilt)}</span></div>
-        <div class="detail-row"><span class="key">Construction</span><span>\${fmt(p.constructionType)}</span></div>
+        <div class="detail-row"><span class="key">Address</span><span>${[p.addr1,p.addr2,p.town,p.county,p.postcode].filter(Boolean).join(', ')}</span></div>
+        <div class="detail-row"><span class="key">Type</span><span>${fmt(p.premisesType)}</span></div>
+        <div class="detail-row"><span class="key">Year Built</span><span>${fmt(p.yearBuilt)}</span></div>
+        <div class="detail-row"><span class="key">Construction</span><span>${fmt(p.constructionType)}</span></div>
       </div>
       <div class="detail-section"><h4>Buildings &amp; Contents</h4>
-        <div class="detail-row"><span class="key">Buildings</span><span>\${p.buildingsReq ? fmtMoney(p.buildingsSI) : 'Not required'}</span></div>
-        <div class="detail-row"><span class="key">Owned/Leased</span><span>\${fmt(p.ownedLeased)}</span></div>
-        <div class="detail-row"><span class="key">Contents</span><span>\${p.contentsReq ? fmtMoney(p.contentsSI) : 'Not required'}</span></div>
-        <div class="detail-row"><span class="key">Computer Equip</span><span>\${fmtMoney(p.computerSI)}</span></div>
+        <div class="detail-row"><span class="key">Buildings</span><span>${p.buildingsReq ? fmtMoney(p.buildingsSI) : 'Not required'}</span></div>
+        <div class="detail-row"><span class="key">Owned/Leased</span><span>${fmt(p.ownedLeased)}</span></div>
+        <div class="detail-row"><span class="key">Contents</span><span>${p.contentsReq ? fmtMoney(p.contentsSI) : 'Not required'}</span></div>
+        <div class="detail-row"><span class="key">Computer Equip</span><span>${fmtMoney(p.computerSI)}</span></div>
       </div>
     </div>
     <div class="detail-grid" style="margin-bottom:16px">
       <div class="detail-section"><h4>Equipment &amp; Money</h4>
-        <div class="detail-row"><span class="key">Equipment</span><span>\${p.equipReq ? fmtMoney(p.equipSI) : 'Not required'}</span></div>
-        <div class="detail-row"><span class="key">Vaccine Storage</span><span>\${fmtMoney(p.vaccineSI)}</span></div>
-        <div class="detail-row"><span class="key">Money on Premises</span><span>\${fmtMoney(p.moneyOnPremises)}</span></div>
-        <div class="detail-row"><span class="key">Money in Transit</span><span>\${fmtMoney(p.moneyInTransit)}</span></div>
+        <div class="detail-row"><span class="key">Equipment</span><span>${p.equipReq ? fmtMoney(p.equipSI) : 'Not required'}</span></div>
+        <div class="detail-row"><span class="key">Vaccine Storage</span><span>${fmtMoney(p.vaccineSI)}</span></div>
+        <div class="detail-row"><span class="key">Money on Premises</span><span>${fmtMoney(p.moneyOnPremises)}</span></div>
+        <div class="detail-row"><span class="key">Money in Transit</span><span>${fmtMoney(p.moneyInTransit)}</span></div>
       </div>
       <div class="detail-section"><h4>Glass &amp; Locum</h4>
-        <div class="detail-row"><span class="key">Glass Cover</span><span>\${p.glassReq ? 'Yes' : 'Not required'}</span></div>
-        <div class="detail-row"><span class="key">External Glass</span><span>\${fmtMoney(p.externalGlass)}</span></div>
-        <div class="detail-row"><span class="key">Locum Cover</span><span>\${p.locumReq ? 'Yes' : 'Not required'}</span></div>
-        <div class="detail-row"><span class="key">Weekly Benefit</span><span>\${fmtMoney(p.locumWeekly)}</span></div>
+        <div class="detail-row"><span class="key">Glass Cover</span><span>${p.glassReq ? 'Yes' : 'Not required'}</span></div>
+        <div class="detail-row"><span class="key">External Glass</span><span>${fmtMoney(p.externalGlass)}</span></div>
+        <div class="detail-row"><span class="key">Locum Cover</span><span>${p.locumReq ? 'Yes' : 'Not required'}</span></div>
+        <div class="detail-row"><span class="key">Weekly Benefit</span><span>${fmtMoney(p.locumWeekly)}</span></div>
       </div>
     </div>
     <div class="quote-nav" style="margin-top:16px">
       <button class="btn btn-secondary" onclick="premisesStepPrev(8)">← Locum</button>
       <button class="btn btn-primary" onclick="savePremisesAndReturn()">Save Premises ${currentPremisesIdx + 1} ✓</button>
     </div>
-  \`;
+  `;
 }
 
 function savePremisesAndReturn() {
