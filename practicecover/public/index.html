@@ -1812,6 +1812,8 @@ function showPage(name) {
   };
   document.getElementById('topbar-action').innerHTML = actions[name] || '';
   if (name === 'dashboard') { renderDashboard(); }
+  if (name === 'customers') { renderCustomers(); }
+  if (name === 'users') { renderUsers(); }
   if (name === 'quotes') { loadQuotesPage(); }
   if (name === 'user-guides') { initUserGuides(); }
 }
