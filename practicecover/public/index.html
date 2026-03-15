@@ -1482,6 +1482,7 @@
 
       <!-- CUSTOMERS -->
       <div class="page" id="page-customers">
+        <div id="customers-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.87rem;color:#991b1b"></div>
         <div class="card">
           <div class="card-header">
             <div class="search-bar"><input type="text" placeholder="Search customers…" id="cust-search" oninput="renderCustomers()"></div>
@@ -1749,9 +1750,16 @@ let serviceTagsArr = [];
 
 // ── API ───────────────────────────────────────────────────────────────────────
 const api = async (method, path, body) => {
-  const r = await fetch(path, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
-  if (r.status === 401) { showLogin(); return null; }
-  return r.json();
+  try {
+    const r = await fetch(path, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+    if (r.status === 401) { showLogin(); return null; }
+    const data = await r.json();
+    if (data && data.error) console.error('API error [' + method + ' ' + path + ']:', data.error);
+    return data;
+  } catch (e) {
+    console.error('API fetch error [' + method + ' ' + path + ']:', e.message);
+    return null;
+  }
 };
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -1840,11 +1848,17 @@ const isAdmin = () => currentUser && currentUser.role === 'admin';
   const canEdit = () => currentUser !== null;
 
 async function loadAll() {
+  try {
   const customers = await api('GET', '/api/customers');
   if (!Array.isArray(customers)) {
-    if (customers?.error) console.error('Customers API error:', customers.error);
+    const errMsg = customers?.error || 'Unknown error loading practices';
+    console.error('Customers API error:', errMsg);
+    const errEl = document.getElementById('customers-error');
+    if (errEl) { errEl.textContent = '⚠ Error loading practices: ' + errMsg; errEl.style.display = 'block'; }
     return;
   }
+  const errEl = document.getElementById('customers-error');
+  if (errEl) errEl.style.display = 'none';
   state = { ...state, customers };
   const users = await api('GET', '/api/users');
   if (Array.isArray(users)) { state.users = users; }
@@ -1852,6 +1866,7 @@ async function loadAll() {
   if (isAdmin()) renderUsers();
   if (document.getElementById('page-dashboard')?.classList.contains('active')) renderDashboard();
   if (document.getElementById('page-quotes')?.classList.contains('active')) loadQuotesPage();
+  } catch(e) { console.error('loadAll error:', e); }
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────

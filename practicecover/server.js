@@ -106,6 +106,17 @@ app.post('/api/auth/logout', (req, res) => {
   req.session.destroy(() => res.json({ success: true }));
 });
 
+
+// ─── Debug endpoint (temporary) ──────────────────────────────────────────────
+app.get('/api/debug', async (req, res) => {
+  try {
+    const result = await query('SELECT COUNT(*) as count FROM customers');
+    res.json({ status: 'ok', customerCount: result.rows[0].count });
+  } catch (e) {
+    res.json({ status: 'error', error: e.message });
+  }
+});
+
 app.get('/api/auth/me', (req, res) => {
   if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
   res.json({ id: req.session.userId, name: req.session.name, role: req.session.role });
@@ -485,7 +496,7 @@ app.post('/api/quotes', requireAuth, async (req, res) => {
         d.dirUnits || 0, d.dirFulltime || 0, d.dirParttime || 0,
         d.empUnits || 0, d.empFulltime || 0, d.empParttime || 0,
         d.biCoverType || null, d.biAnnualSumInsured || 0, d.biCoverPeriod || '24', d.biBookDebtCover || 10000,
-        d.indemnityLimit || '£5,000,000', d.offsiteClinics || 0,
+        d.indemnityLimit || '£5000000', d.offsiteClinics || 0,
         d.terrorismCover || 'No', d.materialDamage || null,
         d.nonSelectionRule || null, d.terrorismPostcode || null, d.anticipatedTurnover || 0,
         d.numPremises || 1, d.country || 'UK', JSON.stringify(d.premises || []),
@@ -529,7 +540,7 @@ app.put('/api/quotes/:id', requireAuth, async (req, res) => {
         d.dirUnits || 0, d.dirFulltime || 0, d.dirParttime || 0,
         d.empUnits || 0, d.empFulltime || 0, d.empParttime || 0,
         d.biCoverType || null, d.biAnnualSumInsured || 0, d.biCoverPeriod || '24', d.biBookDebtCover || 10000,
-        d.indemnityLimit || '£5,000,000', d.offsiteClinics || 0,
+        d.indemnityLimit || '£5000000', d.offsiteClinics || 0,
         d.terrorismCover || 'No', d.materialDamage || null,
         d.nonSelectionRule || null, d.terrorismPostcode || null, d.anticipatedTurnover || 0,
         d.numPremises || 1, d.country || 'UK', JSON.stringify(d.premises || []),
