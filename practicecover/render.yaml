@@ -1,8 +1,7 @@
 services:
   - type: web
-    name: practicecover
+    name: maintenance-desk
     env: node
-    rootDir: practicecover
     buildCommand: npm install
     startCommand: npm start
     envVars:
