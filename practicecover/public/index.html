@@ -2728,7 +2728,22 @@ function showQuoteStep(n) {
 function quoteNext(fromStep) {
   if (!validateQuoteStep(fromStep)) return;
   collectQuoteStep(fromStep);
-  showQuoteStep(fromStep + 1);
+  if (fromStep === 1) {
+    // Auto-save as draft after step 1 so the quote is persisted immediately
+    autoSaveDraft().then(() => showQuoteStep(2));
+  } else {
+    showQuoteStep(fromStep + 1);
+  }
+}
+
+async function autoSaveDraft() {
+  quoteData.status = quoteData.status || 'draft';
+  const method = editingQuoteId ? 'PUT' : 'POST';
+  const url = editingQuoteId ? '/api/quotes/' + editingQuoteId : '/api/quotes';
+  const result = await api(method, url, quoteData);
+  if (result && result.id && !editingQuoteId) {
+    editingQuoteId = result.id; // subsequent steps will PUT, not POST
+  }
 }
 
 function quotePrev(fromStep) {
@@ -2977,7 +2992,8 @@ async function saveQuote(statusOverride) {
     alert('Error saving quote: ' + (result?.error || 'Unknown error'));
     return;
   }
-  quotesState = [];
+  // Reload quotes list then navigate
+  await loadQuotesPage();
   showPage('quotes');
 }
 
@@ -2994,8 +3010,8 @@ function renderQuotesList() {
   const tf = document.getElementById('quote-type-filter')?.value || '';
   const filtered = quotesState.filter(qt => {
     if (sf && qt.status !== sf) return false;
-    if (tf && qt.quote_type !== tf) return false;
-    if (q && !((qt.full_name||'').toLowerCase().includes(q) || (qt.practice_name||'').toLowerCase().includes(q) || (qt.quote_ref||'').toLowerCase().includes(q))) return false;
+    if (tf && qt.quoteType !== tf) return false;
+    if (q && !((qt.fullName||'').toLowerCase().includes(q) || (qt.practiceName||'').toLowerCase().includes(q) || (qt.quoteRef||'').toLowerCase().includes(q))) return false;
     return true;
   });
   const statusBadge = s => {
@@ -3004,13 +3020,13 @@ function renderQuotesList() {
   };
   document.getElementById('quotes-tbody').innerHTML = filtered.length
     ? filtered.map(qt => `<tr>
-        <td><strong>${qt.quote_ref||'—'}</strong></td>
-        <td>${qt.full_name||'—'}${qt.practice_name ? '<br><small style="color:var(--mist)">' + qt.practice_name + '</small>' : ''}</td>
-        <td><span style="font-size:0.82rem">${qt.quote_type||'—'}</span></td>
-        <td>${qt.renewal_date ? fmtDateVal(qt.renewal_date) : '—'}</td>
+        <td><strong>${qt.quoteRef||'—'}</strong></td>
+        <td>${qt.fullName||'—'}${qt.practiceName ? '<br><small style="color:var(--mist)">' + qt.practiceName + '</small>' : ''}</td>
+        <td><span style="font-size:0.82rem">${qt.quoteType||'—'}</span></td>
+        <td>${qt.renewalDate ? fmtDateVal(qt.renewalDate) : '—'}</td>
         <td>${statusBadge(qt.status)}</td>
         <td>${qt.premium ? '£' + parseFloat(qt.premium).toLocaleString('en-GB', {minimumFractionDigits:2}) : '—'}</td>
-        <td style="font-size:0.82rem;color:var(--mist)">${qt.created_at ? new Date(qt.created_at).toLocaleDateString('en-GB') : '—'}</td>
+        <td style="font-size:0.82rem;color:var(--mist)">${qt.createdAt ? new Date(qt.createdAt).toLocaleDateString('en-GB') : '—'}</td>
         <td><div class="actions-col">
           <button class="btn btn-secondary btn-sm" onclick="openQuoteDetail('${qt.id}')">View</button>
           <button class="btn btn-ghost btn-sm" onclick="editQuote('${qt.id}')">Edit</button>
@@ -3028,14 +3044,14 @@ async function editQuote(id) {
   // Repopulate all form fields from quoteData
   const sv = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val || ''; };
   const sb = (elId, val) => { const el = document.getElementById(elId); if (el) el.checked = !!val; };
-  sv('q1-renewalDate', qt.renewal_date); sv('q1-quoteType', qt.quote_type);
-  sv('q1-previousInsurer', qt.previous_insurer); sv('q1-fullName', qt.full_name);
-  sv('q1-contactName', qt.contact_name); sv('q1-telephone', qt.telephone);
+  sv('q1-renewalDate', qt.renewalDate); sv('q1-quoteType', qt.quoteType);
+  sv('q1-previousInsurer', qt.previousInsurer); sv('q1-fullName', qt.fullName);
+  sv('q1-contactName', qt.contactName); sv('q1-telephone', qt.telephone);
   sv('q1-mobile', qt.mobile); sv('q1-email', qt.email);
-  sv('q1-addrName', qt.addr_name); sv('q1-addrLine1', qt.addr_line1);
-  sv('q1-addrLine2', qt.addr_line2); sv('q1-addrTown', qt.addr_town);
-  sv('q1-addrCounty', qt.addr_county); sv('q1-addrCountry', qt.addr_country || 'United Kingdom');
-  sv('q1-addrPostcode', qt.addr_postcode);
+  sv('q1-addrName', qt.addrName); sv('q1-addrLine1', qt.addrLine1);
+  sv('q1-addrLine2', qt.addrLine2); sv('q1-addrTown', qt.addrTown);
+  sv('q1-addrCounty', qt.addrCounty); sv('q1-addrCountry', qt.addrCountry || 'United Kingdom');
+  sv('q1-addrPostcode', qt.addrPostcode);
   // Step 2: Declarations
   const sv2 = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val || ''; };
   sv2('q2-noneOfBelow', qt.noneOfBelow || 'Yes');
@@ -3043,23 +3059,23 @@ async function editQuote(id) {
   sv2('q2-decl4', qt.decl4 || 'No'); sv2('q2-decl5', qt.decl5 || 'No'); sv2('q2-decl6', qt.decl6 || 'No');
   sv2('q2-yearsSinceLastClaim', qt.yearsSinceLastClaim || '0');
   if (qt.claims && qt.claims.length) populateClaimsRows(qt.claims);
-    sv('q3-coverStart', qt.cover_start); sv('q3-coverEnd', qt.cover_end);
-  sv('q3-policyPeriod', qt.policy_period); sv('q3-policyRef', qt.policy_ref);
-  sv('q3-coverType', qt.cover_type); sv('q3-sumInsuredBasis', qt.sum_insured_basis);
-  sv('q3-excess', qt.excess); sv('q3-claimsHistory', qt.claims_history);
-  sv('q3-annualTurnover', qt.annual_turnover); sv('q3-nhsIncome', qt.nhs_income);
-  sv('q3-privateIncome', qt.private_income); sv('q3-locumWeeklyBenefit', qt.locum_weekly_benefit);
-  sb('q4-buildingsToggle', qt.buildings_required); sv('q4-buildingsValue', qt.buildings_value);
-  sb('q4-contentsToggle', qt.contents_required); sv('q4-contentsValue', qt.contents_value);
-  sb('q4-equipmentToggle', qt.equipment_required); sv('q4-equipmentValue', qt.equipment_value);
-  sb('q4-vaccineToggle', qt.vaccine_required); sv('q4-vaccineValue', qt.vaccine_value);
-  sb('q6-biToggle', qt.bi_required); sv('q6-biValue', qt.bi_value); sv('q6-biPeriod', qt.bi_period);
-  sb('q6-legalToggle', qt.legal_expenses); sb('q6-terrorismToggle', qt.terrorism_cover);
-  sb('q6-keyPersonToggle', qt.key_person_required); sv('q6-keyPersonName', qt.key_person_name);
-  sv('q6-keyPersonValue', qt.key_person_value); sb('q6-juryToggle', qt.jury_service);
-  sb('q6-dishonestToggle', qt.employee_dishonesty); sv('q6-dishonestLimit', qt.dishonest_limit);
+    sv('q3-coverStart', qt.coverStart); sv('q3-coverEnd', qt.coverEnd);
+  sv('q3-policyPeriod', qt.policyPeriod); sv('q3-policyRef', qt.policyRef);
+  sv('q3-coverType', qt.coverType); sv('q3-sumInsuredBasis', qt.sumInsuredBasis);
+  sv('q3-excess', qt.excess); sv('q3-claimsHistory', qt.claimsHistory);
+  sv('q3-annualTurnover', qt.annualTurnover); sv('q3-nhsIncome', qt.nhsIncome);
+  sv('q3-privateIncome', qt.privateIncome); sv('q3-locumWeeklyBenefit', qt.locumWeeklyBenefit);
+  sb('q4-buildingsToggle', qt.buildingsRequired); sv('q4-buildingsValue', qt.buildingsValue);
+  sb('q4-contentsToggle', qt.contentsRequired); sv('q4-contentsValue', qt.contentsValue);
+  sb('q4-equipmentToggle', qt.equipmentRequired); sv('q4-equipmentValue', qt.equipmentValue);
+  sb('q4-vaccineToggle', qt.vaccineRequired); sv('q4-vaccineValue', qt.vaccineValue);
+  sb('q6-biToggle', qt.biRequired); sv('q6-biValue', qt.biValue); sv('q6-biPeriod', qt.biPeriod);
+  sb('q6-legalToggle', qt.legalExpenses); sb('q6-terrorismToggle', qt.terrorismCover);
+  sb('q6-keyPersonToggle', qt.keyPersonRequired); sv('q6-keyPersonName', qt.keyPersonName);
+  sv('q6-keyPersonValue', qt.keyPersonValue); sb('q6-juryToggle', qt.juryService);
+  sb('q6-dishonestToggle', qt.employeeDishonesty); sv('q6-dishonestLimit', qt.dishonestLimit);
   sv('q6-notes', qt.notes); sv('q7-premium', qt.premium);
-  sv('q7-status', qt.status); sv('q7-validUntil', qt.valid_until);
+  sv('q7-status', qt.status); sv('q7-validUntil', qt.validUntil);
   // Show toggled sections
   ['buildings','contents','equipment','vaccine'].forEach(id => {
     const fields = document.getElementById('cover-' + id);
