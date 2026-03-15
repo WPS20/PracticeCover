@@ -115,6 +115,38 @@
   .badge-tenant_not_responding { background: #fef2f2; color: var(--red); }
   .badge-on_hold { background: #f3f4f6; color: #6b7280; }
   .badge-active { background: #f0fdf4; color: var(--green); }
+  .badge-prequalified { background: #eff6ff; color: var(--blue); border: 1px solid #bfdbfe; }
+
+  /* ── AI Subcontractor Finder ── */
+  .ai-finder-header { background: linear-gradient(135deg, #1a2535 0%, #2d3f55 100%); border-radius: 12px; padding: 18px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px; }
+  .ai-finder-header .ai-icon { font-size: 2rem; flex-shrink: 0; }
+  .ai-finder-header h4 { color: #fff; font-family: "Raleway", sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 3px; }
+  .ai-finder-header p { color: rgba(255,255,255,0.65); font-size: 0.82rem; }
+  .ai-search-form { background: var(--surface); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .ai-search-form label { font-size: 0.8rem; font-weight: 600; color: var(--slate); display: block; margin-bottom: 5px; }
+  .ai-location-row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 12px; }
+  .ai-location-row .form-group { flex: 1; margin: 0; }
+  .ai-results-area { min-height: 80px; }
+  .ai-searching { display: flex; align-items: center; gap: 12px; padding: 24px; color: var(--slate); font-size: 0.88rem; justify-content: center; }
+  .ai-spinner { width: 22px; height: 22px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ai-summary { font-size: 0.82rem; color: var(--mist); margin-bottom: 14px; padding: 8px 12px; background: var(--surface); border-radius: 7px; font-style: italic; }
+  .ai-result-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 10px; transition: all 0.15s; }
+  .ai-result-card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(61,181,74,0.1); }
+  .ai-result-card.selected { border-color: var(--accent); background: #f0fdf4; }
+  .ai-result-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .ai-result-name { font-weight: 700; font-size: 0.95rem; color: var(--ink); }
+  .ai-result-cat { font-size: 0.75rem; background: var(--surface); color: var(--slate); border-radius: 20px; padding: 2px 10px; font-weight: 600; white-space: nowrap; }
+  .ai-result-desc { font-size: 0.83rem; color: var(--slate); margin-bottom: 10px; line-height: 1.5; }
+  .ai-result-details { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.8rem; color: var(--mist); }
+  .ai-result-details span { display: flex; align-items: center; gap: 4px; }
+  .ai-result-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--surface); }
+  .ai-prequalify-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: "Inter", sans-serif; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+  .ai-prequalify-btn:hover { background: #2d9e3a; }
+  .ai-prequalify-btn:disabled { background: var(--border); color: var(--mist); cursor: default; }
+  .ai-prequalify-btn.added { background: var(--surface); color: var(--green); border: 1.5px solid var(--green); }
+  .ai-no-results { text-align: center; padding: 32px; color: var(--mist); font-size: 0.88rem; }
+  .ai-error { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 16px; color: var(--red); font-size: 0.85rem; margin-bottom: 12px; }
   .badge-inactive { background: #f3f4f6; color: #6b7280; }
   .badge-managing_agent { background: #eff6ff; color: var(--blue); }
   .badge-individual { background: #faf5ff; color: var(--purple); }
@@ -1059,7 +1091,7 @@
       <button class="modal-close" onclick="closeModal('job-detail-modal')">×</button>
     </div>
     <div class="modal-body" id="job-detail-body"></div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('job-detail-modal')">Close</button><button class="btn btn-ghost" id="jd-po-btn" onclick="openPoModal()" style="display:none">📄 Raise PO</button><button class="btn btn-ghost" id="jd-inv-btn" onclick="openInvoiceModal()" style="display:none">🧾 Raise Invoice</button><button class="btn btn-primary" id="jd-edit-btn" style="display:none">Edit Job</button></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('job-detail-modal')">Close</button><button class="btn btn-ghost" id="jd-po-btn" onclick="openPoModal()" style="display:none">📄 Raise PO</button><button class="btn btn-ghost" id="jd-inv-btn" onclick="openInvoiceModal()" style="display:none">🧾 Raise Invoice</button><button class="btn btn-ghost" id="jd-ai-btn" onclick="openAIFinder()" style="display:none">🤖 Find Subcontractors</button><button class="btn btn-primary" id="jd-edit-btn" style="display:none">Edit Job</button></div>
   </div>
 </div>
 
@@ -1105,7 +1137,7 @@
     <div class="modal-header"><h3 id="trade-modal-title">New Trade</h3><button class="modal-close" onclick="closeModal('trade-modal')">×</button></div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group"><label>Status</label><select id="tf-status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+        <div class="form-group"><label>Status</label><select id="tf-status"><option value="active">Active</option><option value="inactive">Inactive</option><option value="prequalified">Prequalified</option></select></div>
         <div class="form-group"><label>Company Name *</label><input id="tf-companyName" placeholder="e.g. ABC Plumbing Ltd"></div>
         <div class="form-group full"><label>Company Address</label><input id="tf-companyAddress" placeholder="Full company address"></div>
         <div class="form-group"><label>Contact Name</label><input id="tf-contactName" placeholder="Primary contact person"></div>
@@ -1501,6 +1533,7 @@ function openJobDetail(id) {
   `;
   document.getElementById('jd-po-btn').style.display = '';
   document.getElementById('jd-inv-btn').style.display = '';
+  document.getElementById('jd-ai-btn').style.display = '';
   document.getElementById('job-detail-modal').classList.add('open');
   loadAttachments('job', j.id, 'job-attach-list');
   loadJobPOs(j.id);
@@ -4174,6 +4207,187 @@ document.addEventListener('click', e => {
   if (sr && si && !sr.contains(e.target) && e.target !== si) sr.classList.remove('show');
 });
 
+
+// ── AI Subcontractor Finder ────────────────────────────────────────────────────
+let _aiFinderJobId   = null;
+let _aiAddedCount    = 0;
+let _aiAddedNames    = new Set();
+
+function openAIFinder() {
+  // Get context from the currently open job detail modal
+  const jobWO    = document.getElementById('jd-workorder')?.textContent?.replace('Work Order: ', '');
+  const j = state.jobs.find(j => j.workOrderId === jobWO);
+  _aiFinderJobId = j ? j.id : null;
+  _aiAddedCount  = 0;
+  _aiAddedNames  = new Set();
+
+  // Pre-fill location from job address
+  let postcode = '';
+  let addrStr  = '';
+  if (j) {
+    const addr = state.addresses.find(a => a.id === j.addressId);
+    if (addr) {
+      postcode = addr.postcode || '';
+      addrStr  = [addr.line1, addr.city, addr.postcode].filter(Boolean).join(', ');
+    }
+    document.getElementById('ai-finder-subtitle').textContent = j.workOrderId + ' – ' + j.title;
+  }
+  document.getElementById('ai-location-input').value = postcode || addrStr;
+  document.getElementById('ai-trade-input').value = '';
+  document.getElementById('ai-results-area').innerHTML =
+    '<div style="text-align:center;padding:32px;color:var(--mist);font-size:0.88rem">Enter a location and click Search to find nearby subcontractors</div>';
+  document.getElementById('ai-added-count').style.display = 'none';
+  document.getElementById('ai-finder-modal').classList.add('open');
+}
+
+async function runAISearch() {
+  const location  = document.getElementById('ai-location-input').value.trim();
+  const tradeType = document.getElementById('ai-trade-input').value.trim();
+  if (!location) { alert('Please enter a location or postcode to search.'); return; }
+
+  const j = state.jobs.find(j => j.id === _aiFinderJobId);
+  const jobTitle      = j?.title || '';
+  const actionRequired = j?.actionRequired || '';
+
+  // Disable button, show spinner
+  const btn = document.getElementById('ai-search-btn');
+  const btnText = document.getElementById('ai-search-btn-text');
+  btn.disabled = true;
+  btnText.textContent = 'Searching…';
+  document.getElementById('ai-results-area').innerHTML =
+    '<div class="ai-searching"><div class="ai-spinner"></div>AI is searching the web for subcontractors near ' + location + '…</div>';
+
+  try {
+    const res = await fetch('/api/ai/find-subcontractors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        postcode:  location,
+        address:   location,
+        jobTitle,
+        actionRequired,
+        tradeType: tradeType || null
+      })
+    });
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      document.getElementById('ai-results-area').innerHTML =
+        '<div class="ai-error">⚠️ ' + (data.error || 'Search failed. Please try again.') + '</div>' +
+        '<div style="text-align:center;font-size:0.82rem;color:var(--mist);padding:12px">Make sure ANTHROPIC_API_KEY is set in your Render environment variables.</div>';
+      return;
+    }
+
+    renderAIResults(data);
+  } catch (e) {
+    document.getElementById('ai-results-area').innerHTML =
+      '<div class="ai-error">⚠️ Connection error: ' + e.message + '</div>';
+  } finally {
+    btn.disabled = false;
+    btnText.textContent = '🔍 Search';
+  }
+}
+
+function renderAIResults(data) {
+  const area = document.getElementById('ai-results-area');
+  const results = data.results || [];
+
+  if (!results.length) {
+    area.innerHTML = '<div class="ai-no-results">No subcontractors found for this search. Try a different location or trade type.</div>';
+    return;
+  }
+
+  let html = '';
+  if (data.searchSummary) {
+    html += '<div class="ai-summary">🔍 ' + data.searchSummary + '</div>';
+  }
+
+  results.forEach((r, idx) => {
+    const alreadyAdded = _aiAddedNames.has(r.companyName);
+    html += '<div class="ai-result-card" id="ai-card-' + idx + '">' +
+      '<div class="ai-result-top">' +
+        '<div class="ai-result-name">' + r.companyName + '</div>' +
+        '<span class="ai-result-cat">' + (r.serviceCategory || 'General') + '</span>' +
+      '</div>' +
+      (r.description ? '<div class="ai-result-desc">' + r.description + '</div>' : '') +
+      '<div class="ai-result-details">' +
+        (r.companyAddress ? '<span>📍 ' + r.companyAddress + '</span>' : '') +
+        (r.contactNumber  ? '<span>📞 ' + r.contactNumber + '</span>' : '') +
+        (r.contactEmail   ? '<span>✉️ <a href="mailto:' + r.contactEmail + '" style="color:var(--accent)">' + r.contactEmail + '</a></span>' : '') +
+        (r.website        ? '<span>🌐 <a href="' + (r.website.startsWith('http') ? '' : 'https://') + r.website + '" target="_blank" style="color:var(--accent)">' + r.website + '</a></span>' : '') +
+      '</div>' +
+      '<div class="ai-result-actions">' +
+        '<div style="font-size:0.78rem;color:var(--mist)">Found via AI web search</div>' +
+        '<button class="ai-prequalify-btn' + (alreadyAdded ? ' added' : '') + '" id="ai-btn-' + idx + '" ' +
+          (alreadyAdded ? 'disabled' : 'onclick="addPrequalified(' + idx + ')"') + '>' +
+          (alreadyAdded ? '✓ Added' : '⭐ Add as Pre-qualified') +
+        '</button>' +
+      '</div>' +
+    '</div>';
+  });
+
+  area.innerHTML = html;
+  // Store results data for use by addPrequalified
+  area._results = results;
+}
+
+async function addPrequalified(idx) {
+  const area    = document.getElementById('ai-results-area');
+  const results = area._results;
+  if (!results || !results[idx]) return;
+  const r = results[idx];
+
+  const btn = document.getElementById('ai-btn-' + idx);
+  if (btn) { btn.disabled = true; btn.textContent = 'Adding…'; }
+
+  // Map the AI service category to our categories list (or use as-is)
+  const services = r.serviceCategory ? [r.serviceCategory] : [];
+
+  const body = {
+    status:        'prequalified',
+    companyName:   r.companyName,
+    companyAddress: r.companyAddress || '',
+    contactName:   '',
+    contactNumber: r.contactNumber || '',
+    contactEmail:  r.contactEmail  || '',
+    services
+  };
+
+  try {
+    const res    = await fetch('/api/trades', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const newTrade = await res.json();
+    if (!res.ok) { alert(newTrade.error || 'Failed to add subcontractor'); if (btn) { btn.disabled = false; btn.textContent = '⭐ Add as Pre-qualified'; } return; }
+
+    // Mark card as added
+    _aiAddedNames.add(r.companyName);
+    _aiAddedCount++;
+    const card = document.getElementById('ai-card-' + idx);
+    if (card) card.classList.add('selected');
+    if (btn)  { btn.classList.add('added'); btn.textContent = '✓ Added as Pre-qualified'; btn.disabled = true; }
+
+    // Update counter
+    const countEl = document.getElementById('ai-added-count');
+    countEl.textContent = _aiAddedCount + ' subcontractor' + (_aiAddedCount > 1 ? 's' : '') + ' added as Pre-qualified';
+    countEl.style.display = '';
+
+    // Refresh state so new subcontractor appears in lists immediately
+    await loadAll();
+
+    showToast('✅ ' + r.companyName + ' added as Pre-qualified subcontractor');
+  } catch (e) {
+    alert('Error: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '⭐ Add as Pre-qualified'; }
+  }
+}
+
+// Allow pressing Enter in search inputs to trigger search
+document.addEventListener('DOMContentLoaded', () => {
+  ['ai-location-input','ai-trade-input'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') runAISearch(); });
+  });
+});
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('click', e => {
   const dd = document.getElementById('trade-cat-dropdown');
@@ -4415,6 +4629,58 @@ init();
       <button class="btn btn-ghost" onclick="printInvoice()" id="inv-print-btn" style="display:none">🖨 Print / PDF</button>
       <button class="btn btn-ghost" onclick="downloadInvoiceDocx()" id="inv-docx-btn" style="display:none">⬇ Download Word</button>
       <button class="btn btn-primary" onclick="saveInvoice()">Save Invoice</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── AI SUBCONTRACTOR FINDER MODAL ── -->
+<div class="modal-overlay" id="ai-finder-modal">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <div>
+        <h3>🤖 AI Subcontractor Finder</h3>
+        <div id="ai-finder-subtitle" style="font-size:0.8rem;color:var(--mist);margin-top:2px"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('ai-finder-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- Header banner -->
+      <div class="ai-finder-header">
+        <div class="ai-icon">🤖</div>
+        <div>
+          <h4>Powered by Claude AI + Web Search</h4>
+          <p>Searches the internet for real, currently trading subcontractors near the job address. Results can be saved directly as Pre-qualified subcontractors.</p>
+        </div>
+      </div>
+      <!-- Search form -->
+      <div class="ai-search-form">
+        <div class="ai-location-row">
+          <div class="form-group" style="flex:1">
+            <label>📍 Search Location (pre-filled from job address)</label>
+            <input type="text" id="ai-location-input" placeholder="e.g. MK41 0DS or Bedford">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label>🔧 Type of Subcontractor</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="ai-trade-input" placeholder="e.g. Gas engineer, Electrician, Roofer — or leave blank to use job details" style="flex:1">
+            <button class="btn btn-primary" onclick="runAISearch()" id="ai-search-btn" style="flex-shrink:0;white-space:nowrap">
+              <span id="ai-search-btn-text">🔍 Search</span>
+            </button>
+          </div>
+          <div style="font-size:0.77rem;color:var(--mist);margin-top:5px">Leave blank to auto-detect from the job title and action required</div>
+        </div>
+      </div>
+      <!-- Results -->
+      <div class="ai-results-area" id="ai-results-area">
+        <div style="text-align:center;padding:32px;color:var(--mist);font-size:0.88rem">
+          Enter a location and click Search to find nearby subcontractors
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('ai-finder-modal')">Close</button>
+      <span id="ai-added-count" style="font-size:0.82rem;color:var(--green);font-weight:600;align-self:center;display:none"></span>
     </div>
   </div>
 </div>

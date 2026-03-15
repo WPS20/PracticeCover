@@ -1251,6 +1251,95 @@ app.delete('/api/invoices/:id', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ─── AI Subcontractor Finder ──────────────────────────────────────────────────
+app.post('/api/ai/find-subcontractors', requireAuth, async (req, res) => {
+  try {
+    const { postcode, address, jobTitle, actionRequired, tradeType } = req.body;
+    if (!postcode && !address) return res.status(400).json({ error: 'Address or postcode required' });
+
+    const location = postcode || address;
+    const jobContext = tradeType
+      ? tradeType
+      : [jobTitle, actionRequired].filter(Boolean).join(' — ');
+
+    const prompt = `You are a property management assistant helping find local subcontractors in the UK.
+
+Search the web for real, currently trading subcontractor companies that offer "${jobContext}" services near ${location}, UK.
+
+Find up to 6 real local businesses. For each one provide:
+- Company name
+- Full address
+- Phone number
+- Email address (if available)
+- Website (if available)
+- A brief description of their services relevant to "${jobContext}"
+- The most relevant service category from this list that fits them best (pick the single best match):
+  Gas – Domestic, Gas – Commercial, Plumbing, Electrics – Domestic, Electrics – Commercial, Joinery/Carpentry, Painting and Decorating, Roofing – Pitched, Roofing - Flat, General Maintenance and Repair, Drainage, Damp and Timber Works, Insulation, Fire Alarm, Security Systems, Flooring – Carpets and Lino, Tiling – Wall and Floor, Plastering, Rendering, General Builders, Landscaping, Pest Control, Locksmith, Other
+
+Return ONLY valid JSON in this exact format, no other text:
+{
+  "results": [
+    {
+      "companyName": "string",
+      "companyAddress": "string",
+      "contactNumber": "string",
+      "contactEmail": "string",
+      "website": "string",
+      "description": "string",
+      "serviceCategory": "string"
+    }
+  ],
+  "searchSummary": "brief one-line description of what was searched for and where"
+}
+
+If you cannot find real businesses with sufficient detail, return fewer results rather than fabricating details. Only include companies you found via web search with real contact information.`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 2000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      return res.status(500).json({ error: 'AI search failed: ' + err });
+    }
+
+    const data = await response.json();
+
+    // Extract text from response — may be after tool use blocks
+    const textBlock = data.content && data.content.find(b => b.type === 'text');
+    if (!textBlock) return res.status(500).json({ error: 'No response from AI' });
+
+    // Parse JSON from response
+    let parsed;
+    try {
+      const raw = textBlock.text.replace(/```json|```/g, '').trim();
+      // Find the JSON object in the response
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('No JSON found');
+      parsed = JSON.parse(jsonMatch[0]);
+    } catch (e) {
+      return res.status(500).json({ error: 'Could not parse AI response', raw: textBlock.text.substring(0, 500) });
+    }
+
+    res.json(parsed);
+  } catch (e) {
+    console.error('AI finder error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─── Catch-all & start ────────────────────────────────────────────────────────
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
