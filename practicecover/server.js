@@ -52,16 +52,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 // ─── Audit log helpers ────────────────────────────────────────────────────────
-async function auditLog(userId, userName, action, entityType, entityId, description) {
-  try {
-    await query(
-      'INSERT INTO audit_log (id, user_id, user_name, action, entity_type, entity_id, description) VALUES ($1,$2,$3,$4,$5,$6,$7)',
-      [uuidv4(), userId, userName, action, entityType, entityId, description]
-    );
-  } catch (e) {
-    console.error('Audit log error:', e.message);
-  }
-}
+// Audit logging removed — table not required
+async function auditLog() { /* no-op */ }
 
 // Build a human-readable diff summary between old and new field values
 function diffFields(oldObj, newObj, fieldMap) {
@@ -106,16 +98,6 @@ app.post('/api/auth/logout', (req, res) => {
   req.session.destroy(() => res.json({ success: true }));
 });
 
-
-// ─── Debug endpoint (temporary) ──────────────────────────────────────────────
-app.get('/api/debug', async (req, res) => {
-  try {
-    const result = await query('SELECT COUNT(*) as count FROM customers');
-    res.json({ status: 'ok', customerCount: result.rows[0].count });
-  } catch (e) {
-    res.json({ status: 'error', error: e.message });
-  }
-});
 
 app.get('/api/auth/me', (req, res) => {
   if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
@@ -268,21 +250,7 @@ app.get('/api/stats', requireAuth, async (req, res) => {
 
 
 // Audit log
-app.get('/api/audit-log', requireAuth, async (req, res) => {
-  try {
-    const { entity, search, limit } = req.query;
-    let q = 'SELECT * FROM audit_log';
-    const params = [];
-    const conditions = [];
-    if (entity && entity !== 'all') { conditions.push(`entity_type = $${params.length+1}`); params.push(entity); }
-    if (search) { conditions.push(`(description ILIKE $${params.length+1} OR user_name ILIKE $${params.length+1})`); params.push('%'+search+'%'); }
-    if (conditions.length) q += ' WHERE ' + conditions.join(' AND ');
-    q += ' ORDER BY created_at DESC';
-    q += ` LIMIT ${parseInt(limit) || 200}`;
-    const result = await query(q, params);
-    res.json(result.rows);
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
+// audit-log route removed;
 
 // ─── Tasks ────────────────────────────────────────────────────────────────────
 // ─── Attachments ──────────────────────────────────────────────────────────────

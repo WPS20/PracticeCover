@@ -764,7 +764,7 @@
       <div class="nav-section">Management</div>
       <a onclick="showPage('customers')" data-page="customers"><span class="icon">🏥</span> Practices</a>
       <a onclick="showPage('quotes')" data-page="quotes"><span class="icon">📋</span> Quotes</a>
-      <a onclick="showPage('log')" data-page="log" class="admin-only" style="display:none"><span class="icon">📋</span> Audit Log</a>
+      
       <div class="nav-section admin-only" style="display:none">Admin</div>
       <a onclick="showPage('users')" data-page="users" class="admin-only" style="display:none"><span class="icon">🔑</span> Users</a>
       <div class="nav-section">Help</div>
@@ -1505,30 +1505,7 @@
 
 
       <!-- AUDIT LOG -->
-      <div class="page" id="page-log">
-        <div class="card">
-          <div class="card-header">
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-              <div class="search-bar"><input type="text" placeholder="Search log…" id="log-search" oninput="renderLog()"></div>
-              <select id="log-entity-filter" onchange="renderLog()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
-                <option value="all">All Types</option>
-                <option value="Customer">Practices</option>
-                <option value="User">Users</option>
-              </select>
-              <select id="log-action-filter" onchange="renderLog()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
-                <option value="">All Actions</option>
-                <option value="created">Created</option>
-                <option value="updated">Updated</option>
-                <option value="deleted">Deleted</option>
-              </select>
-            </div>
-          </div>
-          <table>
-            <thead><tr><th>When</th><th>User</th><th>Action</th><th>Type</th><th>Description</th></tr></thead>
-            <tbody id="log-tbody"></tbody>
-          </table>
-        </div>
-      </div>
+      
       <!-- TASKS PAGE -->
             <!-- INVOICES PAGE -->
       
@@ -1817,7 +1794,7 @@ async function doLogout() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const pageTitles = { dashboard: 'Dashboard', customers: 'Practices', quotes: 'Quotes', 'quote-new': 'New Quote', 'premises-select': 'Premises Details', 'premises-detail': 'Premises Details', users: 'User Management', log: 'Audit Log', 'user-guides': 'User Guides' };
+const pageTitles = { dashboard: 'Dashboard', customers: 'Practices', quotes: 'Quotes', 'quote-new': 'New Quote', 'premises-select': 'Premises Details', 'premises-detail': 'Premises Details', users: 'User Management', 'user-guides': 'User Guides' };
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
