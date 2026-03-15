@@ -1049,7 +1049,7 @@
                     </div>
                     <div style="padding:10px 16px;flex-shrink:0">
                       <select id="q3-dayOneCover" style="width:220px;padding:10px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.88rem;font-weight:600;color:var(--sidebar);background:var(--white)">
-                        <option value="0">0</option>
+                        <option value="0" selected>0</option>
                         <option value="20">20</option>
                         <option value="30">30</option>
                       </select>
@@ -1321,7 +1321,7 @@
                   </div>
 
                   <!-- Terrorism sub-fields (shown when Yes selected) -->
-                  <div id="terrorism-fields" style="display:block;border-top:1px solid var(--border);background:#fffbf0;padding:16px 20px">
+                  <div id="terrorism-fields" style="display:none;border-top:1px solid var(--border);background:#fffbf0;padding:16px 20px">
                     <p style="font-size:0.84rem;color:var(--slate);margin-bottom:12px">This we arrange through the government backed re-insurer Pool Re (for class A cover)</p>
                     <p style="font-size:0.84rem;color:var(--slate);margin-bottom:16px">Should you choose cover for Terrorism the following two questions apply.</p>
 
@@ -2978,6 +2978,8 @@ function startNewQuote() {
     else if (el.id === 'q3-sumInsuredBasis') el.value = 'Reinstatement';
     else if (el.id === 'q3-excess') el.value = '£200';
     else if (el.id === 'q3-fidelity') el.value = '£25,000';
+    else if (el.id === 'q3-dayOneCover') el.value = '0';
+    else if (el.id === 'q5-coverPeriod') el.value = '24';
     else if (el.id === 'q2-yearsSinceLastClaim') el.value = '0';
     else if (el.id === 'q5-coverType') el.value = 'Loss of Income';
     else if (el.id === 'q7-numPremises') el.value = '1';
