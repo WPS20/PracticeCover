@@ -1179,7 +1179,7 @@
                     <div style="padding:10px 16px;flex-shrink:0">
                       <div style="display:flex;align-items:center;gap:0">
                         <span style="padding:9px 10px;background:var(--surface);border:1.5px solid var(--border);border-right:none;border-radius:6px 0 0 6px;font-size:0.88rem;color:var(--slate)">£</span>
-                        <input type="number" id="q5-annualSumInsured" value="0" min="0" style="width:180px;border:1.5px solid var(--border);border-radius:0 6px 6px 0;padding:9px 12px;font-size:0.88rem">
+                        <input type="text" id="q5-annualSumInsured" placeholder="0.00" style="width:180px;border:1.5px solid var(--border);border-radius:0 6px 6px 0;padding:9px 12px;font-size:0.88rem" oninput="formatGBPInput(this)">
                       </div>
                     </div>
                   </div>
@@ -2741,7 +2741,7 @@ function validateQuoteStep(step) {
     1: [['q1-renewalDate','Renewal Date'],['q1-quoteType','Quote Type'],['q1-fullName','Full Name'],['q1-telephone','Telephone Number'],['q1-email','Email Address'],['q1-addrLine1','Correspondence Address Line 1'],['q1-addrTown','Correspondence Address Town'],['q1-addrPostcode','Correspondence Address Postcode'],['q1-previousInsurer','Previous Insurer']],
     2: 'declarations',
     3: [],
-    4: [], 5: [['q5-publicLiability','Public Liability Limit']], 6: [], 7: [],
+    4: [], 5: [], 6: [], 7: [],
   };
   if (required[step] === 'declarations') {
     const noneVal = document.getElementById('q2-noneOfBelow')?.value;
@@ -2872,7 +2872,6 @@ function startNewQuote() {
     else if (el.id === 'q3-sumInsuredBasis') el.value = 'Reinstatement';
     else if (el.id === 'q3-excess') el.value = '200';
     else if (el.id === 'q3-claimsHistory') el.value = 'None';
-    else if (el.id === 'q5-publicLiability') el.value = '5000000';
     else if (el.id === 'q5-employersLiability') el.value = '10000000';
     else if (el.id === 'q2-numSubsidiaries') el.value = '0';
     else if (el.id === 'q7-status') el.value = 'draft';
@@ -2930,9 +2929,6 @@ function buildQuoteReview() {
     </div>
     <div class="review-section">
       <h4>Liability Cover</h4>
-      <div class="review-row"><span class="rk">Public Liability</span><span class="rv">${quoteData.publicLiability ? fmtMoney(quoteData.publicLiability) : '—'}</span></div>
-      <div class="review-row"><span class="rk">Employers Liability</span><span class="rv">${quoteData.employersLiability ? fmtMoney(quoteData.employersLiability) : 'Not required'}</span></div>
-      <div class="review-row"><span class="rk">Professional Indemnity</span><span class="rv">${quoteData.profIndemnity ? fmtMoney(quoteData.profIndemnity) : 'Not required'}</span></div>
     </div>
     <div class="review-section">
       <h4>Additional Cover</h4>
@@ -3057,10 +3053,6 @@ async function editQuote(id) {
   sb('q4-contentsToggle', qt.contents_required); sv('q4-contentsValue', qt.contents_value);
   sb('q4-equipmentToggle', qt.equipment_required); sv('q4-equipmentValue', qt.equipment_value);
   sb('q4-vaccineToggle', qt.vaccine_required); sv('q4-vaccineValue', qt.vaccine_value);
-  sv('q5-publicLiability', qt.public_liability); sv('q5-productsLiability', qt.products_liability);
-  sv('q5-employersLiability', qt.employers_liability); sv('q5-numEmployees', qt.num_employees);
-  sv('q5-profIndemnity', qt.prof_indemnity); sv('q5-retroDate', qt.retro_date);
-  sv('q5-doCover', qt.do_cover); sv('q5-doLimit', qt.do_limit);
   sb('q6-biToggle', qt.bi_required); sv('q6-biValue', qt.bi_value); sv('q6-biPeriod', qt.bi_period);
   sb('q6-legalToggle', qt.legal_expenses); sb('q6-terrorismToggle', qt.terrorism_cover);
   sb('q6-keyPersonToggle', qt.key_person_required); sv('q6-keyPersonName', qt.key_person_name);
@@ -3211,6 +3203,13 @@ function toggleTerrorismFields() {
   const val = document.getElementById('q6-terrorismCover')?.value;
   const fields = document.getElementById('terrorism-fields');
   if (fields) fields.style.display = val === 'Yes' ? 'block' : 'none';
+}
+
+// ── GBP input formatter ────────────────────────────────────────────────────────
+function formatGBPInput(el) {
+  // Allow digits, comma and period only; strip everything else
+  let val = el.value.replace(/[^0-9.,]/g, '');
+  el.value = val;
 }
 
 init();
