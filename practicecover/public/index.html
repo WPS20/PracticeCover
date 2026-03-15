@@ -847,7 +847,7 @@
                 <div class="mandatory-note">* Mandatory fields</div>
 
                 <!-- Apply from customer -->
-                <div class="customer-select-row">
+                <div class="customer-select-row" id="q1-customer-select-row">
                   <div class="form-group">
                     <label>Apply from existing Practice record</label>
                     <select id="q-customer-select">
@@ -2958,9 +2958,11 @@ function startNewQuote() {
   editingQuoteId = null;
   quoteData = {};
   editingQuoteId = null;
-  // Clear practice banner
+  // Clear practice banner and restore selector row
   const banner = document.getElementById('q1-practice-banner');
   if (banner) { banner.style.display = 'none'; banner.textContent = ''; }
+  const selRow = document.getElementById('q1-customer-select-row');
+  if (selRow) selRow.style.display = '';
   // Reset all form fields
   const inputs = document.querySelectorAll('#page-quote-new input, #page-quote-new select, #page-quote-new textarea');
   inputs.forEach(el => {
@@ -4634,6 +4636,9 @@ function startNewQuoteForCustomer(customerId) {
     banner.textContent = '🏥 Linked to: ' + (c.practiceName ? c.name + ' — ' + c.practiceName : c.name);
     banner.style.display = 'block';
   }
+  // Hide the "Apply from existing Practice" selector — not needed when launched from a practice
+  const selRow = document.getElementById('q1-customer-select-row');
+  if (selRow) selRow.style.display = 'none';
 }
 
 init();
