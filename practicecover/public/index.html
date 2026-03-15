@@ -1486,6 +1486,7 @@
         <div class="card">
           <div class="card-header">
             <div class="search-bar"><input type="text" placeholder="Search customers…" id="cust-search" oninput="renderCustomers()"></div>
+            <button class="btn btn-secondary btn-sm" onclick="loadAll()" style="margin-left:8px">↻ Reload</button>
           </div>
           <table><thead><tr><th>Full Name</th><th>Practice Name</th><th>Business Type</th><th>Status</th><th>Email</th><th>Telephone</th><th></th></tr></thead>
           <tbody id="customers-tbody"></tbody></table>
@@ -1825,25 +1826,46 @@ const isAdmin = () => currentUser && currentUser.role === 'admin';
   const canEdit = () => currentUser !== null;
 
 async function loadAll() {
-  try {
-  const customers = await api('GET', '/api/customers');
-  if (!Array.isArray(customers)) {
-    const errMsg = customers?.error || 'Unknown error loading practices';
-    console.error('Customers API error:', errMsg);
-    const errEl = document.getElementById('customers-error');
-    if (errEl) { errEl.textContent = '⚠ Error loading practices: ' + errMsg; errEl.style.display = 'block'; }
-    return;
-  }
+  // Show loading state
   const errEl = document.getElementById('customers-error');
-  if (errEl) errEl.style.display = 'none';
-  state = { ...state, customers };
-  const users = await api('GET', '/api/users');
-  if (Array.isArray(users)) { state.users = users; }
-  renderCustomers();
-  if (isAdmin()) renderUsers();
-  if (document.getElementById('page-dashboard')?.classList.contains('active')) renderDashboard();
-  if (document.getElementById('page-quotes')?.classList.contains('active')) loadQuotesPage();
-  } catch(e) { console.error('loadAll error:', e); }
+
+  try {
+    // Step 1: Test raw fetch
+    const rawResp = await fetch('/api/customers');
+    const rawText = await rawResp.text();
+
+    // Step 2: Try to parse
+    let customers;
+    try {
+      customers = JSON.parse(rawText);
+    } catch(parseErr) {
+      if (errEl) { errEl.textContent = 'Parse error: ' + parseErr.message + ' | Raw: ' + rawText.substring(0, 200); errEl.style.display = 'block'; }
+      return;
+    }
+
+    // Step 3: Check response
+    if (rawResp.status === 401) { showLogin(); return; }
+    if (!Array.isArray(customers)) {
+      const errMsg = customers?.error || JSON.stringify(customers).substring(0, 200);
+      if (errEl) { errEl.textContent = '⚠ API error (' + rawResp.status + '): ' + errMsg; errEl.style.display = 'block'; }
+      return;
+    }
+
+    if (errEl) errEl.style.display = 'none';
+    state = { ...state, customers };
+
+    const users = await api('GET', '/api/users');
+    if (Array.isArray(users)) { state.users = users; }
+
+    renderCustomers();
+    if (isAdmin()) renderUsers();
+    if (document.getElementById('page-dashboard')?.classList.contains('active')) renderDashboard();
+    if (document.getElementById('page-quotes')?.classList.contains('active')) loadQuotesPage();
+
+  } catch(e) {
+    if (errEl) { errEl.textContent = '⚠ Network error: ' + e.message; errEl.style.display = 'block'; }
+    console.error('loadAll error:', e);
+  }
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
