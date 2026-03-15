@@ -667,6 +667,39 @@
   .indent-fields { padding-left: 16px; border-left: 3px solid var(--border); margin-top: 10px; display: none; }
   .indent-fields.show { display: block; }
   label .req { color: var(--red); margin-left: 2px; }
+
+  /* ── Premises Selector ── */
+  .premises-selector { max-width: 960px; margin: 0 auto; }
+  .premises-table-wrap { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+  .premises-table-header { display: grid; grid-template-columns: 60px 1fr 1fr 220px 200px; align-items: center; padding: 12px 20px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .premises-table-header span { font-size: 0.75rem; font-weight: 700; color: var(--mist); text-transform: uppercase; letter-spacing: 0.8px; }
+  .premises-row { display: grid; grid-template-columns: 60px 1fr 1fr 220px 200px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  .premises-row:last-child { border-bottom: none; }
+  .premises-row:hover { background: #fafbfc; }
+  .premises-icon svg { display: block; }
+  .premises-status { font-size: 0.85rem; font-weight: 600; color: var(--mist); }
+  .premises-status.complete { color: var(--accent); }
+  .premises-status.in-progress { color: var(--amber); }
+  .premises-address { font-size: 0.85rem; color: var(--slate); }
+  .premises-progress { display: flex; gap: 4px; align-items: center; }
+  .prog-circle { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .prog-circle.done { border-color: var(--accent); background: var(--accent); }
+  .prog-circle.done svg { display: block; }
+  .prog-circle svg { display: none; }
+  .premises-update-btn { display: flex; align-items: center; gap: 8px; padding: 10px 18px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: "Inter", sans-serif; transition: all 0.15s; white-space: nowrap; }
+  .premises-update-btn:hover { background: #009688; }
+  .premises-update-btn svg { flex-shrink: 0; }
+
+  /* ── Premises Detail Wizard ── */
+  .premises-wizard { max-width: 960px; margin: 0 auto; }
+  .premises-wizard-header { background: var(--white); border-radius: 12px; border: 1px solid var(--border); padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px; }
+  .pwh-back { background: none; border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--slate); font-family: "Inter", sans-serif; display: flex; align-items: center; gap: 6px; }
+  .pwh-back:hover { border-color: var(--accent); color: var(--accent); }
+  .pwh-title { font-family: "Raleway", sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--ink); }
+  .pwh-sub { font-size: 0.82rem; color: var(--mist); margin-top: 2px; }
+  .premises-step { display: none; }
+  .premises-step.active { display: block; }
+  .premises-prog { display: flex; align-items: center; margin-bottom: 20px; background: var(--white); border-radius: 12px; padding: 14px 18px; border: 1px solid var(--border); overflow-x: auto; gap: 0; }
 </style>
 </head>
 <body>
@@ -1391,6 +1424,48 @@
         </div><!-- /.quote-wizard -->
       </div><!-- /#page-quote-new -->
 
+
+      <!-- PREMISES SELECTOR -->
+      <div class="page" id="page-premises-select">
+        <div class="premises-selector">
+          <div class="premises-wizard-header">
+            <button class="pwh-back" onclick="backToStep7()">← Back to Step 7</button>
+            <div>
+              <div class="pwh-title" id="ps-title">Premises Details</div>
+              <div class="pwh-sub" id="ps-sub">Complete details for each premises below</div>
+            </div>
+          </div>
+          <div class="premises-table-wrap">
+            <div class="premises-table-header">
+              <span></span>
+              <span>Status</span>
+              <span>Address</span>
+              <span>Progress</span>
+              <span>Action</span>
+            </div>
+            <div id="premises-rows-container"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:20px">
+            <button class="btn btn-primary" onclick="finishAllPremises()" id="finish-premises-btn">Finish &amp; Save Quote →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREMISES DETAIL WIZARD -->
+      <div class="page" id="page-premises-detail">
+        <div class="premises-wizard">
+          <div class="premises-wizard-header">
+            <button class="pwh-back" onclick="backToPremisesSelect()">← Back to Premises List</button>
+            <div>
+              <div class="pwh-title" id="pd-title">Premises 1</div>
+              <div class="pwh-sub" id="pd-sub">Complete all 8 sections for this premises</div>
+            </div>
+          </div>
+          <div class="premises-prog" id="premises-prog"></div>
+          <div id="premises-steps-container"></div>
+        </div>
+      </div>
+
       <!-- CUSTOMERS -->
       <div class="page" id="page-customers">
         <div class="card">
@@ -1720,7 +1795,7 @@ async function doLogout() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const pageTitles = { dashboard: 'Dashboard', customers: 'Practices', quotes: 'Quotes', 'quote-new': 'New Quote', users: 'User Management', log: 'Audit Log', 'user-guides': 'User Guides' };
+const pageTitles = { dashboard: 'Dashboard', customers: 'Practices', quotes: 'Quotes', 'quote-new': 'New Quote', 'premises-select': 'Premises Details', 'premises-detail': 'Premises Details', users: 'User Management', log: 'Audit Log', 'user-guides': 'User Guides' };
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -2691,10 +2766,10 @@ let quotesState = [];      // loaded quotes list
 const QUOTE_STEPS = [
   { n:1, label:'Client Details' },
   { n:2, label:'Declarations' },
-  { n:3, label:'Physical Items' },
-  { n:4, label:'Cover Continued' },
-  { n:5, label:'Business Interruption' },
-  { n:6, label:'Public Liability' },
+  { n:3, label:'Construction' },
+  { n:4, label:'Security' },
+  { n:5, label:'Cover Choices' },
+  { n:6, label:'Cover Continued' },
   { n:7, label:'Premises Details' },
 ];
 
@@ -2992,9 +3067,9 @@ async function saveQuote(statusOverride) {
     alert('Error saving quote: ' + (result?.error || 'Unknown error'));
     return;
   }
-  // Reload quotes list then navigate
-  await loadQuotesPage();
-  showPage('quotes');
+  if (!editingQuoteId && result && result.id) editingQuoteId = result.id;
+  // Navigate to premises selector
+  showPremisesSelector();
 }
 
 async function loadQuotesPage() {
@@ -3226,6 +3301,1264 @@ function formatGBPInput(el) {
   // Allow digits, comma and period only; strip everything else
   let val = el.value.replace(/[^0-9.,]/g, '');
   el.value = val;
+}
+
+// ── Premises ──────────────────────────────────────────────────────────────────
+let premisesData = [];       // array of 8-section objects, one per premises
+let currentPremisesIdx = 0;  // which premises is being edited
+let currentPremisesStep = 1; // which of the 8 steps within that premises
+
+const PREMISES_STEPS = [
+  { n:1, label:'Premises Details' },
+  { n:2, label:'Buildings' },
+  { n:3, label:'Contents' },
+  { n:4, label:'Equipment' },
+  { n:5, label:'Money' },
+  { n:6, label:'Glass' },
+  { n:7, label:'Business Equip' },
+  { n:8, label:'Endorsements' },
+];
+
+function showPremisesSelector() {
+  const n = parseInt(quoteData.numPremises) || 1;
+  // Initialise premisesData array if not already done
+  if (premisesData.length !== n) {
+    premisesData = Array.from({ length: n }, (_, i) =>
+      premisesData[i] || { stepsComplete: [], address: '' }
+    );
+  }
+  renderPremisesRows();
+  pageTitles['premises-select'] = 'Premises Details';
+  showPage('premises-select');
+}
+
+function backToStep7() {
+  pageTitles['quote-new'] = editingQuoteId ? 'Edit Quote' : 'New Quote';
+  showPage('quote-new');
+  showQuoteStep(7);
+}
+
+function renderPremisesRows() {
+  const container = document.getElementById('premises-rows-container');
+  if (!container) return;
+  container.innerHTML = premisesData.map((p, i) => {
+    const num = i + 1;
+    const complete = p.stepsComplete.length;
+    const total = PREMISES_STEPS.length;
+    const isDone = complete === total;
+    const isStarted = complete > 0;
+    const statusLabel = isDone ? 'Complete' : isStarted ? 'In Progress' : 'Not Started';
+    const statusClass = isDone ? 'complete' : isStarted ? 'in-progress' : '';
+    const addrText = p.address || '';
+    const progressCircles = PREMISES_STEPS.map(s => {
+      const done = p.stepsComplete.includes(s.n);
+      return done
+        ? \`<div class="prog-circle done"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>\`
+        : \`<div class="prog-circle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--border)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>\`;
+    }).join('');
+    const houseIcon = \`<svg width="36" height="36" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22 6L8 17v3h2v14h6V24h12v10h6V20h2v-3L22 6z" fill="#00b4a2" opacity="0.9"/>
+      <rect x="17" y="28" width="10" height="7" rx="1" fill="#fff" opacity="0.9"/>
+      <rect x="4" y="36" width="36" height="2.5" rx="1" fill="#f59e0b"/>
+    </svg>\`;
+    return \`<div class="premises-row">
+      <div class="premises-icon">\${houseIcon}</div>
+      <div class="premises-status \${statusClass}">\${statusLabel}</div>
+      <div class="premises-address">\${addrText || '<span style="color:var(--mist);font-style:italic">Not entered</span>'}</div>
+      <div class="premises-progress">\${progressCircles}</div>
+      <div><button class="premises-update-btn" onclick="openPremisesDetail(\${i})">
+        Update Premises \${num}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8l4 4-4 4M8 12h8"/></svg>
+      </button></div>
+    </div>\`;
+  }).join('');
+}
+
+function openPremisesDetail(idx) {
+  currentPremisesIdx = idx;
+  currentPremisesStep = 1;
+  // Pre-populate first premises from Step 1 quote data if not already started
+  if (idx === 0 && premisesData[0] && !premisesData[0].addr1 && quoteData.addrLine1) {
+    Object.assign(premisesData[0], {
+      tradingName: quoteData.practiceName || '',
+      addr1: quoteData.addrLine1 || '',
+      addr2: quoteData.addrLine2 || '',
+      town: quoteData.addrTown || '',
+      county: quoteData.addrCounty || '',
+      country: quoteData.addrCountry || 'United Kingdom',
+      postcode: quoteData.addrPostcode || '',
+    });
+    premisesData[0].address = [premisesData[0].addr1, premisesData[0].town, premisesData[0].postcode].filter(Boolean).join(', ');
+  }
+  document.getElementById('pd-title').textContent = 'Premises ' + (idx + 1);
+  document.getElementById('pd-sub').textContent = 'Complete all 8 sections for this premises';
+  buildPremisesStepHTML();
+  renderPremisesProgress(1);
+  showPage('premises-detail');
+}
+
+function backToPremisesSelect() {
+  collectPremisesStep(currentPremisesStep);
+  showPremisesSelector();
+}
+
+function renderPremisesProgress(step) {
+  const el = document.getElementById('premises-prog');
+  if (!el) return;
+  el.innerHTML = PREMISES_STEPS.map((s, i) => {
+    const cls = s.n < step ? 'done' : s.n === step ? 'active' : '';
+    const dot = s.n < step ? '✓' : s.n;
+    const lineClass = s.n < step ? 'done' : '';
+    return \`<div class="qp-step \${cls}">
+      \${i > 0 ? \`<div class="qp-line \${lineClass}"></div>\` : ''}
+      <div class="qp-dot">\${dot}</div>
+      <div class="qp-label">\${s.label}</div>
+    </div>\`;
+  }).join('');
+}
+
+function buildPremisesStepHTML() {
+  const container = document.getElementById('premises-steps-container');
+  if (!container) return;
+  const p = premisesData[currentPremisesIdx] || {};
+  const sv = (field, fallback='') => p[field] !== undefined ? p[field] : fallback;
+
+  container.innerHTML = \`
+    <!-- PS1: Premises Details -->
+    <div class="premises-step active" id="ps-step-1">
+      <div class="quote-card">
+        <div class="quote-card-header">
+          <div><h4>Premises \${currentPremisesIdx + 1}: Step 1 of 8 — Premises Details</h4><div class="qch-sub">Enter the address and activity details for this premises</div></div>
+        </div>
+        <div class="quote-card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+
+            <!-- Left: Address -->
+            <div>
+              <div class="qf-section-title">1.1 Enter Premises Address:</div>
+              <div class="form-grid cols-1" style="gap:10px">
+                <div class="form-group"><label>Trading Name</label><input type="text" id="ps-tradingName" value="\${sv('tradingName')}" placeholder="e.g. Ringo's Test Practice"></div>
+                <div class="form-group"><label>Premises Address First Line <span class="req">*</span></label><input type="text" id="ps-addr1" value="\${sv('addr1')}" placeholder="Street address"></div>
+                <div class="form-group"><label>Premises Address Second Line</label><input type="text" id="ps-addr2" value="\${sv('addr2')}" placeholder="Optional"></div>
+                <div class="form-group"><label>Premises Address Town <span class="req">*</span></label><input type="text" id="ps-town" value="\${sv('town')}" placeholder="e.g. Liverpool"></div>
+                <div class="form-group"><label>Premises Address County</label><input type="text" id="ps-county" value="\${sv('county')}" placeholder="e.g. Merseyside"></div>
+                <div class="form-group"><label>Premises Address Country</label>
+                  <select id="ps-country">
+                    <option value="United Kingdom" \${sv('country','United Kingdom')==='United Kingdom'?'selected':''}>United Kingdom</option>
+                    <option value="England" \${sv('country')==='England'?'selected':''}>England</option>
+                    <option value="Scotland" \${sv('country')==='Scotland'?'selected':''}>Scotland</option>
+                    <option value="Wales" \${sv('country')==='Wales'?'selected':''}>Wales</option>
+                    <option value="Northern Ireland" \${sv('country')==='Northern Ireland'?'selected':''}>Northern Ireland</option>
+                    <option value="Channel Islands" \${sv('country')==='Channel Islands'?'selected':''}>Channel Islands</option>
+                    <option value="Isle of Man" \${sv('country')==='Isle of Man'?'selected':''}>Isle of Man</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Premises Address Postcode <span class="req">*</span></label>
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <input type="text" id="ps-postcode" value="\${sv('postcode')}" placeholder="e.g. MK40 3JG" style="text-transform:uppercase;flex:1">
+                    <span style="font-size:0.78rem;color:var(--mist);white-space:nowrap">Valid Postcode</span>
+                  </div>
+                </div>
+                <div class="form-group"><label>Year Established at Address</label><input type="number" id="ps-yearEstablished" value="\${sv('yearEstablished')}" placeholder="e.g. 1970" min="1800" max="2099"></div>
+              </div>
+            </div>
+
+            <!-- Right: Activity -->
+            <div>
+              <div class="qf-section-title">1.2 Activity at Premises:</div>
+              <div style="overflow-x:auto">
+                <table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+                  <thead>
+                    <tr style="background:var(--surface)">
+                      <th style="padding:10px 12px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border);width:45%">Activity Description</th>
+                      <th style="padding:10px 12px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border);width:30%">Carried Out By</th>
+                      <th style="padding:10px 12px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border);width:25%">% of turnover?</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    \${Array.from({length:8},(_,i) => {
+                      const act = (sv('activities')||[])[i] || {};
+                      const isFirst = i === 0 && currentPremisesIdx === 0;
+                      const defDesc = isFirst ? (quoteData.businessDesc || 'None') : 'None';
+                      const actDesc = act.activity || defDesc;
+                      const actBy   = act.carriedOutBy || 'You';
+                      const actPct  = act.pct !== undefined ? act.pct : (i===0 ? 100 : 0);
+                      return \`<tr style="border-top:\${i>0?'1px solid var(--border)':'none'};background:\${i%2===1?'var(--surface)':'var(--white)'}">
+                        <td style="padding:6px 8px">
+                          <select id="ps-act-desc-\${i}" onchange="updateActivityTotal()" style="width:100%;border:1.5px solid var(--sidebar);border-radius:6px;padding:6px 8px;font-size:0.82rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                            \${activityOptionsHTML(actDesc)}
+                          </select>
+                        </td>
+                        <td style="padding:6px 8px">
+                          <select id="ps-act-by-\${i}" style="width:100%;border:1.5px solid var(--sidebar);border-radius:6px;padding:6px 8px;font-size:0.82rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                            \${carriedOutByHTML(actBy)}
+                          </select>
+                        </td>
+                        <td style="padding:6px 8px">
+                          <input type="number" id="ps-act-pct-\${i}" value="\${actPct}" min="0" max="100" oninput="updateActivityTotal()" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:0.88rem;text-align:right">
+                        </td>
+                      </tr>\`;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+              <div style="text-align:right;margin-top:10px;font-family:'Raleway',sans-serif;font-size:1.4rem;font-weight:800" id="ps-act-total">100%</div>
+              <div style="font-size:0.78rem;color:var(--mist);text-align:right;margin-top:2px">Total must equal 100%</div>
+            </div>
+
+          </div>
+          <div class="quote-nav">
+            <button class="btn btn-secondary" onclick="backToPremisesSelect()">← Premises List</button>
+            <button class="btn btn-primary" onclick="premisesStepNext(1)">Next: Step 2 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PS2: Declarations -->
+    <div class="premises-step" id="ps-step-2">
+      <div class="quote-card">
+        <div class="quote-card-header">
+          <div><h4>Premises \${currentPremisesIdx + 1}: Step 2 of 8 — Declarations</h4><div class="qch-sub">Premises-specific declarations</div></div>
+        </div>
+        <div class="quote-card-body">
+
+          <div class="qf-section-title">2.1 Select any of the following that apply to the premises:</div>
+
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+            <select id="ps2-noneOfBelow" onchange="handlePS2NoneOfBelow()" style="width:100px;padding:8px 10px;border:1.5px solid var(--sidebar);border-radius:6px;font-weight:600;color:var(--sidebar);background:var(--white)">
+              <option value="Yes" \${sv('ps2NoneOfBelow','Yes')==='Yes'?'selected':''}>Yes</option>
+              <option value="No"  \${sv('ps2NoneOfBelow')==='No'?'selected':''}>No</option>
+            </select>
+            <span style="font-size:0.88rem;font-weight:600;color:var(--slate)">None of the below</span>
+          </div>
+
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            \${[
+              ['ps2-d1', sv('ps2D1','No'), 'Premises has a history of flooding'],
+              ['ps2-d2', sv('ps2D2','No'), 'Premises is in an area subject to an increased risk of flooding'],
+              ['ps2-d3', sv('ps2D3','No'), 'Premises is of non-standard construction'],
+              ['ps2-d4', sv('ps2D4','No'), 'Premises or any adjacent property has suffered from, or shows any visible signs of damage from subsidence, landslip or ground heave'],
+              ['ps2-d5', sv('ps2D5','No'), 'Proposer is not the sole occupant of the premises'],
+              ['ps2-d6', sv('ps2D6','No'), 'Business is not self contained with its own means of access'],
+              ['ps2-d7', sv('ps2D7','No'), 'Building has an ATM for which you are responsible'],
+            ].map(([id, val, label], i) => \\`
+              <div class="decl-row" style="display:flex;align-items:center;\${i>0?'border-top:1px solid var(--border)':''};background:\${i%2===0?'var(--surface)':'var(--white)'}">
+                <select id="\${id}" onchange="handlePS2DeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
+                  <option value="No"  \${val==='No' ?'selected':''}>No</option>
+                  <option value="Yes" \${val==='Yes'?'selected':''}>Yes</option>
+                </select>
+                <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink);line-height:1.5">\${label}</span>
+              </div>\\`
+            ).join('')}
+          </div>
+
+          <div id="ps2-decl-warning" style="display:none;margin-top:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 16px;font-size:0.85rem;color:#991b1b">
+            ⚠️ You have selected 'None of the below' but one or more declarations are set to 'Yes'. Please review your answers.
+          </div>
+
+          <div class="quote-nav">
+            <button class="btn btn-secondary" onclick="premisesStepPrev(2)">← Premises Details</button>
+            <button class="btn btn-primary" onclick="premisesStepNext(2)">Next: Step 3 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PS3: Construction -->
+    <div class="premises-step" id="ps-step-3">
+      <div class="quote-card">
+        <div class="quote-card-header">
+          <div><h4>Premises ${currentPremisesIdx + 1}: Step 3 of 8 \u2014 Construction</h4><div class="qch-sub">Describe the construction of this premises</div></div>
+        </div>
+        <div class="quote-card-body">
+          <div class="qf-section-title">3.1 If confirmed as non-standard construction in material facts, amend below:</div>
+
+          \${['roof','walls','floor'].map((part, pi) => {
+            const labels = ['Please describe the construction of the roof :', 'Please describe the construction of the walls:', 'Please describe the construction of the floor:'];
+            const optFns = [() => ROOF_OPTIONS, () => WALL_OPTIONS, () => FLOOR_OPTIONS];
+            const defFirst = ['Tile','Brick &or Block','Timber'];
+            const rows = (sv(part + 'Rows') || []);
+            const rowData = [
+              { type: rows[0]?.type || defFirst[pi], pct: rows[0]?.pct !== undefined ? rows[0].pct : 100 },
+              { type: rows[1]?.type || 'N/A',        pct: rows[1]?.pct !== undefined ? rows[1].pct : 0  },
+              { type: rows[2]?.type || 'N/A',        pct: rows[2]?.pct !== undefined ? rows[2].pct : 0  },
+            ];
+            const flatRoofRow = part === 'roof' ? \`
+              <div style="display:flex;align-items:center;gap:12px;margin:12px 0">
+                <span style="font-size:0.85rem;color:var(--slate);white-space:nowrap">If flat roof, which year was the roof installed:</span>
+                <input type="text" id="ps-flatRoofYear" value="\${sv('flatRoofYear','N/A')}" style="width:100px;border:1.5px solid var(--border);border-radius:6px;padding:7px 10px;font-size:0.85rem">
+              </div>\` : '';
+            return \`
+            <div style="display:flex;align-items:flex-start;gap:24px;margin-bottom:28px">
+              <div style="width:240px;padding-top:10px;flex-shrink:0">
+                <span style="font-size:0.85rem;color:var(--slate)">${labels[pi]}</span>
+                ${flatRoofRow}
+              </div>
+              <div style="flex:1">
+                <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+                  ${rowData.map((row, i) => \`
+                    <div style="display:flex;align-items:center;${i>0?'border-top:1px solid var(--border)':''}">
+                      <select id="ps-${part}-type-${i}" onchange="updateConstructionTotal('ps-${part}')"
+                        style="flex:1;border:none;border-right:1px solid var(--border);border-radius:0;padding:10px 12px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        \${constructionOptionsHTML(optFns[pi](), row.type)}
+                      </select>
+                      <input type="number" id="ps-${part}-pct-${i}" value="${row.pct}" min="0" max="100"
+                        oninput="updateConstructionTotal('ps-${part}')"
+                        style="width:80px;border:none;padding:10px 12px;font-size:0.88rem;text-align:right">
+                    </div>
+                  \`).join('')}
+                </div>
+              </div>
+              <div style="font-family:'Raleway',sans-serif;font-size:1.4rem;font-weight:800;color:#22c55e;white-space:nowrap;padding-top:8px" id="ps-${part}-total">100%</div>
+            </div>\`;
+          }).join('')}
+
+          <div class="quote-nav">
+            <button class="btn btn-secondary" onclick="premisesStepPrev(3)">&#8592; Declarations</button>
+            <button class="btn btn-primary" onclick="premisesStepNext(3)">Next: Step 4 &#8594;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- PS4: Grading & Security -->
+    <div class="premises-step" id="ps-step-4">
+      <div class="quote-card">
+        <div class="quote-card-header">
+          <div><h4>Premises ${currentPremisesIdx + 1}: Step 4 of 8 — Premises 1 Grading &amp; Security</h4><div class="qch-sub">Building grading and security features for this premises</div></div>
+        </div>
+        <div class="quote-card-body">
+          <div class="qf-section-title">4.1 Please complete building details including security features:</div>
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+                  <div style="display:flex;align-items:center;background:var(--surface)">
+                    <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Are the premises a listed building? If so, what grade?</div>
+                    <div style="padding:8px 16px;flex-shrink:0">
+                      <select id="ps4-listedBuilding" style="width:240px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="Not on cover" \${sv(\'ps4-listedBuilding\',\'not listed\')===\'Not on cover\'?\'selected\':\'\'}>Not on cover</option>
+<option value="not listed" \${sv(\'ps4-listedBuilding\',\'not listed\')===\'not listed\'?\'selected\':\'\'}>not listed</option>
+<option value="2 / ll / C / B2" \${sv(\'ps4-listedBuilding\',\'not listed\')===\'2 / ll / C / B2\'?\'selected\':\'\'}>2 / ll / C / B2</option>
+<option value=". / . / . / B1" \${sv(\'ps4-listedBuilding\',\'not listed\')===\'. / . / . / B1\'?\'selected\':\'\'}>. / . / . / B1</option>
+<option value=". / . / B / ." \${sv(\'ps4-listedBuilding\',\'not listed\')===\'. / . / B / .\'?\'selected\':\'\'}>. / . / B / .</option>
+<option value="2* / ll* / . / B+" \${sv(\'ps4-listedBuilding\',\'not listed\')===\'2* / ll* / . / B+\'?\'selected\':\'\'}>2* / ll* / . / B+</option>
+<option value="1 / I / A / A" \${sv(\'ps4-listedBuilding\',\'not listed\')===\'1 / I / A / A\'?\'selected\':\'\'}>1 / I / A / A</option>
+                      </select>
+                    </div>
+                  </div>                  <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
+                    <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Do you have any portable heating?</div>
+                    <div style="padding:8px 16px;flex-shrink:0">
+                      <select id="ps4-portableHeating" style="width:240px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="Yes" \${sv(\'ps4-portableHeating\',\'No\')===\'Yes\'?\'selected\':\'\'}>Yes</option>
+<option value="No" \${sv(\'ps4-portableHeating\',\'No\')===\'No\'?\'selected\':\'\'}>No</option>
+                      </select>
+                    </div>
+                  </div>                  <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
+                    <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Do your premises meet our minimum level of security?</div>
+                    <div style="padding:8px 16px;flex-shrink:0">
+                      <select id="ps4-meetsMinSecurity" style="width:240px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="Yes" \${sv(\'ps4-meetsMinSecurity\',\'Yes\')===\'Yes\'?\'selected\':\'\'}>Yes</option>
+<option value="No" \${sv(\'ps4-meetsMinSecurity\',\'Yes\')===\'No\'?\'selected\':\'\'}>No</option>
+                      </select>
+                    </div>
+                  </div>                  <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
+                    <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Does the premises have an intruder alarm?</div>
+                    <div style="padding:8px 16px;flex-shrink:0">
+                      <select id="ps4-intruderAlarm" style="width:240px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="Yes" \${sv(\'ps4-intruderAlarm\',\'Yes\')===\'Yes\'?\'selected\':\'\'}>Yes</option>
+<option value="No" \${sv(\'ps4-intruderAlarm\',\'Yes\')===\'No\'?\'selected\':\'\'}>No</option>
+                      </select>
+                    </div>
+                  </div>                  <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
+                    <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Is the Alarm Monitored?</div>
+                    <div style="padding:8px 16px;flex-shrink:0">
+                      <select id="ps4-alarmMonitored" style="width:240px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="None" \${sv(\'ps4-alarmMonitored\',\'None\')===\'None\'?\'selected\':\'\'}>None</option>
+<option value="ABC" \${sv(\'ps4-alarmMonitored\',\'None\')===\'ABC\'?\'selected\':\'\'}>ABC</option>
+<option value="Audible" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Audible\'?\'selected\':\'\'}>Audible</option>
+<option value="Central Station Dial-up Line" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Central Station Dial-up Line\'?\'selected\':\'\'}>Central Station Dial-up Line</option>
+<option value="Central Station Direct Line" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Central Station Direct Line\'?\'selected\':\'\'}>Central Station Direct Line</option>
+<option value="Digicom" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Digicom\'?\'selected\':\'\'}>Digicom</option>
+<option value="Dualcom" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Dualcom\'?\'selected\':\'\'}>Dualcom</option>
+<option value="High Decibel Internal Sounder" \${sv(\'ps4-alarmMonitored\',\'None\')===\'High Decibel Internal Sounder\'?\'selected\':\'\'}>High Decibel Internal Sounder</option>
+<option value="Line to Site Security Office" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Line to Site Security Office\'?\'selected\':\'\'}>Line to Site Security Office</option>
+<option value="PAKNET" \${sv(\'ps4-alarmMonitored\',\'None\')===\'PAKNET\'?\'selected\':\'\'}>PAKNET</option>
+<option value="Police Direct Line" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Police Direct Line\'?\'selected\':\'\'}>Police Direct Line</option>
+<option value="REDCARE" \${sv(\'ps4-alarmMonitored\',\'None\')===\'REDCARE\'?\'selected\':\'\'}>REDCARE</option>
+<option value="RedcareGSM" \${sv(\'ps4-alarmMonitored\',\'None\')===\'RedcareGSM\'?\'selected\':\'\'}>RedcareGSM</option>
+<option value="Visual" \${sv(\'ps4-alarmMonitored\',\'None\')===\'Visual\'?\'selected\':\'\'}>Visual</option>
+                      </select>
+                    </div>
+                  </div>                  <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
+                    <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">What grade is the alarm system and its signalling? (as specified in EN 50131)</div>
+                    <div style="padding:8px 16px;flex-shrink:0">
+                      <select id="ps4-alarmGrade" style="width:240px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="None" \${sv(\'ps4-alarmGrade\',\'None\')===\'None\'?\'selected\':\'\'}>None</option>
+<option value="Unknown" \${sv(\'ps4-alarmGrade\',\'None\')===\'Unknown\'?\'selected\':\'\'}>Unknown</option>
+<option value="3" \${sv(\'ps4-alarmGrade\',\'None\')===\'3\'?\'selected\':\'\'}>3</option>
+<option value="2" \${sv(\'ps4-alarmGrade\',\'None\')===\'2\'?\'selected\':\'\'}>2</option>
+<option value="1" \${sv(\'ps4-alarmGrade\',\'None\')===\'1\'?\'selected\':\'\'}>1</option>
+                      </select>
+                    </div>
+                  </div>                  <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
+                    <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Is the alarm under your sole control?</div>
+                    <div style="padding:8px 16px;flex-shrink:0">
+                      <select id="ps4-alarmSoleControl" style="width:240px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="Yes" \${sv(\'ps4-alarmSoleControl\',\'Yes\')===\'Yes\'?\'selected\':\'\'}>Yes</option>
+<option value="No" \${sv(\'ps4-alarmSoleControl\',\'Yes\')===\'No\'?\'selected\':\'\'}>No</option>
+                      </select>
+                    </div>
+                  </div>
+                  <!-- Additional security features — 3 rows -->
+                  <div style="display:flex;align-items:flex-start;border-top:1px solid var(--border)">
+                    <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Please give details of any additional security features</div>
+                    <div style="padding:8px 16px;flex-shrink:0;display:flex;flex-direction:column;gap:6px">
+                      ${[0,1,2].map(i => `
+                        <select id="ps4-secFeature-${i}" style="width:340px;padding:9px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:0.85rem;color:var(--slate)">
+                          <option value="None">None</option>
+<option value="Anti Ram Raid Bollards">Anti Ram Raid Bollards</option>
+<option value="Shutters - Metal">Shutters - Metal</option>
+<option value="Fixed External Bars/Grills: on all accessible windows">Fixed External Bars/Grills: on all accessible windows</option>
+<option value="Fixed Internal Bars/Grills: on all accessible windows & doors">Fixed Internal Bars/Grills: on all accessible windows & doors</option>
+<option value="Hinge Bolts">Hinge Bolts</option>
+<option value="Steel Lined Doors">Steel Lined Doors</option>
+<option value="Onsite CCTV">Onsite CCTV</option>
+<option value="Other Monitored CCTV">Other Monitored CCTV</option>
+<option value="anti Ram Raid Bollards">anti Ram Raid Bollards</option>
+<option value="Encasement & entrapment devices on all computer equipment">Encasement & entrapment devices on all computer equipment</option>
+<option value="Smoke Cloak">Smoke Cloak</option>
+<option value="Proposer/family members or employees residing above premises">Proposer/family members or employees residing above premises</option>
+<option value="24 Hour Site on site Security">24 Hour Site on site Security</option>
+<option value="Security Patrols visiting periodically">Security Patrols visiting periodically</option>
+<option value="Guard Dog(s)">Guard Dog(s)</option>
+                        </select>`).join('')}
+                    </div>
+                  </div>
+          </div>
+
+          <div class="quote-nav">
+            <button class="btn btn-secondary" onclick="premisesStepPrev(4)">&#8592; Construction</button>
+            <button class="btn btn-primary" onclick="premisesStepNext(4)">Next: Step 5 &#8594;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- PS5: Cover Choices -->
+    <div class="premises-step" id="ps-step-5">
+      <div class="quote-card">
+        <div class="quote-card-header">
+          <div><h4>Premises ${currentPremisesIdx + 1}: Step 5 of 8 — Cover Choices</h4><div class="qch-sub">Select cover values required for this premises</div></div>
+        </div>
+        <div class="quote-card-body">
+
+          <!-- 5.1 Subsidence & Flood -->
+          <div style="display:flex;align-items:flex-start;gap:24px;margin-bottom:24px">
+            <div style="width:160px;padding-top:10px;flex-shrink:0">
+              <span style="font-size:0.85rem;font-weight:600;color:var(--ink)">5.1 Subsidence &amp; Flood :</span>
+            </div>
+            <div style="flex:1;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+              <div style="display:flex;align-items:center;background:var(--surface)">
+                <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Cover included for Subsidence (include as default)?</div>
+                <div style="padding:8px 16px;flex-shrink:0">
+                  <select id="ps5-subsidence" style="width:120px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                    <option value="Yes" \${sv('ps5Subsidence','Yes')==='Yes'?'selected':''}>Yes</option>
+                    <option value="No"  \${sv('ps5Subsidence')==='No'?'selected':''}>No</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;border-top:1px solid var(--border)">
+                <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Cover included for Flood (include as default)?</div>
+                <div style="padding:8px 16px;flex-shrink:0">
+                  <select id="ps5-flood" style="width:120px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                    <option value="Yes" \${sv('ps5Flood','Yes')==='Yes'?'selected':''}>Yes</option>
+                    <option value="No"  \${sv('ps5Flood')==='No'?'selected':''}>No</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5.2 Building & General -->
+          <div style="display:flex;align-items:flex-start;gap:24px;margin-bottom:24px">
+            <div style="width:160px;padding-top:10px;flex-shrink:0">
+              <span style="font-size:0.85rem;font-weight:600;color:var(--ink)">5.2 Building &amp; General :</span>
+            </div>
+            <div style="flex:1;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+              <div style="display:flex;align-items:center;background:var(--surface)">
+                <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">How much buildings cover is required? (this is the amount to rebuild the premises)</div>
+                <div style="padding:8px 16px;flex-shrink:0;display:flex;align-items:center;gap:4px">
+                  <span style="font-size:0.85rem;color:var(--slate)">£</span>
+                  <input type="text" id="ps5-buildingsCover" value="\${sv('ps5BuildingsCover','0')}" oninput="formatGBPInput(this)" style="width:120px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem">
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;border-top:1px solid var(--border)">
+                <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">How much cover is required for tenants improvements?</div>
+                <div style="padding:8px 16px;flex-shrink:0;display:flex;align-items:center;gap:4px">
+                  <span style="font-size:0.85rem;color:var(--slate)">£</span>
+                  <input type="text" id="ps5-tenantImprovements" value="\${sv('ps5TenantImprovements','0')}" oninput="formatGBPInput(this)" style="width:120px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem">
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
+                <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">How much cover is required for general contents and machinery?</div>
+                <div style="padding:8px 16px;flex-shrink:0;display:flex;align-items:center;gap:4px">
+                  <span style="font-size:0.85rem;color:var(--slate)">£</span>
+                  <input type="text" id="ps5-generalContents" value="\${sv('ps5GeneralContents','0')}" oninput="formatGBPInput(this)" style="width:120px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5.3 Computer cover -->
+          <div style="display:flex;align-items:flex-start;gap:24px;margin-bottom:24px">
+            <div style="width:160px;padding-top:10px;flex-shrink:0">
+              <span style="font-size:0.85rem;font-weight:600;color:var(--ink)">5.3 Computer cover :</span>
+            </div>
+            <div style="flex:1;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+              <div style="display:flex;align-items:center;background:var(--surface)">
+                <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">How much cover is required for computer equipment at the premises?</div>
+                <div style="padding:8px 16px;flex-shrink:0;display:flex;align-items:center;gap:4px">
+                  <span style="font-size:0.85rem;color:var(--slate)">£</span>
+                  <input type="text" id="ps5-computerCover" value="\${sv('ps5ComputerCover','0')}" oninput="formatGBPInput(this)" style="width:120px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem">
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;border-top:1px solid var(--border)">
+                <div style="flex:1;padding:12px 16px;font-size:0.87rem;color:var(--ink)">Cover can be extended to include computer breakdown</div>
+                <div style="padding:8px 16px;flex-shrink:0">
+                  <select id="ps5-computerBreakdown" style="width:120px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                    <option value="No"  \${sv('ps5ComputerBreakdown','No')==='No'?'selected':''}>No</option>
+                    <option value="Yes" \${sv('ps5ComputerBreakdown')==='Yes'?'selected':''}>Yes</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5.4 Specified Contents -->
+          <div style="display:flex;align-items:flex-start;gap:24px;margin-bottom:8px">
+            <div style="width:160px;padding-top:10px;flex-shrink:0">
+              <span style="font-size:0.85rem;font-weight:600;color:var(--ink)">5.4 Specified Contents :</span>
+            </div>
+            <div style="flex:1;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+              <div style="display:flex;align-items:center;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border)">
+                <span style="font-size:0.87rem;color:var(--ink)">Specified Contents: Do you need cover for any?</span>
+              </div>
+              ${[0,1,2].map(i => {
+                const row = (sv('ps5SpecifiedContents')||[])[i] || {type:'N/A', value:'0'};
+                return \`<div style="display:flex;align-items:center;\${i>0?'border-top:1px solid var(--border)':''}">
+                  <select id="ps5-specType-${i}" style="flex:1;border:none;border-right:1px solid var(--border);border-radius:0;padding:10px 12px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                    <option value="N/A" \${row.type==='N/A'?'selected':''}>N/A</option>
+                    <option value="Art" \${row.type==='Art'?'selected':''}>Art</option>
+                    <option value="Jewellery" \${row.type==='Jewellery'?'selected':''}>Jewellery</option>
+                    <option value="Antiques" \${row.type==='Antiques'?'selected':''}>Antiques</option>
+                    <option value="Portable Medical Equipment" \${row.type==='Portable Medical Equipment'?'selected':''}>Portable Medical Equipment</option>
+                    <option value="Other Specified Item" \${row.type==='Other Specified Item'?'selected':''}>Other Specified Item</option>
+                  </select>
+                  <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;flex-shrink:0">
+                    <span style="font-size:0.85rem;color:var(--slate)">£</span>
+                    <input type="text" id="ps5-specValue-${i}" value="${row.value||'0'}" oninput="formatGBPInput(this)"
+                      style="width:100px;border:1.5px solid var(--border);border-radius:6px;padding:8px 10px;font-size:0.88rem;text-align:right">
+                  </div>
+                </div>\`;
+              }).join('')}
+            </div>
+          </div>
+
+          <div class="quote-nav">
+            <button class="btn btn-secondary" onclick="premisesStepPrev(5)">&#8592; Security</button>
+            <button class="btn btn-primary" onclick="premisesStepNext(5)">Next: Step 6 &#8594;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- PS6: Cover Choice Continued -->
+    <div class="premises-step" id="ps-step-6">
+      <div class="quote-card">
+        <div class="quote-card-header">
+          <div><h4>Premises ${currentPremisesIdx + 1}: Step 6 of 8 — Cover Choice Continued</h4><div class="qch-sub">Refrigeration, money and additional cover for this premises</div></div>
+        </div>
+        <div class="quote-card-body">
+
+          <!-- 6.1 Refrigeration -->
+          <div style="margin-bottom:28px">
+            <div class="qf-section-title">6.1 Refrigeration :</div>
+            <p style="font-size:0.84rem;color:var(--slate);margin-bottom:14px">Our cover automatically includes the failure of refrigeration damaging Drugs and Vaccines<br>The maximum that we will pay is £10,000 any one occurrence.</p>
+            <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+              <div style="display:flex;align-items:center;background:var(--surface)">
+                <div style="flex:1;padding:13px 16px">
+                  <div style="font-size:0.87rem;color:var(--ink)">How much cover is required for refrigerated stock - (inc. drugs for MD loss/damage)?</div>
+                  
+                </div>
+                <div style="padding:8px 16px;flex-shrink:0"><div style="display:flex;align-items:center;gap:4px"><span style="font-size:0.85rem;color:var(--slate)">£</span><input type="text" id="ps6-refrigStock" value="\${sv('ps6-refrigStock','0')}" oninput="formatGBPInput(this)" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem;text-align:right"></div></div>
+              </div>              <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--white)">
+                <div style="flex:1;padding:13px 16px">
+                  <div style="font-size:0.87rem;color:var(--ink)">How many refrigeration units do you have?</div>
+                  <div style="font-size:0.81rem;color:var(--mist);margin-top:3px">The maximum that we will pay is £10,000 any one refrigeration unit</div>
+                </div>
+                <div style="padding:8px 16px;flex-shrink:0"><select id="ps6-refrigUnits" style="width:160px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)"><option value="1" \${sv(\'ps6-refrigUnits\',\'1\')==='1'?'selected':''>1</option>
+<option value="2" \${sv(\'ps6-refrigUnits\',\'1\')==='2'?'selected':''>2</option>
+<option value="3" \${sv(\'ps6-refrigUnits\',\'1\')==='3'?'selected':''>3</option>
+<option value="4" \${sv(\'ps6-refrigUnits\',\'1\')==='4'?'selected':''>4</option>
+<option value="5 &more" \${sv(\'ps6-refrigUnits\',\'1\')==='5 &more'?'selected':''>5 &more</option></select></div>
+              </div>              <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
+                <div style="flex:1;padding:13px 16px">
+                  <div style="font-size:0.87rem;color:var(--ink)">If they all have temperature alarms what type: audible / &amp; remote signalling?</div>
+                  
+                </div>
+                <div style="padding:8px 16px;flex-shrink:0"><select id="ps6-tempAlarm" style="width:160px;padding:9px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--sidebar);background:var(--white)"><option value="None" \${sv(\'ps6-tempAlarm\',\'None\')==='None'?'selected':''>None</option>
+<option value="Audible" \${sv(\'ps6-tempAlarm\',\'None\')==='Audible'?'selected':''>Audible</option>
+<option value="Audible & Remote Signalling" \${sv(\'ps6-tempAlarm\',\'None\')==='Audible & Remote Signalling'?'selected':''>Audible & Remote Signalling</option></select></div>
+              </div>              <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--white)">
+                <div style="flex:1;padding:13px 16px">
+                  <div style="font-size:0.87rem;color:var(--ink)">How much cover is required for ambient stock (inc. drugs)?</div>
+                  
+                </div>
+                <div style="padding:8px 16px;flex-shrink:0"><div style="display:flex;align-items:center;gap:4px"><span style="font-size:0.85rem;color:var(--slate)">£</span><input type="text" id="ps6-ambientStock" value="\${sv('ps6-ambientStock','0')}" oninput="formatGBPInput(this)" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem;text-align:right"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6.2 Money -->
+          <div style="margin-bottom:16px">
+            <div class="qf-section-title">6.2 Money :</div>
+            <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+              <div style="display:flex;align-items:center;background:var(--surface)">
+                <div style="flex:1;padding:13px 16px">
+                  <div style="font-size:0.87rem;color:var(--ink)">How much money is held on the premises during business hours?</div>
+                  <div style="font-size:0.81rem;color:var(--mist);margin-top:3px">The default cover is £10,000. Our minimum cover is £2,000.</div>
+                </div>
+                <div style="padding:8px 16px;flex-shrink:0"><div style="display:flex;align-items:center;gap:4px"><span style="font-size:0.85rem;color:var(--slate)">£</span><input type="text" id="ps6-moneyBusHours" value="\${sv('ps6-moneyBusHours','10000')}" oninput="formatGBPInput(this)" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem;text-align:right"></div></div>
+              </div>              <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--white)">
+                <div style="flex:1;padding:13px 16px">
+                  <div style="font-size:0.87rem;color:var(--ink)">How much money is held on the premises after business hours in a single locked safe?</div>
+                  <div style="font-size:0.81rem;color:var(--mist);margin-top:3px">Our minimum cover is £2,000 per safe</div>
+                </div>
+                <div style="padding:8px 16px;flex-shrink:0"><div style="display:flex;align-items:center;gap:4px"><span style="font-size:0.85rem;color:var(--slate)">£</span><input type="text" id="ps6-moneyAfterHours" value="\${sv('ps6-moneyAfterHours','10000')}" oninput="formatGBPInput(this)" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 10px;font-size:0.88rem;text-align:right"></div></div>
+              </div>              <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
+                <div style="flex:1;padding:13px 16px">
+                  <div style="font-size:0.87rem;color:var(--ink)">How many safes do you have?</div>
+                  
+                </div>
+                <div style="padding:8px 16px;flex-shrink:0"><input type="number" id="ps6-numSafes" value="\${sv('ps6-numSafes','1')}" min="0" style="width:140px;border:1.5px solid var(--border);border-radius:6px;padding:9px 12px;font-size:0.88rem"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="quote-nav">
+            <button class="btn btn-secondary" onclick="premisesStepPrev(6)">&#8592; Cover Choices</button>
+            <button class="btn btn-primary" onclick="premisesStepNext(6)">Next: Step 7 &#8594;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- PS7: Business Equipment -->
+    <div class="premises-step" id="ps-step-7">
+      <div class="quote-card">
+        <div class="quote-card-header">
+          <div><h4>Premises ${currentPremisesIdx + 1}: Step 7 of 8 — Business Equipment</h4><div class="qch-sub">Away from premises cover for business equipment</div></div>
+        </div>
+        <div class="quote-card-body">
+          <div class="qf-section-title">6.1 Business Equipment "All Risks" / Away from Premises:</div>
+          <p style="font-size:0.85rem;color:var(--slate);margin-bottom:6px">Cover is included for temporary removal of contents. The maximum amounts are:</p>
+          <p style="font-size:0.83rem;color:var(--mist);margin-bottom:20px;padding-left:16px">15% of the Contents Sum Insured or £30,000 in total whichever is less and a limit of £15,000 any one item.</p>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:0.87rem;color:var(--ink)">
+            Do you need separate cover any items valued more than £15,000, or items in the custody of patients?
+          </div>
+
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+              <thead>
+                <tr style="background:var(--surface)">
+                  <th style="padding:10px 12px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border);text-align:left">Description</th>
+                  <th style="padding:10px 12px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border);text-align:left">Geographical Limit</th>
+                  <th style="padding:10px 12px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border);text-align:left">Declared Value</th>
+                  <th style="padding:10px 12px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border);text-align:left;background:var(--surface)"></th>
+                </tr>
+              </thead>
+              <tbody>
+                    <tr style="border-top:1px solid var(--border)">
+                      <td style="padding:6px 8px;width:40%">
+                        <select id="ps7-desc-0" style="width:100%;border:1.5px solid var(--sidebar);border-radius:6px;padding:7px 10px;font-size:0.83rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                          <option value="N/A">N/A</option>
+<option value="Laptop Computers">Laptop Computers</option>
+<option value="Electronic Diagnotic Equipment - portable">Electronic Diagnotic Equipment - portable</option>
+<option value="Medical bags &amp; assorted contents">Medical bags &amp; assorted contents</option>
+<option value="Electronic Equipment - lent to patients">Electronic Equipment - lent to patients</option>
+<option value="Other Equipment - lent to patients">Other Equipment - lent to patients</option>
+<option value="Display stands">Display stands</option>
+<option value="Audio/Video Equipment">Audio/Video Equipment</option>
+<option value="Cash Register">Cash Register</option>
+<option value="(Survey Equipment)">(Survey Equipment)</option>
+<option value="(Tools - Power Driven Handtools)">(Tools - Power Driven Handtools)</option>
+<option value="Other Item">Other Item</option>
+                        </select>
+                      </td>
+                      <td style="padding:6px 8px;width:22%">
+                        <select id="ps7-geo-0" style="width:100%;border:1.5px solid var(--sidebar);border-radius:6px;padding:7px 10px;font-size:0.83rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                          <option value="N/A">N/A</option>
+<option value="UK">UK</option>
+<option value="UK &amp; EU">UK &amp; EU</option>
+<option value="Worldwide">Worldwide</option>
+                        </select>
+                      </td>
+                      <td style="padding:6px 8px;width:18%">
+                        <div style="display:flex;align-items:center;gap:0">
+                          <span style="padding:6px 8px;background:var(--surface);border:1.5px solid var(--border);border-right:none;border-radius:6px 0 0 6px;font-size:0.85rem;color:var(--slate)">£</span>
+                          <input type="number" id="ps7-value-0" value="0" min="0"
+                            style="width:100%;border:1.5px solid var(--border);border-radius:0 6px 6px 0;padding:6px 10px;font-size:0.85rem">
+                        </div>
+                      </td>
+                      <td style="padding:6px 12px;width:20%;font-size:0.82rem;color:var(--mist);background:var(--surface)">
+                        Indexing Value : £
+                      </td>
+                    </tr>                    <tr style="border-top:1px solid var(--border)">
+                      <td style="padding:6px 8px;width:40%">
+                        <select id="ps7-desc-1" style="width:100%;border:1.5px solid var(--sidebar);border-radius:6px;padding:7px 10px;font-size:0.83rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                          <option value="N/A">N/A</option>
+<option value="Laptop Computers">Laptop Computers</option>
+<option value="Electronic Diagnotic Equipment - portable">Electronic Diagnotic Equipment - portable</option>
+<option value="Medical bags &amp; assorted contents">Medical bags &amp; assorted contents</option>
+<option value="Electronic Equipment - lent to patients">Electronic Equipment - lent to patients</option>
+<option value="Other Equipment - lent to patients">Other Equipment - lent to patients</option>
+<option value="Display stands">Display stands</option>
+<option value="Audio/Video Equipment">Audio/Video Equipment</option>
+<option value="Cash Register">Cash Register</option>
+<option value="(Survey Equipment)">(Survey Equipment)</option>
+<option value="(Tools - Power Driven Handtools)">(Tools - Power Driven Handtools)</option>
+<option value="Other Item">Other Item</option>
+                        </select>
+                      </td>
+                      <td style="padding:6px 8px;width:22%">
+                        <select id="ps7-geo-1" style="width:100%;border:1.5px solid var(--sidebar);border-radius:6px;padding:7px 10px;font-size:0.83rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                          <option value="N/A">N/A</option>
+<option value="UK">UK</option>
+<option value="UK &amp; EU">UK &amp; EU</option>
+<option value="Worldwide">Worldwide</option>
+                        </select>
+                      </td>
+                      <td style="padding:6px 8px;width:18%">
+                        <div style="display:flex;align-items:center;gap:0">
+                          <span style="padding:6px 8px;background:var(--surface);border:1.5px solid var(--border);border-right:none;border-radius:6px 0 0 6px;font-size:0.85rem;color:var(--slate)">£</span>
+                          <input type="number" id="ps7-value-1" value="0" min="0"
+                            style="width:100%;border:1.5px solid var(--border);border-radius:0 6px 6px 0;padding:6px 10px;font-size:0.85rem">
+                        </div>
+                      </td>
+                      <td style="padding:6px 12px;width:20%;font-size:0.82rem;color:var(--mist);background:var(--surface)">
+                        Indexing Value : £
+                      </td>
+                    </tr>                    <tr style="border-top:1px solid var(--border)">
+                      <td style="padding:6px 8px;width:40%">
+                        <select id="ps7-desc-2" style="width:100%;border:1.5px solid var(--sidebar);border-radius:6px;padding:7px 10px;font-size:0.83rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                          <option value="N/A">N/A</option>
+<option value="Laptop Computers">Laptop Computers</option>
+<option value="Electronic Diagnotic Equipment - portable">Electronic Diagnotic Equipment - portable</option>
+<option value="Medical bags &amp; assorted contents">Medical bags &amp; assorted contents</option>
+<option value="Electronic Equipment - lent to patients">Electronic Equipment - lent to patients</option>
+<option value="Other Equipment - lent to patients">Other Equipment - lent to patients</option>
+<option value="Display stands">Display stands</option>
+<option value="Audio/Video Equipment">Audio/Video Equipment</option>
+<option value="Cash Register">Cash Register</option>
+<option value="(Survey Equipment)">(Survey Equipment)</option>
+<option value="(Tools - Power Driven Handtools)">(Tools - Power Driven Handtools)</option>
+<option value="Other Item">Other Item</option>
+                        </select>
+                      </td>
+                      <td style="padding:6px 8px;width:22%">
+                        <select id="ps7-geo-2" style="width:100%;border:1.5px solid var(--sidebar);border-radius:6px;padding:7px 10px;font-size:0.83rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                          <option value="N/A">N/A</option>
+<option value="UK">UK</option>
+<option value="UK &amp; EU">UK &amp; EU</option>
+<option value="Worldwide">Worldwide</option>
+                        </select>
+                      </td>
+                      <td style="padding:6px 8px;width:18%">
+                        <div style="display:flex;align-items:center;gap:0">
+                          <span style="padding:6px 8px;background:var(--surface);border:1.5px solid var(--border);border-right:none;border-radius:6px 0 0 6px;font-size:0.85rem;color:var(--slate)">£</span>
+                          <input type="number" id="ps7-value-2" value="0" min="0"
+                            style="width:100%;border:1.5px solid var(--border);border-radius:0 6px 6px 0;padding:6px 10px;font-size:0.85rem">
+                        </div>
+                      </td>
+                      <td style="padding:6px 12px;width:20%;font-size:0.82rem;color:var(--mist);background:var(--surface)">
+                        Indexing Value : £
+                      </td>
+                    </tr>                    <tr style="border-top:1px solid var(--border)">
+                      <td style="padding:6px 8px;width:40%">
+                        <select id="ps7-desc-3" style="width:100%;border:1.5px solid var(--sidebar);border-radius:6px;padding:7px 10px;font-size:0.83rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                          <option value="N/A">N/A</option>
+<option value="Laptop Computers">Laptop Computers</option>
+<option value="Electronic Diagnotic Equipment - portable">Electronic Diagnotic Equipment - portable</option>
+<option value="Medical bags &amp; assorted contents">Medical bags &amp; assorted contents</option>
+<option value="Electronic Equipment - lent to patients">Electronic Equipment - lent to patients</option>
+<option value="Other Equipment - lent to patients">Other Equipment - lent to patients</option>
+<option value="Display stands">Display stands</option>
+<option value="Audio/Video Equipment">Audio/Video Equipment</option>
+<option value="Cash Register">Cash Register</option>
+<option value="(Survey Equipment)">(Survey Equipment)</option>
+<option value="(Tools - Power Driven Handtools)">(Tools - Power Driven Handtools)</option>
+<option value="Other Item">Other Item</option>
+                        </select>
+                      </td>
+                      <td style="padding:6px 8px;width:22%">
+                        <select id="ps7-geo-3" style="width:100%;border:1.5px solid var(--sidebar);border-radius:6px;padding:7px 10px;font-size:0.83rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                          <option value="N/A">N/A</option>
+<option value="UK">UK</option>
+<option value="UK &amp; EU">UK &amp; EU</option>
+<option value="Worldwide">Worldwide</option>
+                        </select>
+                      </td>
+                      <td style="padding:6px 8px;width:18%">
+                        <div style="display:flex;align-items:center;gap:0">
+                          <span style="padding:6px 8px;background:var(--surface);border:1.5px solid var(--border);border-right:none;border-radius:6px 0 0 6px;font-size:0.85rem;color:var(--slate)">£</span>
+                          <input type="number" id="ps7-value-3" value="0" min="0"
+                            style="width:100%;border:1.5px solid var(--border);border-radius:0 6px 6px 0;padding:6px 10px;font-size:0.85rem">
+                        </div>
+                      </td>
+                      <td style="padding:6px 12px;width:20%;font-size:0.82rem;color:var(--mist);background:var(--surface)">
+                        Indexing Value : £
+                      </td>
+                    </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="quote-nav">
+            <button class="btn btn-secondary" onclick="premisesStepPrev(7)">&#8592; Step 6</button>
+            <button class="btn btn-primary" onclick="premisesStepNext(7)">Next: Summary &#8594;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- PS8: Premises Endorsements -->
+    <div class="premises-step" id="ps-step-8">
+      <div class="quote-card">
+        <div class="quote-card-header">
+          <div><h4>Premises ${currentPremisesIdx + 1}: Step 8 of 8 \u2014 Premises Endorsements</h4><div class="qch-sub">Select any endorsements that apply to this premises</div></div>
+        </div>
+        <div class="quote-card-body">
+
+          <!-- Search bar -->
+          <div style="margin-bottom:16px">
+            <div style="display:flex;align-items:center;border:2px solid var(--sidebar);border-radius:8px;overflow:hidden;max-width:440px">
+              <input type="text" id="ps8-search" placeholder="" oninput="filterEndorsements()"
+                style="flex:1;border:none;padding:12px 16px;font-size:0.9rem;outline:none;font-family:'Inter',sans-serif">
+              <div style="padding:10px 14px;background:var(--white)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sidebar)" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Endorsements table -->
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            <div style="padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border)">
+              <span style="font-size:0.75rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:0.8px">Endorsements</span>
+            </div>
+            <div id="ps8-endorsements-list" style="max-height:500px;overflow-y:auto">
+              ${PREMISES_ENDORSEMENTS.map((e, i) => {
+                const checked = (sv('endorsements') || []).includes(e.code) ? 'checked' : '';
+                return \`<div class="ps8-row" data-code="${e.code}" data-name="${e.name.toLowerCase()}" data-text="${e.text.toLowerCase().substring(0,100)}"
+                  style="display:flex;align-items:flex-start;padding:14px 16px;border-bottom:1px solid var(--border);gap:16px;cursor:pointer"
+                  onclick="toggleEndorsement('${e.code}')">
+                  <div style="flex-shrink:0;width:100px;font-size:0.82rem;font-weight:700;color:var(--sidebar);padding-top:1px">${e.code}</div>
+                  <div style="flex:0 0 200px;font-size:0.85rem;font-weight:600;color:var(--ink);padding-top:1px">${e.name}</div>
+                  <div style="flex:1;font-size:0.83rem;color:var(--slate);line-height:1.5">${e.text}</div>
+                  <div style="flex-shrink:0;padding-top:2px">
+                    <input type="checkbox" id="ps8-chk-${e.code}" ${checked}
+                      onclick="event.stopPropagation();toggleEndorsement('${e.code}')"
+                      style="width:18px;height:18px;cursor:pointer;accent-color:var(--sidebar)">
+                  </div>
+                </div>\`;
+              }).join('')}
+            </div>
+          </div>
+
+          <div class="quote-nav" style="margin-top:16px">
+            <button class="btn btn-secondary" onclick="premisesStepPrev(8)">&#8592; Step 7</button>
+            <button class="btn btn-primary" onclick="savePremisesAndReturn()">Save Premises ${currentPremisesIdx + 1} &#10003;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  \`;
+
+  // Show the current step
+  showPremisesStep(currentPremisesStep);
+}
+
+function showPremisesStep(n) {
+  currentPremisesStep = n;
+  document.querySelectorAll('.premises-step').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('ps-step-' + n);
+  if (el) el.classList.add('active');
+  renderPremisesProgress(n);
+  document.getElementById('content').scrollTop = 0;
+  window.scrollTo(0, 0);
+  if (n === 8) { setTimeout(initPS8Selections, 50); }
+}
+
+function togglePSSection(id) {
+  const cbMap = { 'buildings-fields':'ps-buildingsReq', 'contents-fields':'ps-contentsReq',
+                  'equip-fields':'ps-equipReq', 'glass-fields':'ps-glassReq', 'locum-fields':'ps-locumReq' };
+  const cbId = cbMap[id];
+  const cb = document.getElementById(cbId);
+  const fields = document.getElementById('ps-' + id);
+  if (fields && cb) fields.classList.toggle('show', cb.checked);
+}
+
+function collectPremisesStep(step) {
+  const gv = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  const gb = id => { const el = document.getElementById(id); return el ? el.checked : false; };
+  const p = premisesData[currentPremisesIdx];
+  if (!p) return;
+  if (step === 1) {
+    const activities = getActivityRows();
+    const totalPct = activities.reduce((s, r) => s + (r.pct || 0), 0);
+    if (totalPct !== 100) {
+      alert('Activity percentages must add up to 100%. Current total: ' + totalPct + '%');
+      return false;
+    }
+    Object.assign(p, {
+      tradingName: gv('ps-tradingName'),
+      addr1: gv('ps-addr1'), addr2: gv('ps-addr2'), town: gv('ps-town'),
+      county: gv('ps-county'), country: gv('ps-country'),
+      postcode: gv('ps-postcode').toUpperCase(),
+      yearEstablished: gv('ps-yearEstablished'),
+      activities,
+    });
+    p.address = [p.addr1, p.town, p.postcode].filter(Boolean).join(', ');
+  } else if (step === 2) {
+    const ps2NoneOfBelow = gv('ps2-noneOfBelow');
+    const ps2D1=gv('ps2-d1'), ps2D2=gv('ps2-d2'), ps2D3=gv('ps2-d3'), ps2D4=gv('ps2-d4');
+    const ps2D5=gv('ps2-d5'), ps2D6=gv('ps2-d6'), ps2D7=gv('ps2-d7');
+    Object.assign(p, { ps2NoneOfBelow, ps2D1, ps2D2, ps2D3, ps2D4, ps2D5, ps2D6, ps2D7 });
+  } else if (step === 3) {
+    const validateConstruction = (prefix) => {
+      const rows = getConstructionRows(prefix, []);
+      const total = rows.reduce((s, r) => s + r.pct, 0);
+      return total;
+    };
+    const roofTotal  = validateConstruction('ps-roof');
+    const wallsTotal = validateConstruction('ps-walls');
+    const floorTotal = validateConstruction('ps-floor');
+    if (roofTotal !== 100)  { alert('Roof construction percentages must add up to 100%. Current total: ' + roofTotal + '%');  return false; }
+    if (wallsTotal !== 100) { alert('Wall construction percentages must add up to 100%. Current total: ' + wallsTotal + '%'); return false; }
+    if (floorTotal !== 100) { alert('Floor construction percentages must add up to 100%. Current total: ' + floorTotal + '%'); return false; }
+    Object.assign(p, {
+      roofRows:      getConstructionRows('ps-roof',  ROOF_OPTIONS),
+      wallsRows:     getConstructionRows('ps-walls', WALL_OPTIONS),
+      floorRows:     getConstructionRows('ps-floor', FLOOR_OPTIONS),
+      flatRoofYear:  gv('ps-flatRoofYear'),
+    });
+  } else if (step === 4) {
+    Object.assign(p, {
+      listedBuilding:   gv('ps4-listedBuilding'),
+      portableHeating:  gv('ps4-portableHeating'),
+      meetsMinSecurity: gv('ps4-meetsMinSecurity'),
+      intruderAlarm:    gv('ps4-intruderAlarm'),
+      alarmMonitored:   gv('ps4-alarmMonitored'),
+      alarmGrade:       gv('ps4-alarmGrade'),
+      alarmSoleControl: gv('ps4-alarmSoleControl'),
+      secFeature0:      gv('ps4-secFeature-0'),
+      secFeature1:      gv('ps4-secFeature-1'),
+      secFeature2:      gv('ps4-secFeature-2'),
+    });
+  } else if (step === 5) {
+    Object.assign(p, {
+      ps5Subsidence:          gv('ps5-subsidence'),
+      ps5Flood:               gv('ps5-flood'),
+      ps5BuildingsCover:      gv('ps5-buildingsCover'),
+      ps5TenantImprovements:  gv('ps5-tenantImprovements'),
+      ps5GeneralContents:     gv('ps5-generalContents'),
+      ps5ComputerCover:       gv('ps5-computerCover'),
+      ps5ComputerBreakdown:   gv('ps5-computerBreakdown'),
+      ps5SpecifiedContents:   [0,1,2].map(i => ({
+        type:  gv('ps5-specType-' + i),
+        value: gv('ps5-specValue-' + i),
+      })),
+    });
+  } else if (step === 6) {
+    Object.assign(p, {
+      ps6RefrigStock:      gv('ps6-refrigStock'),
+      ps6RefrigUnits:      gv('ps6-refrigUnits'),
+      ps6TempAlarm:        gv('ps6-tempAlarm'),
+      ps6AmbientStock:     gv('ps6-ambientStock'),
+      ps6MoneyBusHours:    gv('ps6-moneyBusHours'),
+      ps6MoneyAfterHours:  gv('ps6-moneyAfterHours'),
+      ps6NumSafes:         gv('ps6-numSafes'),
+    });
+  } else if (step === 7) {
+    Object.assign(p, {
+      equipItems: Array.from({length: 4}, (_, i) => ({
+        description:  document.getElementById('ps7-desc-'  + i)?.value || 'N/A',
+        geoLimit:     document.getElementById('ps7-geo-'   + i)?.value || 'N/A',
+        declaredValue: parseFloat(document.getElementById('ps7-value-' + i)?.value) || 0,
+      })),
+    });
+  }
+  // Step 8 — collect selected endorsements
+  if (step === 8) {
+    const selected = [];
+    PREMISES_ENDORSEMENTS.forEach(e => {
+      const chk = document.getElementById('ps8-chk-' + e.code);
+      if (chk && chk.checked) selected.push(e.code);
+    });
+    p.endorsements = selected;
+  }
+  // Mark step as complete
+  if (!p.stepsComplete.includes(step)) p.stepsComplete.push(step);
+}
+
+function premisesStepNext(fromStep) {
+  if (fromStep === 1) {
+    const addr1 = document.getElementById('ps-addr1')?.value.trim();
+    const town  = document.getElementById('ps-town')?.value.trim();
+    const post  = document.getElementById('ps-postcode')?.value.trim();
+    if (!addr1 || !town || !post) { alert('Address Line 1, Town and Postcode are required.'); return; }
+  }
+  if (fromStep === 2) {
+    const noneVal = document.getElementById('ps2-noneOfBelow')?.value;
+    const anyYes = ['ps2-d1','ps2-d2','ps2-d3','ps2-d4','ps2-d5','ps2-d6','ps2-d7']
+      .some(id => document.getElementById(id)?.value === 'Yes');
+    if (noneVal === 'Yes' && anyYes) {
+      if (!confirm('Warning: \'None of the below\' is set to Yes but one or more declarations are set to Yes. Do you wish to continue?')) return;
+    }
+  }
+  const result = collectPremisesStep(fromStep);
+  if (result === false) return;
+  showPremisesStep(fromStep + 1);
+}
+
+function premisesStepPrev(fromStep) {
+  collectPremisesStep(fromStep);
+  showPremisesStep(fromStep - 1);
+}
+
+function buildPremisesSummary() {
+  const p = premisesData[currentPremisesIdx] || {};
+  const fmt = v => v || '—';
+  const fmtMoney = v => v ? '£' + v : '—';
+  const fmtBool = v => v ? 'Yes' : 'No';
+  const body = document.getElementById('ps-summary-body');
+  if (!body) return;
+  body.innerHTML = \`
+    <div class="detail-grid" style="margin-bottom:16px">
+      <div class="detail-section"><h4>Risk Address</h4>
+        <div class="detail-row"><span class="key">Address</span><span>\${[p.addr1,p.addr2,p.town,p.county,p.postcode].filter(Boolean).join(', ')}</span></div>
+        <div class="detail-row"><span class="key">Type</span><span>\${fmt(p.premisesType)}</span></div>
+        <div class="detail-row"><span class="key">Year Built</span><span>\${fmt(p.yearBuilt)}</span></div>
+        <div class="detail-row"><span class="key">Construction</span><span>\${fmt(p.constructionType)}</span></div>
+      </div>
+      <div class="detail-section"><h4>Buildings &amp; Contents</h4>
+        <div class="detail-row"><span class="key">Buildings</span><span>\${p.buildingsReq ? fmtMoney(p.buildingsSI) : 'Not required'}</span></div>
+        <div class="detail-row"><span class="key">Owned/Leased</span><span>\${fmt(p.ownedLeased)}</span></div>
+        <div class="detail-row"><span class="key">Contents</span><span>\${p.contentsReq ? fmtMoney(p.contentsSI) : 'Not required'}</span></div>
+        <div class="detail-row"><span class="key">Computer Equip</span><span>\${fmtMoney(p.computerSI)}</span></div>
+      </div>
+    </div>
+    <div class="detail-grid" style="margin-bottom:16px">
+      <div class="detail-section"><h4>Equipment &amp; Money</h4>
+        <div class="detail-row"><span class="key">Equipment</span><span>\${p.equipReq ? fmtMoney(p.equipSI) : 'Not required'}</span></div>
+        <div class="detail-row"><span class="key">Vaccine Storage</span><span>\${fmtMoney(p.vaccineSI)}</span></div>
+        <div class="detail-row"><span class="key">Money on Premises</span><span>\${fmtMoney(p.moneyOnPremises)}</span></div>
+        <div class="detail-row"><span class="key">Money in Transit</span><span>\${fmtMoney(p.moneyInTransit)}</span></div>
+      </div>
+      <div class="detail-section"><h4>Glass &amp; Locum</h4>
+        <div class="detail-row"><span class="key">Glass Cover</span><span>\${p.glassReq ? 'Yes' : 'Not required'}</span></div>
+        <div class="detail-row"><span class="key">External Glass</span><span>\${fmtMoney(p.externalGlass)}</span></div>
+        <div class="detail-row"><span class="key">Locum Cover</span><span>\${p.locumReq ? 'Yes' : 'Not required'}</span></div>
+        <div class="detail-row"><span class="key">Weekly Benefit</span><span>\${fmtMoney(p.locumWeekly)}</span></div>
+      </div>
+    </div>
+    <div class="quote-nav" style="margin-top:16px">
+      <button class="btn btn-secondary" onclick="premisesStepPrev(8)">← Locum</button>
+      <button class="btn btn-primary" onclick="savePremisesAndReturn()">Save Premises ${currentPremisesIdx + 1} ✓</button>
+    </div>
+  \`;
+}
+
+function savePremisesAndReturn() {
+  collectPremisesStep(8);
+  const p = premisesData[currentPremisesIdx];
+  // Mark all steps as complete
+  p.stepsComplete = [1,2,3,4,5,6,7,8];
+  // Save premises to quote on server
+  savePremisesToQuote();
+  backToPremisesSelect();
+}
+
+async function savePremisesToQuote() {
+  if (!editingQuoteId) return;
+  await api('PUT', '/api/quotes/' + editingQuoteId, {
+    ...quoteData,
+    premises: premisesData,
+  });
+}
+
+async function finishAllPremises() {
+  await savePremisesToQuote();
+  await loadQuotesPage();
+  showPage('quotes');
+}
+
+// ── Premises Activity Options ─────────────────────────────────────────────────
+const ACTIVITY_OPTIONS = ["None","G.P Practice/Surgery","Dental Practice/Surgery",
+  "NHS General Hospital","Private General Hospital","Other medical","Residential",
+  "Other clerical","Other retail","Café/Coffee/Tea Shop (no DFF)",
+  "Other catering/restaurant/takeaway","Other wholesale","Other manufacturing","Other",
+  "Acupuncture","Aromatherapy","Arts therapy","Audiology","Beauty therapy","Chiropody",
+  "Chiropractic","Clinical psychology","Complementary medicine","Complementary therapy",
+  "Counselling","Dental hygiene","Dental nursing","Dietician","Fitness instruction",
+  "Hairdressing","Holistic therapy","Hypnotherapy","Life coaching","Management coaching",
+  "Massage therapy","Nursing","Occupational therapy","Optician","Optometrist","Orthoptics",
+  "Osteopathy","Paramedic","Personal training","Pharmacy","Physiotherapy",
+  "Pilates instruction","Podiatry","Prosthetist","Psychology","Psychotherapy",
+  "Radiography","Reflexology","Speech and language therapy","Sports therapy","Tatooist",
+  "Veterinary","Veterinary nursing","Yoga instruction","Unoccupied PDHs",
+  "Unoccupied Clinic/Office","Unoccupied Shops","Unoccupied Modern Industrial Units"];
+
+const CARRIED_OUT_BY_OPTIONS = ["You","Your Tenant","Landlord/Tenant"];
+
+function activityOptionsHTML(selected) {
+  return ACTIVITY_OPTIONS.map(o =>
+    `<option value="${o}"${o===selected?' selected':''}>${o}</option>`
+  ).join('');
+}
+
+function carriedOutByHTML(selected) {
+  return CARRIED_OUT_BY_OPTIONS.map(o =>
+    `<option value="${o}"${o===selected?' selected':''}>${o}</option>`
+  ).join('');
+}
+
+function updateActivityTotal() {
+  let total = 0;
+  for (let i = 0; i < 8; i++) {
+    const el = document.getElementById('ps-act-pct-' + i);
+    if (el) total += parseFloat(el.value) || 0;
+  }
+  const display = document.getElementById('ps-act-total');
+  if (display) {
+    display.textContent = total + '%';
+    display.style.color = total === 100 ? '#22c55e' : '#dc2626';
+  }
+}
+
+function getActivityRows() {
+  return Array.from({length: 8}, (_, i) => ({
+    activity: document.getElementById('ps-act-desc-' + i)?.value || 'None',
+    carriedOutBy: document.getElementById('ps-act-by-' + i)?.value || 'You',
+    pct: parseFloat(document.getElementById('ps-act-pct-' + i)?.value) || 0,
+  }));
+}
+
+function populateActivityRows(rows) {
+  if (!rows || !rows.length) return;
+  rows.forEach((r, i) => {
+    const desc = document.getElementById('ps-act-desc-' + i);
+    const by   = document.getElementById('ps-act-by-' + i);
+    const pct  = document.getElementById('ps-act-pct-' + i);
+    if (desc) desc.value = r.activity || 'None';
+    if (by)   by.value   = r.carriedOutBy || 'You';
+    if (pct)  pct.value  = r.pct || 0;
+  });
+  updateActivityTotal();
+}
+
+// ── Premises Step 2 — Declarations ───────────────────────────────────────────
+function handlePS2NoneOfBelow() { checkPS2Warning(); }
+function handlePS2DeclChange()  { checkPS2Warning(); }
+
+function checkPS2Warning() {
+  const noneVal = document.getElementById('ps2-noneOfBelow')?.value;
+  const warning = document.getElementById('ps2-decl-warning');
+  if (!warning) return;
+  if (noneVal === 'Yes') {
+    const anyYes = ['ps2-d1','ps2-d2','ps2-d3','ps2-d4','ps2-d5','ps2-d6','ps2-d7']
+      .some(id => document.getElementById(id)?.value === 'Yes');
+    warning.style.display = anyYes ? 'block' : 'none';
+  } else {
+    warning.style.display = 'none';
+  }
+}
+
+// ── Premises Step 3 — Construction Options ───────────────────────────────────
+const ROOF_OPTIONS = ["Please select","N/A","Tile","Slate","Asphalt on Concrete (flat)",
+  "Concrete (flat)","Felt on Timber","Membrane on Timber","Fibreglass on Timber","Lead (flat)",
+  "Intergrated Solar Panels","Glass","Plastic sheet","Corrugated Iron","Metal- Profiled Sheet",
+  "Asbestos Sheet","Shingle- wood &or felt","Timber &or Wood","Thatch - Fibre","Thatch - Reed",
+  "Green Roof","Stone Tile/slab (pitched)","Composite Panels \u2013 LPC approved",
+  "Composite Panels \u2013 Not LPC approved","Prefabricated Building - Combustible Materials",
+  "Prefabricated Building - Non Combustible Materials","Other"];
+
+const WALL_OPTIONS = ["N/A","Asbestos","Brick &or Block","Concrete","Flint","Stone","Cob",
+  "Composite Panels \u2013 LPC approved","Composite Panels \u2013 Not LPC approved",
+  "Metal Frame & Brick clad","Metal Frame & Metal Sheet clad","Metal Frame & Timber Clad",
+  "Corrugated Iron","Fibreglass","Glass & frame","Plastic & frame",
+  "Timber Frame & Brick Clad","Timber Frame & Slate Hung","Timber Frame & Tile Hung",
+  "Timber Frame & Timber Clad","Timber & Plaster","Wattle & Daub",
+  "Prefabricated Building - Combustible Materials",
+  "Prefabricated Building - Non Combustible Materials","Other"];
+
+const FLOOR_OPTIONS = ["N/A","Timber","Concrete Ground Floor","Concrete Upper Floor",
+  "High Alumina Cement","Stone","Metal","Mixed - Concrete And Timber/Metal",
+  "Prefabricated Building - Combustible Materials",
+  "Prefabricated Building - Non Combustible Materials"];
+
+function constructionOptionsHTML(opts, selected) {
+  return opts.map(o => `<option value="${o}"${o===selected?' selected':''}>${o}</option>`).join('');
+}
+
+function updateConstructionTotal(prefix) {
+  let total = 0;
+  for (let i = 0; i < 3; i++) {
+    const el = document.getElementById(prefix + '-pct-' + i);
+    if (el) total += parseFloat(el.value) || 0;
+  }
+  const display = document.getElementById(prefix + '-total');
+  if (display) {
+    display.textContent = total + '%';
+    display.style.color = total === 100 ? '#22c55e' : '#dc2626';
+  }
+}
+
+function getConstructionRows(prefix, opts) {
+  return Array.from({length: 3}, (_, i) => ({
+    type: document.getElementById(prefix + '-type-' + i)?.value || opts[0],
+    pct:  parseFloat(document.getElementById(prefix + '-pct-' + i)?.value) || 0,
+  }));
+}
+
+// ── Premises Endorsements Data ────────────────────────────────────────────────
+const PREMISES_ENDORSEMENTS = [{"code": "NPACom53", "name": "Deletion of Average", "text": "The Average Condition does not apply to this policy."}, {"code": "NPAInt03", "name": "Note of Interest – First Loss Payee", "text": "It is noted that of have an interest in the Insurance by (the section of) Your Policy as Lender and First Loss Payee.  (Omit bracketed parts if required)"}, {"code": "NPAInt04", "name": "Note of Interest – First Loss Payee and Non Vitiation", "text": "It is noted that of have an interest in the Insurance by (the section of) Your Policy as Lender and First Loss Payee.  This insurance policy will not be cancelled for non-payment of premium without 14 days notice being given to the noted Lendor.  (Omit bracketed parts if required)."}, {"code": "NPASec03", "name": "Alarm Specification", "text": "The minimum specification required for the alarm fitted at the insured Premises graded under EN050131-1, is Grade 2."}, {"code": "NPAExs03b", "name": "Co-Insurance: Shared Alarm", "text": "You will be responsible for 50% of any Damage when a claim is made for theft with under the Contents section of Your Policy, and the Special Condition regarding the Intruder Alarm has not been complied with by other occupants of the Premises.. You will also be responsible for a minimum of £5,000 for every claim made."}, {"code": "NPATre08", "name": "Exorcism", "text": "This policy excludes all cover in respect of spirit release and exorcism. All other terms, conditions, exclusions and limitations in this policy remain unaltered."}, {"code": "NPASec06", "name": "Alarm Installation", "text": "It is a condition of Your Policy that any requirements made to install an alarm are completed to Our satisfaction within 60 days of Your notification.  During the 60 day period between Your notification and the alarm installation the policy excess for Theft is increased to £5,000.  If after the 60 day period the premises is not alarmed to the required specification cover for Theft is excluded."}, {"code": "NPAPHe02", "name": "Heating Condition", "text": "It is a condition precedent to liability that: A. The Premises are not artificially heated by any form of heating other than fixed gas, oil or electrical heating system, portable electric fan heater, portable electric oil filled radiator, portable LPG heater, portable paraffin heater, fixed open fire with flue."}, {"code": "NPALia03b", "name": "Exclusion of Advice and Treatment", "text": "We will not indemnify You under the Liability section of Your Policy for accidental Injury to any person not being an Employee or accidental Damage to any property arising out of: a) the giving of advice or treatment. b) Medical Advice & Treatment"}, {"code": "NPAIPha20b", "name": "Animals in custody or control", "text": "Under Buildings & Contents - the exclusion in relation to animals on premises doesn't not apply with the exception of animals owned by the Insured. The maximum sum insured is £50,000 in total not exceeding £25,000 any one animal."}, {"code": "NPAGen03", "name": "Composite Panel Inspection", "text": "It is a condition precedent to the liability of the Company that any composite panels at the premises are inspected every 5 years by a competent person, and any remedial work necessary is undertaken."}, {"code": "NPAGen02", "name": "Asbestos Roof Inspection", "text": "It is a condition precedent to the liability of the Company that the asbestos roof at the premises is inspected every 5 years by a competent person, and any remedial work necessary is undertaken."}, {"code": "NPAGen01", "name": "Flat Roof Inspection", "text": "It is a condition precedent to the liability of the Company that any flat roof at the premises, which you are responsible to maintain, is inspected every 5 years by a competent person, and any remedial work necessary is undertaken."}, {"code": "NPAExs08", "name": "Increased excess £250 Loaned/Hired Medical Equipment", "text": "The policy excess is increased to £250 in respect of theft of the loaned and or hired equipment by the recipient when insured as All Risk item."}, {"code": "NPAExs07", "name": "Increased excess £2000 ADM away", "text": "The policy excess is increased to £2000 in respect of the Automated Dispensing Machine located externally and insured as All Risk item."}, {"code": "NPAExs06", "name": "Increased excess £1000 External ADM", "text": "The policy excess is increased to £1000 in respect of the Automated Dispensing Machine located on the forecourt of the Pharmacy Premises."}, {"code": "NPAExs04", "name": "Electrical Certificate Increased Excess", "text": "It is a condition of Your Policy that you provide sight of the documentation providing confirmation that the fixed electrical installation has been inspected and certified as safe by a competent person. To Our satisfaction within 60 days of inception of the Policy. Until the certificate is obtained an increased excess of £500 will apply for claims occurring from fire."}, {"code": "NPABIn01", "name": "Uninsured Working Expenses", "text": "The net cost of Stock purchased during the indemnity period."}, {"code": "NPASec01", "name": "Alarm Condition", "text": "You will only be covered for theft, attempted theft or arson when an alarm is installed and You comply with the Intruder Alarm Special Condition of Your Policy."}];
+
+// ── Premises Endorsements (PS8) ───────────────────────────────────────────────
+function filterEndorsements() {
+  const q = (document.getElementById('ps8-search')?.value || '').toLowerCase();
+  document.querySelectorAll('.ps8-row').forEach(row => {
+    const name = row.dataset.name || '';
+    const code = (row.dataset.code || '').toLowerCase();
+    const text = row.dataset.text || '';
+    row.style.display = (!q || name.includes(q) || code.includes(q) || text.includes(q)) ? '' : 'none';
+  });
+}
+
+function toggleEndorsement(code) {
+  const chk = document.getElementById('ps8-chk-' + code);
+  if (!chk) return;
+  chk.checked = !chk.checked;
+  // Highlight selected rows
+  const row = chk.closest('.ps8-row');
+  if (row) row.style.background = chk.checked ? '#f0fdf4' : '';
+}
+
+function initPS8Selections() {
+  const p = premisesData[currentPremisesIdx] || {};
+  const selected = p.endorsements || [];
+  PREMISES_ENDORSEMENTS.forEach(e => {
+    const chk = document.getElementById('ps8-chk-' + e.code);
+    if (!chk) return;
+    chk.checked = selected.includes(e.code);
+    const row = chk.closest('.ps8-row');
+    if (row) row.style.background = chk.checked ? '#f0fdf4' : '';
+  });
 }
 
 init();

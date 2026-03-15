@@ -426,6 +426,8 @@ function normaliseQuote(r) {
     anticipatedTurnover: r.anticipated_turnover,
     // Step 7
     numPremises: r.num_premises, country: r.country,
+    // Premises
+    premises: r.premises || [],
     // Meta
     premium: r.premium, validUntil: r.valid_until ? r.valid_until.toISOString().split('T')[0] : null,
     createdAt: r.created_at, updatedAt: r.updated_at,
@@ -464,7 +466,7 @@ app.post('/api/quotes', requireAuth, async (req, res) => {
         bi_cover_type, bi_annual_sum_insured, bi_cover_period, bi_book_debt_cover,
         indemnity_limit, offsite_clinics, terrorism_cover, material_damage,
         non_selection_rule, terrorism_postcode, anticipated_turnover,
-        num_premises, country, premium, valid_until, created_by
+        num_premises, country, premises, premium, valid_until, created_by
       ) VALUES (
         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,
         $19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,
@@ -486,7 +488,7 @@ app.post('/api/quotes', requireAuth, async (req, res) => {
         d.indemnityLimit || '£5,000,000', d.offsiteClinics || 0,
         d.terrorismCover || 'No', d.materialDamage || null,
         d.nonSelectionRule || null, d.terrorismPostcode || null, d.anticipatedTurnover || 0,
-        d.numPremises || 1, d.country || 'UK',
+        d.numPremises || 1, d.country || 'UK', JSON.stringify(d.premises || []),
         d.premium || null, d.validUntil || null, req.session.userId
       ]
     );
@@ -512,9 +514,9 @@ app.put('/api/quotes/:id', requireAuth, async (req, res) => {
         bi_cover_type=$35, bi_annual_sum_insured=$36, bi_cover_period=$37, bi_book_debt_cover=$38,
         indemnity_limit=$39, offsite_clinics=$40, terrorism_cover=$41, material_damage=$42,
         non_selection_rule=$43, terrorism_postcode=$44, anticipated_turnover=$45,
-        num_premises=$46, country=$47, premium=$48, valid_until=$49,
+        num_premises=$46, country=$47, premises=$48, premium=$49, valid_until=$50,
         updated_at=NOW()
-      WHERE id=$50 RETURNING *`,
+      WHERE id=$51 RETURNING *`,
       [
         d.status || 'draft', d.renewalDate || null, d.quoteType || null, d.previousInsurer || null,
         d.fullName || null, d.contactName || null, d.telephone || null, d.mobile || null, d.email || null,
@@ -530,7 +532,7 @@ app.put('/api/quotes/:id', requireAuth, async (req, res) => {
         d.indemnityLimit || '£5,000,000', d.offsiteClinics || 0,
         d.terrorismCover || 'No', d.materialDamage || null,
         d.nonSelectionRule || null, d.terrorismPostcode || null, d.anticipatedTurnover || 0,
-        d.numPremises || 1, d.country || 'UK',
+        d.numPremises || 1, d.country || 'UK', JSON.stringify(d.premises || []),
         d.premium || null, d.validUntil || null,
         req.params.id
       ]
