@@ -171,8 +171,27 @@ app.get('/api/customers', requireAuth, async (req, res) => {
 });
 app.post('/api/customers', requireAuth, async (req, res) => {
   try {
-    const { type, name, email, phone, contactName, contactMobile } = req.body;
-    const result = await query('INSERT INTO customers (id,type,name,email,phone,contact_name,contact_mobile) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *', [uuidv4(),type,name,email,phone,contactName||null,contactMobile||null]);
+    const {
+      type, name, email, phone, contactName, contactMobile,
+      practiceName, status, ernNumber, ernExempt, yearEstablished, numSubsidiaries,
+      corrAddressLine1, corrAddressLine2, corrCity, corrCounty, corrCountry, corrPostcode,
+      businessDescription, entityType
+    } = req.body;
+    const result = await query(
+      `INSERT INTO customers
+        (id,type,name,email,phone,contact_name,contact_mobile,
+         practice_name,status,ern_number,ern_exempt,year_established,num_subsidiaries,
+         corr_address_line1,corr_address_line2,corr_city,corr_county,corr_country,corr_postcode,
+         business_description,entity_type)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
+       RETURNING *`,
+      [uuidv4(),type,name,email,phone,contactName||null,contactMobile||null,
+       practiceName||null,status||'active',ernNumber||null,ernExempt||'no',
+       yearEstablished||null,numSubsidiaries!=null?numSubsidiaries:0,
+       corrAddressLine1||null,corrAddressLine2||null,corrCity||null,corrCounty||null,
+       corrCountry||'United Kingdom',corrPostcode||null,
+       businessDescription||null,entityType||null]
+    );
     const c = result.rows[0];
     await auditLog(req.session.userId, req.session.name, 'created', 'Customer', c.id, `Created customer "${c.name}"`);
     res.status(201).json(normaliseCustomer(c));
@@ -180,15 +199,34 @@ app.post('/api/customers', requireAuth, async (req, res) => {
 });
 app.put('/api/customers/:id', requireAuth, async (req, res) => {
   try {
-    const { type, name, email, phone, contactName, contactMobile } = req.body;
+    const {
+      type, name, email, phone, contactName, contactMobile,
+      practiceName, status, ernNumber, ernExempt, yearEstablished, numSubsidiaries,
+      corrAddressLine1, corrAddressLine2, corrCity, corrCounty, corrCountry, corrPostcode,
+      businessDescription, entityType
+    } = req.body;
     const before = (await query('SELECT * FROM customers WHERE id=$1', [req.params.id])).rows[0];
-    const result = await query('UPDATE customers SET type=$1,name=$2,email=$3,phone=$4,contact_name=$5,contact_mobile=$6 WHERE id=$7 RETURNING *', [type,name,email,phone,contactName||null,contactMobile||null,req.params.id]);
+    const result = await query(
+      `UPDATE customers SET
+        type=$1,name=$2,email=$3,phone=$4,contact_name=$5,contact_mobile=$6,
+        practice_name=$7,status=$8,ern_number=$9,ern_exempt=$10,year_established=$11,num_subsidiaries=$12,
+        corr_address_line1=$13,corr_address_line2=$14,corr_city=$15,corr_county=$16,
+        corr_country=$17,corr_postcode=$18,business_description=$19,entity_type=$20
+       WHERE id=$21 RETURNING *`,
+      [type,name,email,phone,contactName||null,contactMobile||null,
+       practiceName||null,status||'active',ernNumber||null,ernExempt||'no',
+       yearEstablished||null,numSubsidiaries!=null?numSubsidiaries:0,
+       corrAddressLine1||null,corrAddressLine2||null,corrCity||null,corrCounty||null,
+       corrCountry||'United Kingdom',corrPostcode||null,
+       businessDescription||null,entityType||null,
+       req.params.id]
+    );
     if (!result.rows.length) return res.status(404).json({ error: 'Not found' });
     const c = result.rows[0];
     const changes = before ? diffFields(
-      { type: before.type, name: before.name, email: before.email, phone: before.phone, contact: before.contact_name, mobile: before.contact_mobile },
-      { type: c.type, name: c.name, email: c.email, phone: c.phone, contact: c.contact_name, mobile: c.contact_mobile },
-      { type: 'Type', name: 'Name', email: 'Email', phone: 'Phone', contact: 'Contact Name', mobile: 'Contact Mobile' }
+      { name: before.name, email: before.email, phone: before.phone, practice: before.practice_name, status: before.status },
+      { name: c.name, email: c.email, phone: c.phone, practice: c.practice_name, status: c.status },
+      { name: 'Name', email: 'Email', phone: 'Phone', practice: 'Practice Name', status: 'Status' }
     ) : null;
     const desc = `Updated customer "${c.name}"${changes ? ' — ' + changes : ''}`;
     await auditLog(req.session.userId, req.session.name, 'updated', 'Customer', c.id, desc);
@@ -1346,7 +1384,33 @@ app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // ─── Normalisers ──────────────────────────────────────────────────────────────
-function normaliseCustomer(r) { return { id: r.id, type: r.type, name: r.name, email: r.email, phone: r.phone, contactName: r.contact_name || '', contactMobile: r.contact_mobile || '', createdAt: r.created_at }; }
+function normaliseCustomer(r) {
+  return {
+    id: r.id,
+    type: r.type,
+    name: r.name,
+    email: r.email,
+    phone: r.phone,
+    contactName: r.contact_name || '',
+    contactMobile: r.contact_mobile || '',
+    createdAt: r.created_at,
+    // PracticeCover fields
+    practiceName:        r.practice_name        || '',
+    status:              r.status               || 'active',
+    ernNumber:           r.ern_number           || '',
+    ernExempt:           r.ern_exempt           || 'no',
+    yearEstablished:     r.year_established     || null,
+    numSubsidiaries:     r.num_subsidiaries     != null ? r.num_subsidiaries : 0,
+    corrAddressLine1:    r.corr_address_line1   || '',
+    corrAddressLine2:    r.corr_address_line2   || '',
+    corrCity:            r.corr_city            || '',
+    corrCounty:          r.corr_county          || '',
+    corrCountry:         r.corr_country         || 'United Kingdom',
+    corrPostcode:        r.corr_postcode        || '',
+    businessDescription: r.business_description || '',
+    entityType:          r.entity_type          || '',
+  };
+}
 function normaliseAddress(r) { return { id: r.id, customerId: r.customer_id, label: r.label, line1: r.line1, line2: r.line2, city: r.city, postcode: r.postcode }; }
 function normaliseTrade(r) { return { id: r.id, status: r.status, companyName: r.company_name, companyAddress: r.company_address, contactName: r.contact_name, contactNumber: r.contact_number, contactEmail: r.contact_email, services: r.services || [] }; }
 function normaliseJob(r, tradeIds, communications) {
