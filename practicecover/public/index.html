@@ -608,6 +608,65 @@
     #topbar h2 { font-size: 1rem; }
   }
 
+
+  /* ── Quote Wizard ── */
+  .quote-wizard { max-width: 960px; margin: 0 auto; }
+  .quote-progress { display: flex; align-items: center; margin-bottom: 28px; background: var(--white); border-radius: 12px; padding: 16px 20px; border: 1px solid var(--border); overflow-x: auto; gap: 0; }
+  .qp-step { display: flex; align-items: center; flex: 1; min-width: 80px; }
+  .qp-step:last-child { flex: none; }
+  .qp-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; flex-shrink: 0; border: 2px solid var(--border); background: var(--white); color: var(--mist); transition: all 0.2s; }
+  .qp-step.done .qp-dot { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .qp-step.active .qp-dot { background: var(--sidebar); border-color: var(--sidebar); color: #fff; }
+  .qp-label { font-size: 0.72rem; color: var(--mist); margin-left: 8px; font-weight: 500; white-space: nowrap; }
+  .qp-step.active .qp-label { color: var(--ink); font-weight: 700; }
+  .qp-step.done .qp-label { color: var(--accent); }
+  .qp-line { flex: 1; height: 2px; background: var(--border); margin: 0 8px; }
+  .qp-step.done + .qp-step .qp-line,
+  .qp-line.done { background: var(--accent); }
+  .quote-card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px; }
+  .quote-card-header { padding: 14px 20px; background: var(--sidebar); color: #fff; display: flex; align-items: center; gap: 10px; }
+  .quote-card-header h4 { font-size: 0.9rem; font-weight: 700; color: #fff; }
+  .quote-card-header .qch-sub { font-size: 0.78rem; color: rgba(255,255,255,0.7); }
+  .quote-card-body { padding: 20px; }
+  .quote-nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 0 0; margin-top: 8px; border-top: 1px solid var(--border); }
+  .quote-step { display: none; }
+  .quote-step.active { display: block; }
+  .qf-section-title { font-size: 0.7rem; font-weight: 700; color: var(--mist); letter-spacing: 1.5px; text-transform: uppercase; margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .qf-section-title:first-child { margin-top: 0; }
+  .mandatory-note { font-size: 0.78rem; color: var(--red); text-align: right; margin-bottom: 12px; }
+  .apply-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--sidebar); color: #fff; border: none; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: "Inter", sans-serif; transition: all 0.15s; }
+  .apply-btn:hover { background: var(--ink2); }
+  .customer-select-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 16px; padding: 14px; background: var(--surface); border-radius: 10px; border: 1px solid var(--border); }
+  .customer-select-row .form-group { flex: 1; margin: 0; }
+  .review-section { margin-bottom: 20px; }
+  .review-section h4 { font-size: 0.78rem; font-weight: 700; color: var(--mist); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .review-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.87rem; border-bottom: 1px solid var(--surface); }
+  .review-row:last-child { border-bottom: none; }
+  .review-row .rk { color: var(--slate); font-weight: 500; }
+  .review-row .rv { color: var(--ink); font-weight: 600; text-align: right; max-width: 60%; }
+  .quote-status-badge { display: inline-flex; align-items: center; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+  .qsb-draft { background: #f3f4f6; color: #6b7280; }
+  .qsb-quoted { background: #dbeafe; color: #1e40af; }
+  .qsb-accepted { background: #dcfce7; color: #166534; }
+  .qsb-declined { background: #fee2e2; color: #991b1b; }
+  .qsb-bound { background: #fef3c7; color: #92400e; }
+  .premium-box { background: linear-gradient(135deg, var(--sidebar) 0%, #1a4a6e 100%); border-radius: 12px; padding: 20px 24px; color: #fff; margin-top: 16px; }
+  .premium-box .pb-label { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+  .premium-box .pb-value { font-family: "Raleway", sans-serif; font-size: 2.4rem; font-weight: 800; color: #fff; }
+  .premium-box .pb-sub { font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 4px; }
+  .cover-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--surface); }
+  .cover-toggle-row:last-child { border-bottom: none; }
+  .cover-toggle-row .ct-label { font-size: 0.88rem; font-weight: 600; color: var(--ink); }
+  .cover-toggle-row .ct-sub { font-size: 0.78rem; color: var(--mist); margin-top: 2px; }
+  .toggle-switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 24px; cursor: pointer; transition: all 0.2s; }
+  .toggle-slider:before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: all 0.2s; }
+  input:checked + .toggle-slider { background: var(--accent); }
+  input:checked + .toggle-slider:before { transform: translateX(18px); }
+  .indent-fields { padding-left: 16px; border-left: 3px solid var(--border); margin-top: 10px; display: none; }
+  .indent-fields.show { display: block; }
+  label .req { color: var(--red); margin-left: 2px; }
 </style>
 </head>
 <body>
@@ -663,6 +722,7 @@
       <a class="active" onclick="showPage('dashboard')" data-page="dashboard"><span class="icon">📊</span> Dashboard</a>
       <div class="nav-section">Management</div>
       <a onclick="showPage('customers')" data-page="customers"><span class="icon">🏥</span> Practices</a>
+      <a onclick="showPage('quotes')" data-page="quotes"><span class="icon">📋</span> Quotes</a>
       <a onclick="showPage('log')" data-page="log" class="admin-only" style="display:none"><span class="icon">📋</span> Audit Log</a>
       <div class="nav-section admin-only" style="display:none">Admin</div>
       <a onclick="showPage('users')" data-page="users" class="admin-only" style="display:none"><span class="icon">🔑</span> Users</a>
@@ -701,6 +761,635 @@
           <tbody id="recent-practices"></tbody></table>
         </div>
       </div>
+
+
+      <!-- QUOTES -->
+      <div class="page" id="page-quotes">
+        <div class="card">
+          <div class="card-header">
+            <div class="search-bar"><input type="text" placeholder="Search quotes…" id="quote-search" oninput="renderQuotesList()"></div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="quote-status-filter" onchange="renderQuotesList()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
+                <option value="">All Statuses</option>
+                <option value="draft">Draft</option>
+                <option value="quoted">Quoted</option>
+                <option value="accepted">Accepted</option>
+                <option value="declined">Declined</option>
+                <option value="bound">Bound</option>
+              </select>
+              <select id="quote-type-filter" onchange="renderQuotesList()" style="padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85rem">
+                <option value="">All Types</option>
+                <option value="New Business">New Business</option>
+                <option value="Renewal">Renewal</option>
+                <option value="Mid-term adjustment(MTA)">MTA</option>
+                <option value="Cancellation">Cancellation</option>
+              </select>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>Quote Ref</th><th>Practice / Client</th><th>Type</th><th>Renewal Date</th><th>Status</th><th>Premium</th><th>Created</th><th></th></tr></thead>
+            <tbody id="quotes-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- QUOTE WIZARD -->
+      <div class="page" id="page-quote-new">
+        <div class="quote-wizard">
+
+          <!-- Progress bar -->
+          <div class="quote-progress" id="quote-progress"></div>
+
+          <!-- Step 1: Client Details & Correspondence Address -->
+          <div class="quote-step active" id="qstep-1">
+            <div class="quote-card">
+              <div class="quote-card-header">
+                <div>
+                  <h4>Step 1 of 7 — Client Details and Correspondence Address</h4>
+                  <div class="qch-sub">1.1 Enter correspondence details for this policy or click 'Apply Customer Details'</div>
+                </div>
+              </div>
+              <div class="quote-card-body">
+                <div class="mandatory-note">* Mandatory fields</div>
+
+                <!-- Apply from customer -->
+                <div class="customer-select-row">
+                  <div class="form-group">
+                    <label>Apply from existing Practice record</label>
+                    <select id="q-customer-select">
+                      <option value="">— Select a Practice to auto-fill —</option>
+                    </select>
+                  </div>
+                  <button class="apply-btn" onclick="applyCustomerToQuote()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Apply Customer Details
+                  </button>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+                  <!-- Left -->
+                  <div>
+                    <div class="qf-section-title">Policy Information</div>
+                    <div class="form-grid cols-1" style="gap:10px">
+                      <div class="form-group">
+                        <label>Renewal Date <span class="req">*</span></label>
+                        <input type="date" id="q1-renewalDate">
+                      </div>
+                      <div class="form-group">
+                        <label>Quote Type <span class="req">*</span></label>
+                        <select id="q1-quoteType">
+                          <option value="">— Select —</option>
+                          <option value="Renewal">Renewal</option>
+                          <option value="New Business">New Business</option>
+                          <option value="Mid-term adjustment(MTA)">Mid-term adjustment (MTA)</option>
+                          <option value="Cancellation">Cancellation</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label>Previous Insurer <span class="req">*</span></label>
+                        <select id="q1-previousInsurer">
+                          <option value="">— Select —</option>
+                          <option>Ageas</option><option>AIG</option><option>Allianz</option>
+                          <option>Aviva</option><option>AXA</option><option>Covea</option>
+                          <option>Folgate</option><option>Hiscox</option><option>RSA</option>
+                          <option>Zurich</option><option>Other</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="qf-section-title">Contact Details</div>
+                    <div class="form-grid cols-1" style="gap:10px">
+                      <div class="form-group"><label>Full Name <span class="req">*</span></label><input type="text" id="q1-fullName" placeholder="Input details…"></div>
+                      <div class="form-group"><label>Name of Contact</label><input type="text" id="q1-contactName" placeholder="Input details…"></div>
+                      <div class="form-group"><label>Telephone Number <span class="req">*</span></label><input type="tel" id="q1-telephone" placeholder="Input details…"></div>
+                      <div class="form-group"><label>Mobile Number</label><input type="tel" id="q1-mobile" placeholder="Input details…"></div>
+                      <div class="form-group"><label>Email Address <span class="req">*</span></label><input type="email" id="q1-email" placeholder="Input details…"></div>
+                    </div>
+                  </div>
+                  <!-- Right -->
+                  <div>
+                    <div class="qf-section-title">Correspondence Address</div>
+                    <div class="form-grid cols-1" style="gap:10px">
+                      <div class="form-group"><label>Address Name / Number</label><input type="text" id="q1-addrName" placeholder="Input details…"></div>
+                      <div class="form-group"><label>First Line <span class="req">*</span></label><input type="text" id="q1-addrLine1" placeholder="Input details…"></div>
+                      <div class="form-group"><label>Second Line</label><input type="text" id="q1-addrLine2" placeholder="Input details…"></div>
+                      <div class="form-group"><label>Town <span class="req">*</span></label><input type="text" id="q1-addrTown" placeholder="Input details…"></div>
+                      <div class="form-group"><label>County</label><input type="text" id="q1-addrCounty" placeholder="Input details…"></div>
+                      <div class="form-group"><label>Country <span class="req">*</span></label>
+                        <select id="q1-addrCountry">
+                          <option value="United Kingdom">United Kingdom</option>
+                          <option value="England">England</option>
+                          <option value="Scotland">Scotland</option>
+                          <option value="Wales">Wales</option>
+                          <option value="Northern Ireland">Northern Ireland</option>
+                          <option value="Republic of Ireland">Republic of Ireland</option>
+                        </select>
+                      </div>
+                      <div class="form-group"><label>Postcode <span class="req">*</span></label><input type="text" id="q1-addrPostcode" placeholder="Input details…" style="text-transform:uppercase"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="quote-nav">
+                  <button class="btn btn-secondary" onclick="showPage('quotes')">Cancel</button>
+                  <button class="btn btn-primary" onclick="quoteNext(1)">Next: Declarations →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Declarations -->
+          <div class="quote-step" id="qstep-2">
+            <div class="quote-card">
+              <div class="quote-card-header">
+                <div><h4>Step 2 of 7 — Declarations</h4><div class="qch-sub">Please answer all declaration questions honestly and accurately</div></div>
+              </div>
+              <div class="quote-card-body">
+
+                <!-- 2.1 Declarations -->
+                <div class="qf-section-title">2.1 Select any of the following that apply to any proposer, director, partner, or any person with a financial interest in the business, if they have ever, either personally or in any business capacity</div>
+
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+                  <select id="q2-noneOfBelow" onchange="handleNoneOfBelow()" style="width:100px;padding:8px 10px;border:1.5px solid var(--sidebar);border-radius:6px;font-weight:600;color:var(--sidebar);background:var(--white)">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                  <span style="font-size:0.88rem;font-weight:600;color:var(--slate)">None of below</span>
+                </div>
+
+                <div id="q2-declarations-list" style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+                  <div class="decl-row" style="display:flex;align-items:center;background:var(--surface)">
+                    <select id="q2-decl1" onchange="handleDeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
+                      <option value="No">No</option><option value="Yes">Yes</option>
+                    </select>
+                    <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink)">had any convictions or criminal offences which are not spent under the Rehabilitation of Offenders Act or has any prosecutions pending</span>
+                  </div>
+                  <div class="decl-row" style="display:flex;align-items:center;border-top:1px solid var(--border)">
+                    <select id="q2-decl2" onchange="handleDeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
+                      <option value="No">No</option><option value="Yes">Yes</option>
+                    </select>
+                    <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink)">been declared bankrupt or insolvent, or been the subject of bankruptcy or insolvency proceedings</span>
+                  </div>
+                  <div class="decl-row" style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
+                    <select id="q2-decl3" onchange="handleDeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
+                      <option value="No">No</option><option value="Yes">Yes</option>
+                    </select>
+                    <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink)">received a county court judgement in respect of debt, or entered into an individual or company voluntary arrangement</span>
+                  </div>
+                  <div class="decl-row" style="display:flex;align-items:center;border-top:1px solid var(--border)">
+                    <select id="q2-decl4" onchange="handleDeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
+                      <option value="No">No</option><option value="Yes">Yes</option>
+                    </select>
+                    <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink)">had an insurance proposal refused or declined, had insurance cancelled or its renewal refused, or had any special terms imposed</span>
+                  </div>
+                  <div class="decl-row" style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
+                    <select id="q2-decl5" onchange="handleDeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
+                      <option value="No">No</option><option value="Yes">Yes</option>
+                    </select>
+                    <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink)">had any losses or incidents giving rise to losses in the last 5 years</span>
+                  </div>
+                  <div class="decl-row" style="display:flex;align-items:center;border-top:1px solid var(--border)">
+                    <select id="q2-decl6" onchange="handleDeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
+                      <option value="No">No</option><option value="Yes">Yes</option>
+                    </select>
+                    <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink)">become aware of any circumstances that could give rise to a claim in the last 5 years</span>
+                  </div>
+                </div>
+
+                <!-- Warning banner -->
+                <div id="q2-decl-warning" style="display:none;margin-top:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 16px;font-size:0.85rem;color:#991b1b">
+                  ⚠️ You have selected 'None of below' but one or more declarations are set to 'Yes'. Please review your answers.
+                </div>
+
+                <!-- 2.2 Claims history -->
+                <div class="qf-section-title" style="margin-top:24px">2.2 How many years since last claim?</div>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+                  <select id="q2-yearsSinceLastClaim" style="width:120px;padding:8px 10px;border:1.5px solid var(--border);border-radius:6px">
+                    <option value="0">0</option>
+                    <option value="1-2">1-2</option>
+                    <option value="3">3</option>
+                    <option value="4 & above">4 &amp; above</option>
+                  </select>
+                  <span style="font-size:0.88rem;color:var(--slate)">Years since last claim</span>
+                </div>
+
+                <!-- Claims table -->
+                <div style="overflow-x:auto">
+                  <table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+                    <thead>
+                      <tr style="background:var(--surface)">
+                        <th style="padding:10px 12px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border);width:22%">Claim type</th>
+                        <th style="padding:10px 12px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border);width:16%">Date</th>
+                        <th style="padding:10px 12px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border);width:12%">Claim made</th>
+                        <th style="padding:10px 12px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border)">Description</th>
+                        <th style="padding:10px 12px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border);width:10%">Settled</th>
+                        <th style="padding:10px 12px;font-size:0.78rem;font-weight:600;color:var(--mist);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border);width:10%;text-align:right">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody id="q2-claims-tbody"></tbody>
+                  </table>
+                </div>
+                <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="addClaimRow()">+ Add Claim Row</button>
+
+                <div class="quote-nav">
+                  <button class="btn btn-secondary" onclick="quotePrev(2)">← Step 1</button>
+                  <button class="btn btn-primary" onclick="quoteNext(2)">Next: Physical Items →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Cover Choice - Physical Items -->
+          <div class="quote-step" id="qstep-3">
+            <div class="quote-card">
+              <div class="quote-card-header">
+                <div><h4>Step 3 of 7 — Cover Choice - Physical Items</h4><div class="qch-sub">Select the physical items cover options required for this policy</div></div>
+              </div>
+              <div class="quote-card-body">
+
+                <!-- 3.1 Physical Items -->
+                <div class="qf-section-title">3.1 Physical Items</div>
+                <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:24px">
+                  <div style="display:flex;align-items:center;background:var(--surface)">
+                    <div style="flex:1;padding:14px 16px">
+                      <div style="font-size:0.87rem;font-weight:600;color:var(--ink)">Do you require the inclusion of Day one cover (on all premises)?</div>
+                      <div style="font-size:0.82rem;color:var(--mist);margin-top:3px">This adds additional protection against inflation beyond the policy year</div>
+                    </div>
+                    <div style="padding:10px 16px;flex-shrink:0">
+                      <select id="q3-dayOneCover" style="width:220px;padding:10px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.88rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="0">0</option>
+                        <option value="20">20</option>
+                        <option value="30">30</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div style="display:flex;align-items:center;border-top:1px solid var(--border)">
+                    <div style="flex:1;padding:14px 16px">
+                      <div style="font-size:0.87rem;font-weight:600;color:var(--ink)">What excess is required?</div>
+                      <div style="font-size:0.82rem;color:var(--mist);margin-top:3px">This will apply to the cover for physical items &amp; business interruption</div>
+                    </div>
+                    <div style="padding:10px 16px;flex-shrink:0">
+                      <select id="q3-excess" style="width:220px;padding:10px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.88rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="£200">£200</option>
+                        <option value="£500">£500</option>
+                        <option value="£1,000">£1,000</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3.2 Fidelity -->
+                <div class="qf-section-title">3.2 Fidelity</div>
+                <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+                  <div style="display:flex;align-items:center">
+                    <div style="flex:1;padding:14px 16px">
+                      <div style="font-size:0.87rem;font-weight:600;color:var(--ink)">Do you want cover for Fidelity?</div>
+                      <div style="font-size:0.82rem;color:var(--mist);margin-top:3px">Fidelity protects against theft of money &amp; stock by employees.</div>
+                      <div style="font-size:0.82rem;color:var(--mist)">When covered we offer a limits from £10,000 to £50,000</div>
+                    </div>
+                    <div style="padding:10px 16px;flex-shrink:0">
+                      <select id="q3-fidelity" style="width:220px;padding:10px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.88rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="£0">£0</option>
+                        <option value="£10,000">£10,000</option>
+                        <option value="£15,000">£15,000</option>
+                        <option value="£20,000">£20,000</option>
+                        <option value="£25,000" selected>£25,000</option>
+                        <option value="£50,000">£50,000</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="quote-nav">
+                  <button class="btn btn-secondary" onclick="quotePrev(3)">← Step 2</button>
+                  <button class="btn btn-primary" onclick="quoteNext(3)">Next: Cover Continued →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Cover Choice Continued -->
+          <div class="quote-step" id="qstep-4">
+            <div class="quote-card">
+              <div class="quote-card-header">
+                <div><h4>Step 4 of 7 — Cover Choice Continued</h4><div class="qch-sub">Assault and Employee Personal Accident cover details</div></div>
+              </div>
+              <div class="quote-card-body">
+
+                <!-- 4.1 Assault -->
+                <div class="qf-section-title">4.1 Assault</div>
+                <p style="font-size:0.87rem;color:var(--slate);margin-bottom:24px">A range of benefits are included for Bodily Injury caused by theft, happening in the course of The Practice</p>
+
+                <!-- 4.2 Employee Personal Accident -->
+                <div class="qf-section-title">4.2 Employee Personal Accident</div>
+                <p style="font-size:0.87rem;color:var(--slate);margin-bottom:6px">Cover is available to pay Compensation to You for a range of Accidental Bodily Injuries to an Insured Person.</p>
+                <ul style="margin:0 0 6px 24px;font-size:0.85rem;color:var(--mist);line-height:1.9">
+                  <li>The amount of compensation payable is selectable in units for each category of Insured Person.</li>
+                  <li>You can either cover one or other of the Employee Types separately, or both.</li>
+                  <li>Cover is for all of the people in the categories selected</li>
+                  <li>Each unit is £5,000</li>
+                </ul>
+
+                <!-- 4.3 Employee Type table -->
+                <div class="qf-section-title" style="margin-top:20px">4.3 Employee Type</div>
+                <div style="overflow-x:auto">
+                  <table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+                    <thead>
+                      <tr style="background:var(--surface)">
+                        <th style="padding:12px 16px;font-size:0.82rem;font-weight:600;color:var(--slate);border-bottom:1px solid var(--border);text-align:left;width:45%"></th>
+                        <th style="padding:12px 16px;font-size:0.82rem;font-weight:600;color:var(--slate);border-bottom:1px solid var(--border);text-align:left;width:18%">Number of Units</th>
+                        <th style="padding:12px 16px;font-size:0.82rem;font-weight:600;color:var(--slate);border-bottom:1px solid var(--border);text-align:left;width:18%">Full Time</th>
+                        <th style="padding:12px 16px;font-size:0.82rem;font-weight:600;color:var(--slate);border-bottom:1px solid var(--border);text-align:left;width:18%">Part Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td style="padding:12px 16px;font-size:0.87rem;color:var(--ink);border-bottom:1px solid var(--border)">You, any director of Yours, or partner, or proprietor of The Practice</td>
+                        <td style="padding:8px 12px;border-bottom:1px solid var(--border)">
+                          <input type="number" id="q4-dir-units" value="0" min="0" style="width:100%;border:1.5px solid var(--accent);border-radius:6px;padding:8px 10px;font-size:0.88rem;text-align:left">
+                        </td>
+                        <td style="padding:8px 12px;border-bottom:1px solid var(--border)">
+                          <input type="number" id="q4-dir-fulltime" value="0" min="0" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:8px 10px;font-size:0.88rem">
+                        </td>
+                        <td style="padding:8px 12px;border-bottom:1px solid var(--border)">
+                          <input type="number" id="q4-dir-parttime" value="0" min="0" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:8px 10px;font-size:0.88rem">
+                        </td>
+                      </tr>
+                      <tr style="background:var(--surface)">
+                        <td style="padding:12px 16px;font-size:0.87rem;color:var(--ink)">Any other Employee of Yours (aged 75 or under)</td>
+                        <td style="padding:8px 12px">
+                          <input type="number" id="q4-emp-units" value="0" min="0" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:8px 10px;font-size:0.88rem">
+                        </td>
+                        <td style="padding:8px 12px">
+                          <input type="number" id="q4-emp-fulltime" value="0" min="0" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:8px 10px;font-size:0.88rem">
+                        </td>
+                        <td style="padding:8px 12px">
+                          <input type="number" id="q4-emp-parttime" value="0" min="0" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:8px 10px;font-size:0.88rem">
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="quote-nav">
+                  <button class="btn btn-secondary" onclick="quotePrev(4)">← Step 3</button>
+                  <button class="btn btn-primary" onclick="quoteNext(4)">Next: Business Interruption →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 5: Business Interruption -->
+          <div class="quote-step" id="qstep-5">
+            <div class="quote-card">
+              <div class="quote-card-header">
+                <div><h4>Step 5 of 7 — Business Interruption</h4><div class="qch-sub">Business interruption cover details for this policy</div></div>
+              </div>
+              <div class="quote-card-body">
+
+                <!-- Intro text -->
+                <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:24px">
+                  <p style="font-size:0.87rem;color:var(--ink);margin-bottom:10px">This protects damage to your premises due to an insured cause e.g. impact when a patient drives through the pedestrian entrance, destroying the foyer etc</p>
+                  <p style="font-size:0.85rem;color:var(--slate);margin-bottom:8px">There are two options for cover:</p>
+                  <p style="font-size:0.85rem;color:var(--slate);margin-bottom:4px"><strong>1- Loss of Income</strong> - replaces the money lost from not being able to operate</p>
+                  <p style="font-size:0.85rem;color:var(--mist);margin-bottom:10px;padding-left:16px">As standard we include cover for a loss of £500k over 24 months. This can be increased if needed.</p>
+                  <p style="font-size:0.85rem;color:var(--slate)"><strong>2- Increased Expenses</strong> - provides money to pay for preventive measures so you don't lose money</p>
+                </div>
+
+                <!-- Questions -->
+                <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+
+                  <!-- 5.1 -->
+                  <div style="display:flex;align-items:center;background:var(--surface)">
+                    <div style="flex:1;padding:14px 16px">
+                      <div style="font-size:0.87rem;font-weight:600;color:var(--ink)">5.1 What cover type is required:</div>
+                    </div>
+                    <div style="padding:10px 16px;flex-shrink:0">
+                      <select id="q5-coverType" style="width:220px;padding:10px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.88rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="Loss of Income">Loss of Income</option>
+                        <option value="Increased Expenses">Increased Expenses</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- 5.2 -->
+                  <div style="display:flex;align-items:center;border-top:1px solid var(--border)">
+                    <div style="flex:1;padding:14px 16px">
+                      <div style="font-size:0.87rem;font-weight:600;color:var(--ink)">5.2 What is the annual sum insured you want for all your premises on the policy (annual):</div>
+                      <div style="font-size:0.82rem;color:var(--mist);margin-top:3px">This cover is going to float across all your addresses</div>
+                    </div>
+                    <div style="padding:10px 16px;flex-shrink:0">
+                      <div style="display:flex;align-items:center;gap:0">
+                        <span style="padding:9px 10px;background:var(--surface);border:1.5px solid var(--border);border-right:none;border-radius:6px 0 0 6px;font-size:0.88rem;color:var(--slate)">£</span>
+                        <input type="number" id="q5-annualSumInsured" value="0" min="0" style="width:180px;border:1.5px solid var(--border);border-radius:0 6px 6px 0;padding:9px 12px;font-size:0.88rem">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 5.3 -->
+                  <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
+                    <div style="flex:1;padding:14px 16px">
+                      <div style="font-size:0.87rem;font-weight:600;color:var(--ink)">5.3 Our standard cover period is: 24 months If required: we can arrange cover for are: 12, 18, 24, 30, 36, 48, 60 months</div>
+                      <div style="font-size:0.82rem;color:var(--mist);margin-top:3px">A range of additional benefits are included for other events that can hinder the operation of the surgery.</div>
+                    </div>
+                    <div style="padding:10px 16px;flex-shrink:0">
+                      <select id="q5-coverPeriod" style="width:220px;padding:10px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.88rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="12">12</option>
+                        <option value="18">18</option>
+                        <option value="24" selected>24</option>
+                        <option value="30">30</option>
+                        <option value="36">36</option>
+                        <option value="48">48</option>
+                        <option value="60">60</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- 5.4 -->
+                  <div style="display:flex;align-items:center;border-top:1px solid var(--border)">
+                    <div style="flex:1;padding:14px 16px">
+                      <div style="font-size:0.87rem;font-weight:600;color:var(--ink)">5.4 How much cover is required for Outstanding Book Debt Balances?</div>
+                      <div style="font-size:0.82rem;color:var(--mist);margin-top:3px">Our minimum cover is £10,000</div>
+                    </div>
+                    <div style="padding:10px 16px;flex-shrink:0">
+                      <div style="display:flex;align-items:center;gap:0">
+                        <span style="padding:9px 10px;background:var(--surface);border:1.5px solid var(--border);border-right:none;border-radius:6px 0 0 6px;font-size:0.88rem;color:var(--slate)">£</span>
+                        <input type="number" id="q5-bookDebtCover" value="10000" min="0" style="width:180px;border:1.5px solid var(--border);border-radius:0 6px 6px 0;padding:9px 12px;font-size:0.88rem">
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="quote-nav">
+                  <button class="btn btn-secondary" onclick="quotePrev(5)">← Step 4</button>
+                  <button class="btn btn-primary" onclick="quoteNext(5)">Next: Public Liability →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 6: Public & Products Liability -->
+          <div class="quote-step" id="qstep-6">
+            <div class="quote-card">
+              <div class="quote-card-header">
+                <div><h4>Step 6 of 7 — Public &amp; Products Liability</h4><div class="qch-sub">Liability cover details for all premises on this policy</div></div>
+              </div>
+              <div class="quote-card-body">
+
+                <p style="font-size:0.87rem;font-weight:600;color:var(--ink);margin-bottom:16px">Cover for all premises:</p>
+
+                <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+
+                  <!-- 6.1 Limit of indemnity -->
+                  <div style="display:flex;align-items:center;background:var(--surface)">
+                    <div style="flex:1;padding:14px 16px">
+                      <div style="font-size:0.87rem;font-weight:600;color:var(--ink)">6.1 What is the limit of indemnity do you want:</div>
+                    </div>
+                    <div style="padding:10px 16px;flex-shrink:0">
+                      <select id="q6-indemnityLimit" style="width:220px;padding:10px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.88rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="£1,000,000">£1,000,000</option>
+                        <option value="£2,000,000">£2,000,000</option>
+                        <option value="£5,000,000" selected>£5,000,000</option>
+                        <option value="£10,000,000">£10,000,000</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- 6.2 Offsite clinics -->
+                  <div style="display:flex;align-items:center;border-top:1px solid var(--border)">
+                    <div style="flex:1;padding:14px 16px">
+                      <div style="font-size:0.87rem;font-weight:600;color:var(--ink)">6.2 Do you run any offsite clinics? If so how many?</div>
+                      <div style="font-size:0.82rem;color:var(--mist);margin-top:3px">N.B. not visits to individual patients</div>
+                    </div>
+                    <div style="padding:10px 16px;flex-shrink:0">
+                      <select id="q6-offsiteClinics" style="width:220px;padding:10px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.88rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="0" selected>0</option>
+                        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                        <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                        <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                        <option value="10">10</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- 6.3 Terrorism -->
+                  <div style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
+                    <div style="flex:1;padding:14px 16px">
+                      <div style="font-size:0.87rem;font-weight:600;color:var(--ink)">6.3 Do you want cover for terrorism?</div>
+                    </div>
+                    <div style="padding:10px 16px;flex-shrink:0">
+                      <select id="q6-terrorismCover" onchange="toggleTerrorismFields()" style="width:120px;padding:10px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.88rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="No" selected>No</option>
+                        <option value="Yes">Yes</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Terrorism sub-fields (shown when Yes selected) -->
+                  <div id="terrorism-fields" style="display:none;border-top:1px solid var(--border);background:#fffbf0;padding:16px 20px">
+                    <p style="font-size:0.84rem;color:var(--slate);margin-bottom:12px">This we arrange through the government backed re-insurer Pool Re (for class A cover)</p>
+                    <p style="font-size:0.84rem;color:var(--slate);margin-bottom:16px">Should you choose cover for Terrorism the following two questions apply.</p>
+
+                    <!-- Material damage question -->
+                    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">
+                      <div style="flex:1">
+                        <p style="font-size:0.85rem;font-weight:600;color:var(--ink);margin-bottom:4px">Is the total Material Damage Declared Value for all of your qualifying business more than £5M?</p>
+                        <p style="font-size:0.82rem;color:var(--mist)">This is everything held in the same name as this policy that you insure either with us, with another insurer, or self insure</p>
+                      </div>
+                      <select id="q6-materialDamage" style="width:120px;flex-shrink:0;padding:10px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.88rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="Yes" selected>Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+
+                    <!-- Non Selection Rule question -->
+                    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">
+                      <div style="flex:1">
+                        <p style="font-size:0.85rem;font-weight:600;color:var(--ink);margin-bottom:4px">Non Selection Rule</p>
+                        <p style="font-size:0.82rem;color:var(--mist);margin-bottom:4px">Under the terms of cover provided by Pool Re should you choose to insure Terrorism then we must ensure Terrorism cover is placed on all such property (including all subsidiary/parent companies).</p>
+                        <p style="font-size:0.82rem;color:var(--mist)">Can we have your confirmation that your other qualifying premises also have terrorism cover purchased on them? If cover is selected you will need to enter the Terrorism Postcode value</p>
+                      </div>
+                      <select id="q6-nonSelectionRule" style="width:120px;flex-shrink:0;padding:10px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.88rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="Yes" selected>Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+
+                    <!-- Terrorism postcode -->
+                    <div class="form-group" style="max-width:300px">
+                      <label>Terrorism Postcode value</label>
+                      <input type="text" id="q6-terrorismPostcode" placeholder="e.g. SO14" style="text-transform:uppercase">
+                    </div>
+                  </div>
+
+                  <!-- 6.4 Anticipated turnover -->
+                  <div style="display:flex;align-items:center;border-top:1px solid var(--border)">
+                    <div style="flex:1;padding:14px 16px">
+                      <div style="font-size:0.87rem;font-weight:600;color:var(--ink)">6.4 What is your anticipated turnover for the next 12 months at all premises?</div>
+                    </div>
+                    <div style="padding:10px 16px;flex-shrink:0">
+                      <div style="display:flex;align-items:center;gap:0">
+                        <span style="padding:9px 10px;background:var(--surface);border:1.5px solid var(--border);border-right:none;border-radius:6px 0 0 6px;font-size:0.88rem;color:var(--slate)">£</span>
+                        <input type="number" id="q6-anticipatedTurnover" value="0" min="0" style="width:180px;border:1.5px solid var(--border);border-radius:0 6px 6px 0;padding:9px 12px;font-size:0.88rem">
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="quote-nav">
+                  <button class="btn btn-secondary" onclick="quotePrev(6)">← Step 5</button>
+                  <button class="btn btn-primary" onclick="quoteNext(6)">Next: Premises Details →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 7: Premises Details -->
+          <div class="quote-step" id="qstep-7">
+            <div class="quote-card">
+              <div class="quote-card-header">
+                <div><h4>Step 7 of 7 — Premises Details</h4><div class="qch-sub">Details of the premises to be covered under this policy</div></div>
+              </div>
+              <div class="quote-card-body">
+
+                <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+
+                  <!-- 7.1 Number of premises -->
+                  <div style="display:flex;align-items:center;background:var(--surface)">
+                    <div style="flex:1;padding:14px 16px">
+                      <div style="font-size:0.87rem;font-weight:600;color:var(--ink)">7.1 How many premises are you quoting for?</div>
+                    </div>
+                    <div style="padding:10px 16px;flex-shrink:0">
+                      <input type="number" id="q7-numPremises" value="1" min="1" style="width:140px;padding:10px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.88rem;font-weight:600;color:var(--sidebar)">
+                    </div>
+                  </div>
+
+                  <!-- 7.2 Country -->
+                  <div style="display:flex;align-items:center;border-top:1px solid var(--border)">
+                    <div style="flex:1;padding:14px 16px">
+                      <div style="font-size:0.87rem;font-weight:600;color:var(--ink)">7.2 Country - all premises are in:</div>
+                    </div>
+                    <div style="padding:10px 16px;flex-shrink:0">
+                      <select id="q7-country" style="width:220px;padding:10px 12px;border:1.5px solid var(--sidebar);border-radius:6px;font-size:0.88rem;font-weight:600;color:var(--sidebar);background:var(--white)">
+                        <option value="Not on Cover">Not on Cover</option>
+                        <option value="UK" selected>UK</option>
+                        <option value="Channel Islands">Channel Islands</option>
+                        <option value="Isle of Man">Isle of Man</option>
+                      </select>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="quote-nav">
+                  <button class="btn btn-secondary" onclick="quotePrev(7)">← Step 6</button>
+                  <button class="btn btn-primary" onclick="saveQuote()">Submit Quote</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /.quote-wizard -->
+      </div><!-- /#page-quote-new -->
 
       <!-- CUSTOMERS -->
       <div class="page" id="page-customers">
@@ -1031,7 +1720,7 @@ async function doLogout() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const pageTitles = { dashboard: 'Dashboard', customers: 'Practices', users: 'User Management', log: 'Audit Log', 'user-guides': 'User Guides' };
+const pageTitles = { dashboard: 'Dashboard', customers: 'Practices', quotes: 'Quotes', 'quote-new': 'New Quote', users: 'User Management', log: 'Audit Log', 'user-guides': 'User Guides' };
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -1042,11 +1731,13 @@ function showPage(name) {
 
   const actions = {
     customers: '<button class="btn btn-primary" onclick="openCustomerModal()">+ New Practice</button>',
+    quotes: '<button class="btn btn-primary" onclick="startNewQuote()">+ New Quote</button>',
     users: isAdmin() ? '<button class="btn btn-primary" onclick="openUserModal()">+ New User</button>' : '',
     dashboard: ''
   };
   document.getElementById('topbar-action').innerHTML = actions[name] || '';
   if (name === 'dashboard') { renderDashboard(); }
+  if (name === 'quotes') { loadQuotesPage(); }
   if (name === 'log') { loadLog(); }
   if (name === 'user-guides') { initUserGuides(); }
 }
@@ -1068,6 +1759,7 @@ async function loadAll() {
   renderCustomers();
   if (isAdmin()) renderUsers();
   if (document.getElementById('page-dashboard')?.classList.contains('active')) renderDashboard();
+  if (document.getElementById('page-quotes')?.classList.contains('active')) loadQuotesPage();
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
@@ -1991,6 +2683,540 @@ document.addEventListener('click', e => {
     dd.style.display = 'none';
   }
 });
+// ── Quotes ────────────────────────────────────────────────────────────────────
+let quoteData = {};        // accumulated form data across steps
+let editingQuoteId = null; // null = new, string = editing existing
+let quotesState = [];      // loaded quotes list
+
+const QUOTE_STEPS = [
+  { n:1, label:'Client Details' },
+  { n:2, label:'Declarations' },
+  { n:3, label:'Physical Items' },
+  { n:4, label:'Cover Continued' },
+  { n:5, label:'Business Interruption' },
+  { n:6, label:'Public Liability' },
+  { n:7, label:'Premises Details' },
+];
+
+function renderQuoteProgress(currentStep) {
+  const el = document.getElementById('quote-progress');
+  if (!el) return;
+  el.innerHTML = QUOTE_STEPS.map((s, i) => {
+    const cls = s.n < currentStep ? 'done' : s.n === currentStep ? 'active' : '';
+    const lineClass = s.n < currentStep ? 'done' : '';
+    const dotContent = s.n < currentStep ? '✓' : s.n;
+    return `
+      <div class="qp-step ${cls}">
+        ${i > 0 ? `<div class="qp-line ${lineClass}"></div>` : ''}
+        <div class="qp-dot">${dotContent}</div>
+        <div class="qp-label">${s.label}</div>
+      </div>`;
+  }).join('');
+}
+
+function showQuoteStep(n) {
+  document.querySelectorAll('.quote-step').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('qstep-' + n);
+  if (el) el.classList.add('active');
+  renderQuoteProgress(n);
+  document.getElementById('content').scrollTop = 0;
+  window.scrollTo(0, 0);
+  if (n === 2) initClaimsTable();
+  if (n === 7) buildQuoteReview();
+}
+
+function quoteNext(fromStep) {
+  if (!validateQuoteStep(fromStep)) return;
+  collectQuoteStep(fromStep);
+  showQuoteStep(fromStep + 1);
+}
+
+function quotePrev(fromStep) {
+  collectQuoteStep(fromStep);
+  showQuoteStep(fromStep - 1);
+}
+
+function validateQuoteStep(step) {
+  const required = {
+    1: [['q1-renewalDate','Renewal Date'],['q1-quoteType','Quote Type'],['q1-fullName','Full Name'],['q1-telephone','Telephone Number'],['q1-email','Email Address'],['q1-addrLine1','Correspondence Address Line 1'],['q1-addrTown','Correspondence Address Town'],['q1-addrPostcode','Correspondence Address Postcode'],['q1-previousInsurer','Previous Insurer']],
+    2: [['q2-practiceName','Practice Name'],['q2-businessDesc','Business Description'],['q2-entityType','Entity Type']],
+    3: [],
+    4: [], 5: [['q5-publicLiability','Public Liability Limit']], 6: [], 7: [],
+  };
+  if (required[step] === 'declarations') {
+    const noneVal = document.getElementById('q2-noneOfBelow')?.value;
+    const anyYes = [1,2,3,4,5,6].some(i => document.getElementById('q2-decl'+i)?.value === 'Yes');
+    if (noneVal === 'Yes' && anyYes) {
+      if (!confirm('Warning: "None of below" is set to Yes but one or more declarations are set to Yes. Do you wish to continue?')) return false;
+    }
+    return true;
+  }
+  for (const [id, label] of (required[step] || [])) {
+    const el = document.getElementById(id);
+    if (!el || !el.value.trim()) {
+      alert(label + ' is required.');
+      el && el.focus();
+      return false;
+    }
+  }
+  return true;
+}
+
+function collectQuoteStep(step) {
+  const gv = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  const gb = id => { const el = document.getElementById(id); return el ? el.checked : false; };
+  if (step === 1) {
+    Object.assign(quoteData, {
+      renewalDate: gv('q1-renewalDate'), quoteType: gv('q1-quoteType'),
+      previousInsurer: gv('q1-previousInsurer'), fullName: gv('q1-fullName'),
+      contactName: gv('q1-contactName'), telephone: gv('q1-telephone'),
+      mobile: gv('q1-mobile'), email: gv('q1-email'),
+      addrName: gv('q1-addrName'), addrLine1: gv('q1-addrLine1'),
+      addrLine2: gv('q1-addrLine2'), addrTown: gv('q1-addrTown'),
+      addrCounty: gv('q1-addrCounty'), addrCountry: gv('q1-addrCountry'),
+      addrPostcode: gv('q1-addrPostcode').toUpperCase(),
+    });
+  } else if (step === 2) {
+    Object.assign(quoteData, {
+      noneOfBelow: gv('q2-noneOfBelow'),
+      decl1: gv('q2-decl1'), decl2: gv('q2-decl2'), decl3: gv('q2-decl3'),
+      decl4: gv('q2-decl4'), decl5: gv('q2-decl5'), decl6: gv('q2-decl6'),
+      yearsSinceLastClaim: gv('q2-yearsSinceLastClaim'),
+      claims: collectClaimsRows(),
+    });
+  } else if (step === 3) {
+    Object.assign(quoteData, {
+      dayOneCover: gv('q3-dayOneCover'),
+      excess: gv('q3-excess'),
+      fidelity: gv('q3-fidelity'),
+    });
+  } else if (step === 4) {
+    Object.assign(quoteData, {
+      dirUnits: gv('q4-dir-units'), dirFulltime: gv('q4-dir-fulltime'), dirParttime: gv('q4-dir-parttime'),
+      empUnits: gv('q4-emp-units'), empFulltime: gv('q4-emp-fulltime'), empParttime: gv('q4-emp-parttime'),
+    });
+  } else if (step === 5) {
+    Object.assign(quoteData, {
+      biCoverType: gv('q5-coverType'),
+      biAnnualSumInsured: gv('q5-annualSumInsured'),
+      biCoverPeriod: gv('q5-coverPeriod'),
+      biBookDebtCover: gv('q5-bookDebtCover'),
+    });
+  } else if (step === 6) {
+    Object.assign(quoteData, {
+      indemnityLimit: gv('q6-indemnityLimit'),
+      offsiteClinics: gv('q6-offsiteClinics'),
+      terrorismCover: gv('q6-terrorismCover'),
+      materialDamage: gv('q6-materialDamage'),
+      nonSelectionRule: gv('q6-nonSelectionRule'),
+      terrorismPostcode: gv('q6-terrorismPostcode').toUpperCase(),
+      anticipatedTurnover: gv('q6-anticipatedTurnover'),
+    });
+  } else if (step === 7) {
+    Object.assign(quoteData, {
+      numPremises: gv('q7-numPremises'),
+      country: gv('q7-country'),
+    });
+  }
+}
+
+function toggleCoverSection(id) {
+  const checkbox = document.getElementById('q4-' + id + 'Toggle') ||
+                   document.getElementById('q6-' + id + 'Toggle');
+  const fields = document.getElementById('cover-' + id);
+  if (fields) fields.classList.toggle('show', checkbox?.checked);
+}
+
+function applyCustomerToQuote() {
+  const sel = document.getElementById('q-customer-select');
+  const cid = sel?.value;
+  if (!cid) { alert('Please select a Practice first.'); return; }
+  const c = state.customers.find(c => c.id === cid);
+  if (!c) return;
+  const sv = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  sv('q1-fullName', c.name);
+  sv('q1-contactName', c.contactName);
+  sv('q1-telephone', c.phone);
+  sv('q1-mobile', c.contactMobile);
+  sv('q1-email', c.email);
+  sv('q1-addrLine1', c.corrAddressLine1);
+  sv('q1-addrLine2', c.corrAddressLine2);
+  sv('q1-addrTown', c.corrCity);
+  sv('q1-addrCounty', c.corrCounty);
+  sv('q1-addrCountry', c.corrCountry || 'United Kingdom');
+  sv('q1-addrPostcode', (c.corrPostcode || '').toUpperCase());
+  // Also prefill step 2
+  sv('q2-practiceName', c.practiceName);
+  sv('q2-businessDesc', c.businessDescription);
+  sv('q2-entityType', c.entityType);
+  sv('q2-yearEstablished', c.yearEstablished);
+  sv('q2-ernNumber', c.ernNumber);
+  document.getElementById('q2-ernExempt').value = c.ernExempt || 'no';
+  document.getElementById('q2-numSubsidiaries').value = String(c.numSubsidiaries ?? 0);
+}
+
+function populateQuoteCustomerSelect() {
+  const sel = document.getElementById('q-customer-select');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Select a Practice to auto-fill —</option>' +
+    state.customers.map(c => `<option value="${c.id}">${c.name}${c.practiceName ? ' — ' + c.practiceName : ''}</option>`).join('');
+}
+
+function startNewQuote() {
+  editingQuoteId = null;
+  quoteData = {};
+  // Reset all form fields
+  const inputs = document.querySelectorAll('#page-quote-new input, #page-quote-new select, #page-quote-new textarea');
+  inputs.forEach(el => {
+    if (el.type === 'checkbox') el.checked = false;
+    else if (el.id === 'q1-addrCountry') el.value = 'United Kingdom';
+    else if (el.id === 'q3-policyPeriod') el.value = '12 months';
+    else if (el.id === 'q3-sumInsuredBasis') el.value = 'Reinstatement';
+    else if (el.id === 'q3-excess') el.value = '200';
+    else if (el.id === 'q3-claimsHistory') el.value = 'None';
+    else if (el.id === 'q5-publicLiability') el.value = '5000000';
+    else if (el.id === 'q5-employersLiability') el.value = '10000000';
+    else if (el.id === 'q2-numSubsidiaries') el.value = '0';
+    else if (el.id === 'q2-numPremises') el.value = '1';
+    else if (el.id === 'q2-staffFull' || el.id === 'q2-staffPart') el.value = '0';
+    else if (el.id === 'q7-status') el.value = 'draft';
+    else if (el.id === 'q4-numFridges') el.value = '1';
+    else el.value = '';
+  });
+  // Set today as default renewal date
+  document.getElementById('q1-renewalDate').value = new Date().toISOString().split('T')[0];
+  // Hide all toggle sections
+  document.querySelectorAll('.indent-fields').forEach(el => el.classList.remove('show'));
+  populateQuoteCustomerSelect();
+  pageTitles['quote-new'] = 'New Quote';
+  showPage('quote-new');
+  showQuoteStep(1);
+}
+
+function buildQuoteReview() {
+  collectQuoteStep(6); // ensure step 6 is collected before review
+  const fmt = v => v || '—';
+  const fmtMoney = v => v ? '£' + parseFloat(v).toLocaleString('en-GB', {minimumFractionDigits:2}) : '—';
+  const fmtBool = v => v ? '✓ Yes' : 'No';
+
+  const html = `
+    <div class="review-section">
+      <h4>Client &amp; Correspondence</h4>
+      <div class="review-row"><span class="rk">Quote Type</span><span class="rv">${fmt(quoteData.quoteType)}</span></div>
+      <div class="review-row"><span class="rk">Renewal Date</span><span class="rv">${fmt(quoteData.renewalDate)}</span></div>
+      <div class="review-row"><span class="rk">Previous Insurer</span><span class="rv">${fmt(quoteData.previousInsurer)}</span></div>
+      <div class="review-row"><span class="rk">Full Name</span><span class="rv">${fmt(quoteData.fullName)}</span></div>
+      <div class="review-row"><span class="rk">Email</span><span class="rv">${fmt(quoteData.email)}</span></div>
+      <div class="review-row"><span class="rk">Telephone</span><span class="rv">${fmt(quoteData.telephone)}</span></div>
+      <div class="review-row"><span class="rk">Correspondence Address</span><span class="rv">${[quoteData.addrLine1,quoteData.addrTown,quoteData.addrPostcode].filter(Boolean).join(', ')}</span></div>
+    </div>
+    <div class="review-section">
+      <h4>Practice Details</h4>
+      <div class="review-row"><span class="rk">Practice Name</span><span class="rv">${fmt(quoteData.practiceName)}</span></div>
+      <div class="review-row"><span class="rk">Business Type</span><span class="rv">${fmt(quoteData.businessDesc)}</span></div>
+      <div class="review-row"><span class="rk">Entity Type</span><span class="rv">${fmt(quoteData.entityType)}</span></div>
+      <div class="review-row"><span class="rk">Staff (FT/PT)</span><span class="rv">${fmt(quoteData.staffFull)} / ${fmt(quoteData.staffPart)}</span></div>
+    </div>
+    <div class="review-section">
+      <h4>Cover Requirements</h4>
+      <div class="review-row"><span class="rk">Cover Type</span><span class="rv">${fmt(quoteData.coverType)}</span></div>
+      <div class="review-row"><span class="rk">Cover Period</span><span class="rv">${fmt(quoteData.coverStart)} → ${fmt(quoteData.coverEnd)}</span></div>
+      <div class="review-row"><span class="rk">Annual Turnover</span><span class="rv">${fmtMoney(quoteData.annualTurnover)}</span></div>
+      <div class="review-row"><span class="rk">Excess</span><span class="rv">£${fmt(quoteData.excess)}</span></div>
+      <div class="review-row"><span class="rk">Claims History</span><span class="rv">${fmt(quoteData.claimsHistory)}</span></div>
+    </div>
+    <div class="review-section">
+      <h4>Property Cover</h4>
+      <div class="review-row"><span class="rk">Buildings</span><span class="rv">${quoteData.buildingsRequired ? fmtMoney(quoteData.buildingsValue) : 'Not required'}</span></div>
+      <div class="review-row"><span class="rk">Contents</span><span class="rv">${quoteData.contentsRequired ? fmtMoney(quoteData.contentsValue) : 'Not required'}</span></div>
+      <div class="review-row"><span class="rk">Medical Equipment</span><span class="rv">${quoteData.equipmentRequired ? fmtMoney(quoteData.equipmentValue) : 'Not required'}</span></div>
+      <div class="review-row"><span class="rk">Vaccine/Drug Storage</span><span class="rv">${quoteData.vaccineRequired ? fmtMoney(quoteData.vaccineValue) : 'Not required'}</span></div>
+    </div>
+    <div class="review-section">
+      <h4>Liability Cover</h4>
+      <div class="review-row"><span class="rk">Public Liability</span><span class="rv">${quoteData.publicLiability ? fmtMoney(quoteData.publicLiability) : '—'}</span></div>
+      <div class="review-row"><span class="rk">Employers Liability</span><span class="rv">${quoteData.employersLiability ? fmtMoney(quoteData.employersLiability) : 'Not required'}</span></div>
+      <div class="review-row"><span class="rk">Professional Indemnity</span><span class="rv">${quoteData.profIndemnity ? fmtMoney(quoteData.profIndemnity) : 'Not required'}</span></div>
+    </div>
+    <div class="review-section">
+      <h4>Additional Cover</h4>
+      <div class="review-row"><span class="rk">Business Interruption</span><span class="rv">${quoteData.biRequired ? fmtMoney(quoteData.biValue) + ' / ' + (quoteData.biPeriod||'—') : 'Not required'}</span></div>
+      <div class="review-row"><span class="rk">Legal Expenses</span><span class="rv">${fmtBool(quoteData.legalExpenses)}</span></div>
+      <div class="review-row"><span class="rk">Terrorism Cover</span><span class="rv">${fmtBool(quoteData.terrorismCover)}</span></div>
+      <div class="review-row"><span class="rk">Key Person</span><span class="rv">${quoteData.keyPersonRequired ? (quoteData.keyPersonName||'—') + ' — ' + fmtMoney(quoteData.keyPersonValue) : 'Not required'}</span></div>
+      <div class="review-row"><span class="rk">Employee Dishonesty</span><span class="rv">${quoteData.employeeDishonesty ? fmtMoney(quoteData.dishonestLimit) : 'Not required'}</span></div>
+      ${quoteData.notes ? '<div class="review-row"><span class="rk">Notes</span><span class="rv">' + quoteData.notes + '</span></div>' : ''}
+    </div>`;
+  document.getElementById('quote-review-content').innerHTML = html;
+
+  // Set default valid until (30 days from today)
+  if (!document.getElementById('q7-validUntil').value) {
+    const d = new Date(); d.setDate(d.getDate() + 30);
+    document.getElementById('q7-validUntil').value = d.toISOString().split('T')[0];
+  }
+
+  // Wire up premium IPT calculator
+  const premInput = document.getElementById('q7-premium');
+  const calcIPT = () => {
+    const p = parseFloat(premInput.value) || 0;
+    const ipt = p * 0.12;
+    document.getElementById('q7-ipt').textContent = '£' + ipt.toFixed(2);
+    document.getElementById('q7-total').textContent = '£' + (p + ipt).toFixed(2);
+  };
+  premInput.oninput = calcIPT;
+  calcIPT();
+}
+
+async function saveQuote(statusOverride) {
+  collectQuoteStep(7);
+  if (statusOverride) quoteData.status = statusOverride;
+  if (!quoteData.status) quoteData.status = 'draft';
+
+  const btn = document.getElementById('submit-quote-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
+  const method = editingQuoteId ? 'PUT' : 'POST';
+  const url = editingQuoteId ? '/api/quotes/' + editingQuoteId : '/api/quotes';
+  const result = await api(method, url, quoteData);
+
+  if (btn) { btn.disabled = false; btn.textContent = 'Submit Quote'; }
+
+  if (!result || result.error) {
+    alert('Error saving quote: ' + (result?.error || 'Unknown error'));
+    return;
+  }
+  quotesState = [];
+  showPage('quotes');
+}
+
+async function loadQuotesPage() {
+  const quotes = await api('GET', '/api/quotes');
+  if (!quotes) return;
+  quotesState = quotes;
+  renderQuotesList();
+}
+
+function renderQuotesList() {
+  const q = (document.getElementById('quote-search')?.value || '').toLowerCase();
+  const sf = document.getElementById('quote-status-filter')?.value || '';
+  const tf = document.getElementById('quote-type-filter')?.value || '';
+  const filtered = quotesState.filter(qt => {
+    if (sf && qt.status !== sf) return false;
+    if (tf && qt.quote_type !== tf) return false;
+    if (q && !((qt.full_name||'').toLowerCase().includes(q) || (qt.practice_name||'').toLowerCase().includes(q) || (qt.quote_ref||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+  const statusBadge = s => {
+    const map = { draft:'qsb-draft', quoted:'qsb-quoted', accepted:'qsb-accepted', declined:'qsb-declined', bound:'qsb-bound' };
+    return `<span class="quote-status-badge ${map[s]||'qsb-draft'}">${s||'draft'}</span>`;
+  };
+  document.getElementById('quotes-tbody').innerHTML = filtered.length
+    ? filtered.map(qt => `<tr>
+        <td><strong>${qt.quote_ref||'—'}</strong></td>
+        <td>${qt.full_name||'—'}${qt.practice_name ? '<br><small style="color:var(--mist)">' + qt.practice_name + '</small>' : ''}</td>
+        <td><span style="font-size:0.82rem">${qt.quote_type||'—'}</span></td>
+        <td>${qt.renewal_date ? fmtDateVal(qt.renewal_date) : '—'}</td>
+        <td>${statusBadge(qt.status)}</td>
+        <td>${qt.premium ? '£' + parseFloat(qt.premium).toLocaleString('en-GB', {minimumFractionDigits:2}) : '—'}</td>
+        <td style="font-size:0.82rem;color:var(--mist)">${qt.created_at ? new Date(qt.created_at).toLocaleDateString('en-GB') : '—'}</td>
+        <td><div class="actions-col">
+          <button class="btn btn-secondary btn-sm" onclick="openQuoteDetail('${qt.id}')">View</button>
+          <button class="btn btn-ghost btn-sm" onclick="editQuote('${qt.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteQuote('${qt.id}')">Delete</button>
+        </div></td>
+      </tr>`).join('')
+    : '<tr class="empty-row"><td colspan="8">No quotes found</td></tr>';
+}
+
+async function editQuote(id) {
+  const qt = quotesState.find(q => q.id === id);
+  if (!qt) return;
+  editingQuoteId = id;
+  quoteData = { ...qt };
+  // Repopulate all form fields from quoteData
+  const sv = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val || ''; };
+  const sb = (elId, val) => { const el = document.getElementById(elId); if (el) el.checked = !!val; };
+  sv('q1-renewalDate', qt.renewal_date); sv('q1-quoteType', qt.quote_type);
+  sv('q1-previousInsurer', qt.previous_insurer); sv('q1-fullName', qt.full_name);
+  sv('q1-contactName', qt.contact_name); sv('q1-telephone', qt.telephone);
+  sv('q1-mobile', qt.mobile); sv('q1-email', qt.email);
+  sv('q1-addrName', qt.addr_name); sv('q1-addrLine1', qt.addr_line1);
+  sv('q1-addrLine2', qt.addr_line2); sv('q1-addrTown', qt.addr_town);
+  sv('q1-addrCounty', qt.addr_county); sv('q1-addrCountry', qt.addr_country || 'United Kingdom');
+  sv('q1-addrPostcode', qt.addr_postcode);
+  sv('q2-practiceName', qt.practice_name); sv('q2-businessDesc', qt.business_desc);
+  sv('q2-entityType', qt.entity_type); sv('q2-yearEstablished', qt.year_established);
+  sv('q2-numSubsidiaries', qt.num_subsidiaries); sv('q2-ernNumber', qt.ern_number);
+  sv('q2-ernExempt', qt.ern_exempt); sv('q2-practiceAddr1', qt.practice_addr1);
+  sv('q2-practiceAddr2', qt.practice_addr2); sv('q2-practiceTown', qt.practice_town);
+  sv('q2-practiceCounty', qt.practice_county); sv('q2-practicePostcode', qt.practice_postcode);
+  sv('q2-numPremises', qt.num_premises); sv('q2-staffFull', qt.staff_full); sv('q2-staffPart', qt.staff_part);
+  sv('q3-coverStart', qt.cover_start); sv('q3-coverEnd', qt.cover_end);
+  sv('q3-policyPeriod', qt.policy_period); sv('q3-policyRef', qt.policy_ref);
+  sv('q3-coverType', qt.cover_type); sv('q3-sumInsuredBasis', qt.sum_insured_basis);
+  sv('q3-excess', qt.excess); sv('q3-claimsHistory', qt.claims_history);
+  sv('q3-annualTurnover', qt.annual_turnover); sv('q3-nhsIncome', qt.nhs_income);
+  sv('q3-privateIncome', qt.private_income); sv('q3-locumWeeklyBenefit', qt.locum_weekly_benefit);
+  sb('q4-buildingsToggle', qt.buildings_required); sv('q4-buildingsValue', qt.buildings_value);
+  sb('q4-contentsToggle', qt.contents_required); sv('q4-contentsValue', qt.contents_value);
+  sb('q4-equipmentToggle', qt.equipment_required); sv('q4-equipmentValue', qt.equipment_value);
+  sb('q4-vaccineToggle', qt.vaccine_required); sv('q4-vaccineValue', qt.vaccine_value);
+  sv('q5-publicLiability', qt.public_liability); sv('q5-productsLiability', qt.products_liability);
+  sv('q5-employersLiability', qt.employers_liability); sv('q5-numEmployees', qt.num_employees);
+  sv('q5-profIndemnity', qt.prof_indemnity); sv('q5-retroDate', qt.retro_date);
+  sv('q5-doCover', qt.do_cover); sv('q5-doLimit', qt.do_limit);
+  sb('q6-biToggle', qt.bi_required); sv('q6-biValue', qt.bi_value); sv('q6-biPeriod', qt.bi_period);
+  sb('q6-legalToggle', qt.legal_expenses); sb('q6-terrorismToggle', qt.terrorism_cover);
+  sb('q6-keyPersonToggle', qt.key_person_required); sv('q6-keyPersonName', qt.key_person_name);
+  sv('q6-keyPersonValue', qt.key_person_value); sb('q6-juryToggle', qt.jury_service);
+  sb('q6-dishonestToggle', qt.employee_dishonesty); sv('q6-dishonestLimit', qt.dishonest_limit);
+  sv('q6-notes', qt.notes); sv('q7-premium', qt.premium);
+  sv('q7-status', qt.status); sv('q7-validUntil', qt.valid_until);
+  // Show toggled sections
+  ['buildings','contents','equipment','vaccine'].forEach(id => {
+    const fields = document.getElementById('cover-' + id);
+    const cb = document.getElementById('q4-' + id + 'Toggle');
+    if (fields && cb) fields.classList.toggle('show', cb.checked);
+  });
+  ['bi','keyperson','dishonest'].forEach(id => {
+    const fields = document.getElementById('cover-' + id);
+    const cbId = id === 'bi' ? 'q6-biToggle' : id === 'keyperson' ? 'q6-keyPersonToggle' : 'q6-dishonestToggle';
+    const cb = document.getElementById(cbId);
+    if (fields && cb) fields.classList.toggle('show', cb.checked);
+  });
+  populateQuoteCustomerSelect();
+  pageTitles['quote-new'] = 'Edit Quote';
+  showPage('quote-new');
+  showQuoteStep(1);
+}
+
+async function deleteQuote(id) {
+  if (!confirm('Delete this quote? This cannot be undone.')) return;
+  await api('DELETE', '/api/quotes/' + id);
+  await loadQuotesPage();
+}
+
+function openQuoteDetail(id) {
+  editQuote(id);
+}
+
+// ── Quote Step 2 — Declarations ───────────────────────────────────────────────
+const CLAIM_TYPES = ['N/A','Accident','Accidental Loss or Damage','Loss of Attraction',
+  'Flood','Storm','Burst Water pipes or tanks','Theft/Theft Damage','Malicious Damage',
+  'Impact','Deterioration of Stock','Disease','Notifable Disease','Other Special Extensions',
+  'Legal','Fire','Glass','Computer Breakdown','Money','Book Debts','Fidelity',
+  'Personal Assault','Employers Liability','Goods In Transit','Public Liability',
+  'Product Liability','Terrorism'];
+
+const CLAIM_TYPE_OPTIONS = CLAIM_TYPES.map(t =>
+  `<option value="${t}"${t==='N/A'?' selected':''}>${t}</option>`
+).join('');
+
+function initClaimsTable() {
+  const tbody = document.getElementById('q2-claims-tbody');
+  if (!tbody || tbody.children.length > 0) return;
+  // Default 3 rows
+  for (let i = 0; i < 3; i++) addClaimRow();
+}
+
+function addClaimRow() {
+  const tbody = document.getElementById('q2-claims-tbody');
+  if (!tbody) return;
+  const today = new Date().toISOString().split('T')[0];
+  const idx = tbody.children.length;
+  const tr = document.createElement('tr');
+  tr.style.borderTop = '1px solid var(--border)';
+  tr.innerHTML = `
+    <td style="padding:6px 8px">
+      <select class="claim-type" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:6px 8px;font-size:0.83rem">
+        ${CLAIM_TYPE_OPTIONS}
+      </select>
+    </td>
+    <td style="padding:6px 8px">
+      <input type="date" class="claim-date" value="${today}" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:6px 8px;font-size:0.83rem">
+    </td>
+    <td style="padding:6px 8px">
+      <select class="claim-made" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:6px 8px;font-weight:600;color:var(--sidebar)">
+        <option value="No">No</option><option value="Yes">Yes</option>
+      </select>
+    </td>
+    <td style="padding:6px 8px">
+      <input type="text" class="claim-desc" placeholder="Input details ..." style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:6px 8px;font-size:0.83rem">
+    </td>
+    <td style="padding:6px 8px">
+      <select class="claim-settled" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:6px 8px;font-weight:600;color:var(--sidebar)">
+        <option value="No">No</option><option value="Yes">Yes</option>
+      </select>
+    </td>
+    <td style="padding:6px 8px;text-align:right">
+      <input type="number" class="claim-total" value="0" min="0" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:6px 8px;font-size:0.83rem;text-align:right">
+    </td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function handleNoneOfBelow() {
+  checkDeclWarning();
+}
+
+function handleDeclChange() {
+  checkDeclWarning();
+}
+
+function checkDeclWarning() {
+  const noneVal = document.getElementById('q2-noneOfBelow')?.value;
+  const warning = document.getElementById('q2-decl-warning');
+  if (!warning) return;
+  if (noneVal === 'Yes') {
+    const anyYes = [1,2,3,4,5,6].some(i => {
+      const el = document.getElementById('q2-decl' + i);
+      return el && el.value === 'Yes';
+    });
+    warning.style.display = anyYes ? 'block' : 'none';
+  } else {
+    warning.style.display = 'none';
+  }
+}
+
+function collectClaimsRows() {
+  const tbody = document.getElementById('q2-claims-tbody');
+  if (!tbody) return [];
+  return Array.from(tbody.rows).map(row => ({
+    claimType:    row.querySelector('.claim-type')?.value || 'N/A',
+    claimDate:    row.querySelector('.claim-date')?.value || '',
+    claimMade:    row.querySelector('.claim-made')?.value || 'No',
+    description:  row.querySelector('.claim-desc')?.value || '',
+    settled:      row.querySelector('.claim-settled')?.value || 'No',
+    total:        parseFloat(row.querySelector('.claim-total')?.value || '0'),
+  }));
+}
+
+function populateClaimsRows(claims) {
+  const tbody = document.getElementById('q2-claims-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  if (!claims || !claims.length) { initClaimsTable(); return; }
+  claims.forEach(() => addClaimRow());
+  Array.from(tbody.rows).forEach((row, i) => {
+    const c = claims[i];
+    if (!c) return;
+    const setVal = (cls, val) => { const el = row.querySelector('.' + cls); if (el) el.value = val || ''; };
+    setVal('claim-type', c.claimType);
+    setVal('claim-date', c.claimDate);
+    setVal('claim-made', c.claimMade);
+    setVal('claim-desc', c.description);
+    setVal('claim-settled', c.settled);
+    setVal('claim-total', c.total);
+  });
+}
+
+// ── Quote Step 6 — Terrorism toggle ──────────────────────────────────────────
+function toggleTerrorismFields() {
+  const val = document.getElementById('q6-terrorismCover')?.value;
+  const fields = document.getElementById('terrorism-fields');
+  if (fields) fields.style.display = val === 'Yes' ? 'block' : 'none';
+}
+
 init();
 </script>
 
