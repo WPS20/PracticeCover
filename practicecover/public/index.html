@@ -918,7 +918,7 @@
                           <option value="Republic of Ireland">Republic of Ireland</option>
                         </select>
                       </div>
-                      <div class="form-group"><label>Postcode <span class="req">*</span></label><input type="text" id="q1-addrPostcode" placeholder="Input details…" style="text-transform:uppercase"></div>
+                      <div class="form-group"><label>Postcode <span class="req">*</span></label><input type="text" id="q1-addrPostcode" placeholder="Input details…"></div>
                     </div>
                   </div>
                 </div>
@@ -943,7 +943,7 @@
 
                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
                   <select id="q2-noneOfBelow" onchange="handleNoneOfBelow()" style="width:100px;padding:8px 10px;border:1.5px solid var(--sidebar);border-radius:6px;font-weight:600;color:var(--sidebar);background:var(--white)">
-                    <option value="Yes">Yes</option>
+                    <option value="Yes" selected>Yes</option>
                     <option value="No">No</option>
                   </select>
                   <span style="font-size:0.88rem;font-weight:600;color:var(--slate)">None of below</span>
@@ -952,37 +952,37 @@
                 <div id="q2-declarations-list" style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
                   <div class="decl-row" style="display:flex;align-items:center;background:var(--surface)">
                     <select id="q2-decl1" onchange="handleDeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
-                      <option value="No">No</option><option value="Yes">Yes</option>
+                      <option value="No" selected>No</option><option value="Yes">Yes</option>
                     </select>
                     <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink)">had any convictions or criminal offences which are not spent under the Rehabilitation of Offenders Act or has any prosecutions pending</span>
                   </div>
                   <div class="decl-row" style="display:flex;align-items:center;border-top:1px solid var(--border)">
                     <select id="q2-decl2" onchange="handleDeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
-                      <option value="No">No</option><option value="Yes">Yes</option>
+                      <option value="No" selected>No</option><option value="Yes">Yes</option>
                     </select>
                     <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink)">been declared bankrupt or insolvent, or been the subject of bankruptcy or insolvency proceedings</span>
                   </div>
                   <div class="decl-row" style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
                     <select id="q2-decl3" onchange="handleDeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
-                      <option value="No">No</option><option value="Yes">Yes</option>
+                      <option value="No" selected>No</option><option value="Yes">Yes</option>
                     </select>
                     <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink)">received a county court judgement in respect of debt, or entered into an individual or company voluntary arrangement</span>
                   </div>
                   <div class="decl-row" style="display:flex;align-items:center;border-top:1px solid var(--border)">
                     <select id="q2-decl4" onchange="handleDeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
-                      <option value="No">No</option><option value="Yes">Yes</option>
+                      <option value="No" selected>No</option><option value="Yes">Yes</option>
                     </select>
                     <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink)">had an insurance proposal refused or declined, had insurance cancelled or its renewal refused, or had any special terms imposed</span>
                   </div>
                   <div class="decl-row" style="display:flex;align-items:center;border-top:1px solid var(--border);background:var(--surface)">
                     <select id="q2-decl5" onchange="handleDeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
-                      <option value="No">No</option><option value="Yes">Yes</option>
+                      <option value="No" selected>No</option><option value="Yes">Yes</option>
                     </select>
                     <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink)">had any losses or incidents giving rise to losses in the last 5 years</span>
                   </div>
                   <div class="decl-row" style="display:flex;align-items:center;border-top:1px solid var(--border)">
                     <select id="q2-decl6" onchange="handleDeclChange()" style="width:100px;flex-shrink:0;border:none;border-right:1px solid var(--border);border-radius:0;padding:12px 10px;font-weight:600;color:var(--sidebar);background:var(--white)">
-                      <option value="No">No</option><option value="Yes">Yes</option>
+                      <option value="No" selected>No</option><option value="Yes">Yes</option>
                     </select>
                     <span style="padding:12px 16px;font-size:0.87rem;color:var(--ink)">become aware of any circumstances that could give rise to a claim in the last 5 years</span>
                   </div>
@@ -2975,6 +2975,8 @@ function startNewQuote() {
     else if (el.id === 'q5-employersLiability') el.value = '10000000';
     else if (el.id === 'q2-numSubsidiaries') el.value = '0';
     else if (el.id === 'q7-status') el.value = 'draft';
+    else if (el.id === 'q2-noneOfBelow') el.value = 'Yes';
+    else if (el.id && el.id.startsWith('q2-decl')) el.value = 'No';
     else if (el.id === 'q4-numFridges') el.value = '1';
     else el.value = '';
   });
