@@ -843,6 +843,7 @@
                 </div>
               </div>
               <div class="quote-card-body">
+                <div id="q1-practice-banner" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 16px;font-size:0.87rem;font-weight:600;color:#166534;margin-bottom:14px"></div>
                 <div class="mandatory-note">* Mandatory fields</div>
 
                 <!-- Apply from customer -->
@@ -2049,6 +2050,7 @@ function openCustomerDetail(id) {
       '<div class="upload-progress" id="cust-upload-progress"><span>⏳</span><span id="cust-upload-status">Uploading…</span></div>' +
     '</div>';
   document.getElementById('cd-edit-btn').onclick = function() { closeModal('customer-detail-modal'); openCustomerModal(id); };
+  document.getElementById('cd-quote-btn').onclick = function() { closeModal('customer-detail-modal'); startNewQuoteForCustomer(id); };
   document.getElementById('customer-detail-modal').classList.add('open');
   loadAttachments('customer', c.id, 'cust-attach-list');
 }
@@ -2865,6 +2867,8 @@ function collectQuoteStep(step) {
       addrLine2: gv('q1-addrLine2'), addrTown: gv('q1-addrTown'),
       addrCounty: gv('q1-addrCounty'), addrCountry: gv('q1-addrCountry'),
       addrPostcode: gv('q1-addrPostcode').toUpperCase(),
+      // preserve customerId if set via startNewQuoteForCustomer
+      customerId: quoteData.customerId || null,
     });
   } else if (step === 2) {
     Object.assign(quoteData, {
@@ -2953,6 +2957,10 @@ function populateQuoteCustomerSelect() {
 function startNewQuote() {
   editingQuoteId = null;
   quoteData = {};
+  editingQuoteId = null;
+  // Clear practice banner
+  const banner = document.getElementById('q1-practice-banner');
+  if (banner) { banner.style.display = 'none'; banner.textContent = ''; }
   // Reset all form fields
   const inputs = document.querySelectorAll('#page-quote-new input, #page-quote-new select, #page-quote-new textarea');
   inputs.forEach(el => {
@@ -4597,6 +4605,37 @@ function initPS8Selections() {
   });
 }
 
+function startNewQuoteForCustomer(customerId) {
+  const c = state.customers.find(c => c.id === customerId);
+  if (!c) return;
+  // Start a fresh quote then pre-fill from practice record
+  startNewQuote();
+  // Store link to practice
+  quoteData.customerId = customerId;
+  quoteData.practiceName = c.practiceName || '';
+  // Pre-fill Step 1 fields from practice
+  const sv = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  sv('q1-fullName',    c.name);
+  sv('q1-contactName', c.contactName);
+  sv('q1-telephone',   c.phone);
+  sv('q1-mobile',      c.contactMobile);
+  sv('q1-email',       c.email);
+  sv('q1-addrLine1',   c.corrAddressLine1);
+  sv('q1-addrLine2',   c.corrAddressLine2);
+  sv('q1-addrTown',    c.corrCity);
+  sv('q1-addrCounty',  c.corrCounty);
+  sv('q1-addrPostcode',(c.corrPostcode || '').toUpperCase());
+  if (document.getElementById('q1-addrCountry')) {
+    document.getElementById('q1-addrCountry').value = c.corrCountry || 'United Kingdom';
+  }
+  // Show a linked-practice banner at top of step 1
+  const banner = document.getElementById('q1-practice-banner');
+  if (banner) {
+    banner.textContent = '🏥 Linked to: ' + (c.practiceName ? c.name + ' — ' + c.practiceName : c.name);
+    banner.style.display = 'block';
+  }
+}
+
 init();
 </script>
 
@@ -4611,6 +4650,7 @@ init();
     <div class="modal-body" id="cd-body"></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('customer-detail-modal')">Close</button>
+      <button class="btn btn-ghost" id="cd-quote-btn" onclick="">+ New Quote</button>
       <button class="btn btn-primary" id="cd-edit-btn">Edit Practice</button>
     </div>
   </div>

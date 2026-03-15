@@ -396,7 +396,7 @@ async function nextQuoteRef() {
 
 function normaliseQuote(r) {
   return {
-    id: r.id, quoteRef: r.quote_ref, status: r.status,
+    id: r.id, quoteRef: r.quote_ref, status: r.status, customerId: r.customer_id || null,
     // Step 1
     renewalDate: r.renewal_date ? r.renewal_date.toISOString().split('T')[0] : null,
     quoteType: r.quote_type, previousInsurer: r.previous_insurer,
@@ -455,7 +455,7 @@ app.post('/api/quotes', requireAuth, async (req, res) => {
     const quoteRef = await nextQuoteRef();
     const result = await query(`
       INSERT INTO quotes (
-        id, quote_ref, status,
+        id, quote_ref, status, customer_id,
         renewal_date, quote_type, previous_insurer,
         full_name, contact_name, telephone, mobile, email,
         addr_name, addr_line1, addr_line2, addr_town, addr_county, addr_country, addr_postcode,
@@ -468,12 +468,12 @@ app.post('/api/quotes', requireAuth, async (req, res) => {
         non_selection_rule, terrorism_postcode, anticipated_turnover,
         num_premises, country, premises, premium, valid_until, created_by
       ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,
-        $19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,
-        $37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,
+        $20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,
+        $38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54
       ) RETURNING *`,
       [
-        uuidv4(), quoteRef, d.status || 'draft',
+        uuidv4(), quoteRef, d.status || 'draft', d.customerId || null,
         d.renewalDate || null, d.quoteType || null, d.previousInsurer || null,
         d.fullName || null, d.contactName || null, d.telephone || null, d.mobile || null, d.email || null,
         d.addrName || null, d.addrLine1 || null, d.addrLine2 || null, d.addrTown || null,
@@ -502,23 +502,23 @@ app.put('/api/quotes/:id', requireAuth, async (req, res) => {
     const d = req.body;
     const result = await query(`
       UPDATE quotes SET
-        status=$1, renewal_date=$2, quote_type=$3, previous_insurer=$4,
-        full_name=$5, contact_name=$6, telephone=$7, mobile=$8, email=$9,
-        addr_name=$10, addr_line1=$11, addr_line2=$12, addr_town=$13, addr_county=$14,
-        addr_country=$15, addr_postcode=$16,
-        none_of_below=$17, decl1=$18, decl2=$19, decl3=$20, decl4=$21, decl5=$22, decl6=$23,
-        years_since_last_claim=$24, claims=$25,
-        day_one_cover=$26, excess=$27, fidelity=$28,
-        dir_units=$29, dir_fulltime=$30, dir_parttime=$31,
-        emp_units=$32, emp_fulltime=$33, emp_parttime=$34,
-        bi_cover_type=$35, bi_annual_sum_insured=$36, bi_cover_period=$37, bi_book_debt_cover=$38,
-        indemnity_limit=$39, offsite_clinics=$40, terrorism_cover=$41, material_damage=$42,
-        non_selection_rule=$43, terrorism_postcode=$44, anticipated_turnover=$45,
-        num_premises=$46, country=$47, premises=$48, premium=$49, valid_until=$50,
+        status=$1, customer_id=$2, renewal_date=$3, quote_type=$4, previous_insurer=$5,
+        full_name=$6, contact_name=$7, telephone=$8, mobile=$9, email=$10,
+        addr_name=$11, addr_line1=$12, addr_line2=$13, addr_town=$14, addr_county=$15,
+        addr_country=$16, addr_postcode=$17,
+        none_of_below=$18, decl1=$19, decl2=$20, decl3=$21, decl4=$22, decl5=$23, decl6=$24,
+        years_since_last_claim=$25, claims=$26,
+        day_one_cover=$27, excess=$28, fidelity=$29,
+        dir_units=$30, dir_fulltime=$31, dir_parttime=$32,
+        emp_units=$33, emp_fulltime=$34, emp_parttime=$35,
+        bi_cover_type=$36, bi_annual_sum_insured=$37, bi_cover_period=$38, bi_book_debt_cover=$39,
+        indemnity_limit=$40, offsite_clinics=$41, terrorism_cover=$42, material_damage=$43,
+        non_selection_rule=$44, terrorism_postcode=$45, anticipated_turnover=$46,
+        num_premises=$47, country=$48, premises=$49, premium=$50, valid_until=$51,
         updated_at=NOW()
-      WHERE id=$51 RETURNING *`,
+      WHERE id=$52 RETURNING *`,
       [
-        d.status || 'draft', d.renewalDate || null, d.quoteType || null, d.previousInsurer || null,
+        d.status || 'draft', d.customerId || null, d.renewalDate || null, d.quoteType || null, d.previousInsurer || null,
         d.fullName || null, d.contactName || null, d.telephone || null, d.mobile || null, d.email || null,
         d.addrName || null, d.addrLine1 || null, d.addrLine2 || null, d.addrTown || null,
         d.addrCounty || null, d.addrCountry || null, d.addrPostcode || null,
@@ -534,7 +534,7 @@ app.put('/api/quotes/:id', requireAuth, async (req, res) => {
         d.nonSelectionRule || null, d.terrorismPostcode || null, d.anticipatedTurnover || 0,
         d.numPremises || 1, d.country || 'UK', JSON.stringify(d.premises || []),
         d.premium || null, d.validUntil || null,
-        req.params.id
+        req.params.id  // $52
       ]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'Not found' });

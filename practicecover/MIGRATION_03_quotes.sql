@@ -5,7 +5,8 @@
 
 CREATE TABLE IF NOT EXISTS quotes (
   id                    TEXT PRIMARY KEY,
-  quote_ref             TEXT UNIQUE,                    -- e.g. QT-0001
+  quote_ref             TEXT UNIQUE,
+  customer_id           TEXT REFERENCES customers(id) ON DELETE SET NULL,                    -- e.g. QT-0001
   status                TEXT DEFAULT 'draft',           -- draft / quoted / accepted / declined / bound
   created_by            TEXT REFERENCES users(id),
   created_at            TIMESTAMPTZ DEFAULT NOW(),
