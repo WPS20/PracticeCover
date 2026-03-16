@@ -349,6 +349,12 @@ tr:hover td{background:#fafbfc}
         </div>
       </div>
 
+
+      <!-- PREMISES SELECTOR -->
+      <div class="page" id="page-premises-select"></div>
+
+      <!-- PREMISES WIZARD -->
+      <div class="page" id="page-premises-wizard"></div>
     </div><!-- /#content -->
   </div><!-- /.main -->
 </div><!-- /#app -->
@@ -1026,13 +1032,14 @@ async function quotePrev(fromStep) {
 
 async function saveQuote() {
   collectStep(7);
-  if (!quoteData.status || quoteData.status==='draft') quoteData.status='quoted';
+  quoteData.status = quoteData.status || 'draft';
   const method = editingQuoteId ? 'PUT' : 'POST';
   const url = editingQuoteId ? '/api/quotes/'+editingQuoteId : '/api/quotes';
   const r = await api(method, url, quoteData);
   if (!r || r.error) { alert('Error saving: '+(r?.error||'Unknown')); return; }
-  await loadAll();
-  showPage('quotes');
+  if (!editingQuoteId && r.id) editingQuoteId = r.id;
+  // Navigate to premises selector
+  showPremisesSelector();
 }
 
 function populateQuoteFields() {
@@ -1362,6 +1369,518 @@ function buildQuoteStepsHTML() {
 function esc(s) {
   if (s == null) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Premises ──────────────────────────────────────────────────────────────────
+let premisesData = [];
+let currentPremisesIdx = 0;
+let currentPremisesStep = 1;
+
+const PREMISES_STEPS = [
+  {n:1,label:'Address'},{n:2,label:'Declarations'},{n:3,label:'Construction'},
+  {n:4,label:'Security'},{n:5,label:'Cover Choices'},{n:6,label:'Cover Contd'},
+  {n:7,label:'Business Equip'},{n:8,label:'Endorsements'}
+];
+
+function showPremisesSelector() {
+  const n = parseInt(quoteData.numPremises) || 1;
+  if (premisesData.length !== n) {
+    premisesData = Array.from({length:n}, (_,i) => premisesData[i] || {stepsComplete:[], address:''});
+  }
+  renderPremisesSelector();
+  showPage('premises-select');
+  document.getElementById('page-title').textContent = 'Premises Details';
+  document.getElementById('topbar-action').innerHTML = '<button class="btn btn-primary" onclick="finishPremises()">Finish &amp; Save Quote</button>';
+}
+
+function renderPremisesSelector() {
+  const pg = document.getElementById('page-premises-select');
+  if (!pg) return;
+  const houseIcon = `<svg width="36" height="36" viewBox="0 0 44 44" fill="none"><path d="M22 6L8 17v3h2v14h6V24h12v10h6V20h2v-3L22 6z" fill="#00b4a2"/><rect x="4" y="36" width="36" height="2.5" rx="1" fill="#f59e0b"/></svg>`;
+  const progressCircles = p => PREMISES_STEPS.map(s => {
+    const done = p.stepsComplete.includes(s.n);
+    return `<div style="width:22px;height:22px;border-radius:50%;border:1.5px solid ${done?'var(--accent)':'var(--border)'};background:${done?'var(--accent)':'transparent'};display:flex;align-items:center;justify-content:center;font-size:.65rem;color:${done?'#fff':'var(--mist)'};flex-shrink:0">${done?'✓':s.n}</div>`;
+  }).join('');
+  const statusLabel = p => {
+    const done = p.stepsComplete.length === 8;
+    const started = p.stepsComplete.length > 0;
+    if (done) return '<span style="color:var(--accent);font-weight:600">Complete</span>';
+    if (started) return '<span style="color:var(--amber);font-weight:600">In Progress</span>';
+    return '<span style="color:var(--mist)">Not Started</span>';
+  };
+  pg.innerHTML = `
+    <div style="max-width:980px;margin:0 auto">
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:60px 120px 1fr 260px 200px;align-items:center;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--border)">
+          <span></span>
+          <span style="font-size:.72rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.8px">Status</span>
+          <span style="font-size:.72rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.8px">Address</span>
+          <span style="font-size:.72rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.8px">Progress</span>
+          <span style="font-size:.72rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.8px">Action</span>
+        </div>
+        ${premisesData.map((p,i) => `
+          <div style="display:grid;grid-template-columns:60px 120px 1fr 260px 200px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border)">
+            <div>${houseIcon}</div>
+            <div style="font-size:.85rem">${statusLabel(p)}</div>
+            <div style="font-size:.83rem;color:var(--slate)">${p.address || '<span style="color:var(--mist);font-style:italic">Not entered</span>'}</div>
+            <div style="display:flex;gap:4px">${progressCircles(p)}</div>
+            <div>
+              <button class="btn btn-primary btn-sm" onclick="openPremisesWizard(${i})" style="width:160px;justify-content:space-between">
+                Update Premises ${i+1} <span>→</span>
+              </button>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:16px">
+        <button class="btn btn-secondary" onclick="showPage('quote-new');showQuoteStep(7);document.getElementById('page-title').textContent='New Quote'">← Back to Step 7</button>
+        <button class="btn btn-primary" onclick="finishPremises()">Finish &amp; Save Quote</button>
+      </div>
+    </div>`;
+}
+
+function openPremisesWizard(idx) {
+  currentPremisesIdx = idx;
+  currentPremisesStep = 1;
+  // Pre-populate premises 1 address from quote step 1 if not yet entered
+  if (idx === 0 && !premisesData[0].addr1 && quoteData.addrLine1) {
+    Object.assign(premisesData[0], {
+      tradingName: quoteData.fullName || '',
+      addr1: quoteData.addrLine1 || '', addr2: quoteData.addrLine2 || '',
+      town: quoteData.addrTown || '', county: quoteData.addrCounty || '',
+      country: quoteData.addrCountry || 'United Kingdom', postcode: quoteData.addrPostcode || ''
+    });
+  }
+  buildPremisesWizard();
+  showPage('premises-wizard');
+  document.getElementById('page-title').textContent = 'Premises ' + (idx+1) + ' — Details';
+  document.getElementById('topbar-action').innerHTML = '';
+  showPremisesStep(1);
+}
+
+function buildPremisesWizard() {
+  const pg = document.getElementById('page-premises-wizard');
+  if (!pg) return;
+  pg.innerHTML = `
+    <div style="max-width:960px;margin:0 auto">
+      <div class="quote-progress" id="pw-progress"></div>
+      <div id="pw-steps"></div>
+    </div>`;
+  renderPwProgress(1);
+  buildPwStepHTML();
+}
+
+function renderPwProgress(step) {
+  const el = document.getElementById('pw-progress');
+  if (!el) return;
+  el.innerHTML = PREMISES_STEPS.map((s,i) => {
+    const cls = s.n < step ? 'done' : s.n === step ? 'active' : '';
+    return `<div class="qp-step ${cls}">
+      ${i>0?`<div class="qp-line ${s.n<=step?'done':''}"></div>`:''}
+      <div class="qp-inner">
+        <div class="qp-dot">${s.n < step ? '✓' : s.n}</div>
+        <div class="qp-label">${s.label}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showPremisesStep(n) {
+  currentPremisesStep = n;
+  document.querySelectorAll('.pw-step').forEach(s => s.style.display='none');
+  const el = document.getElementById('pw-step-'+n);
+  if (el) el.style.display = 'block';
+  renderPwProgress(n);
+  document.getElementById('content').scrollTop = 0;
+  if (n === 8) buildPwSummary();
+}
+
+function pwNext(from) {
+  if (from === 1) {
+    if (!pgv('pw-addr1') || !pgv('pw-town') || !pgv('pw-postcode')) {
+      alert('Address Line 1, Town and Postcode are required'); return;
+    }
+  }
+  if (from === 2) {
+    const none = pgv('pw-none');
+    const anyYes = [1,2,3,4,5,6,7].some(i => pgv('pw-d'+i)==='Yes');
+    if (none==='Yes' && anyYes) {
+      if (!confirm("'None of below' is Yes but some declarations are Yes. Continue?")) return;
+    }
+  }
+  if (from === 3) {
+    for (const part of ['roof','walls','floor']) {
+      const total = [0,1,2].reduce((s,i)=>{const el=document.getElementById('pw-'+part+'-pct-'+i);return s+(parseFloat(el?.value)||0);},0);
+      if (total !== 100) { alert(part.charAt(0).toUpperCase()+part.slice(1)+' percentages must add up to 100% (currently '+total+'%)'); return; }
+    }
+  }
+  collectPwStep(from);
+  showPremisesStep(from + 1);
+}
+
+function pwPrev(from) {
+  collectPwStep(from);
+  if (from === 1) { backToPremisesSelector(); return; }
+  showPremisesStep(from - 1);
+}
+
+function backToPremisesSelector() {
+  showPremisesSelector();
+}
+
+function pgv(id) { const el=document.getElementById(id); return el ? el.value : ''; }
+function pgb(id) { const el=document.getElementById(id); return el ? el.checked : false; }
+
+function collectPwStep(n) {
+  const p = premisesData[currentPremisesIdx];
+  if (!p) return;
+  if (n===1) {
+    Object.assign(p, {
+      tradingName:pgv('pw-tradingName'), addr1:pgv('pw-addr1'), addr2:pgv('pw-addr2'),
+      town:pgv('pw-town'), county:pgv('pw-county'), country:pgv('pw-country'),
+      postcode:pgv('pw-postcode').toUpperCase(), yearEstab:pgv('pw-yearEstab'),
+      activities: Array.from({length:8},(_,i)=>({
+        activity:pgv('pw-act-'+i), carriedOutBy:pgv('pw-by-'+i),
+        pct:parseFloat(pgv('pw-pct-'+i))||0
+      }))
+    });
+    p.address = [p.addr1, p.town, p.postcode].filter(Boolean).join(', ');
+  } else if (n===2) {
+    Object.assign(p, { pw2None:pgv('pw-none'), pw2D1:pgv('pw-d1'), pw2D2:pgv('pw-d2'), pw2D3:pgv('pw-d3'), pw2D4:pgv('pw-d4'), pw2D5:pgv('pw-d5'), pw2D6:pgv('pw-d6'), pw2D7:pgv('pw-d7') });
+  } else if (n===3) {
+    Object.assign(p, {
+      roofRows:[0,1,2].map(i=>({type:pgv('pw-roof-type-'+i),pct:parseFloat(pgv('pw-roof-pct-'+i))||0})),
+      wallsRows:[0,1,2].map(i=>({type:pgv('pw-walls-type-'+i),pct:parseFloat(pgv('pw-walls-pct-'+i))||0})),
+      floorRows:[0,1,2].map(i=>({type:pgv('pw-floor-type-'+i),pct:parseFloat(pgv('pw-floor-pct-'+i))||0})),
+      flatRoofYear:pgv('pw-flatRoofYear')
+    });
+  } else if (n===4) {
+    Object.assign(p, {
+      listedBuilding:pgv('pw-listed'), portableHeating:pgv('pw-portableHeat'),
+      meetsMinSec:pgv('pw-meetsMinSec'), intruderAlarm:pgv('pw-intruderAlarm'),
+      alarmMonitored:pgv('pw-alarmMonitored'), alarmGrade:pgv('pw-alarmGrade'),
+      alarmSoleControl:pgv('pw-alarmSoleControl'),
+      secFeature0:pgv('pw-secFeat-0'), secFeature1:pgv('pw-secFeat-1'), secFeature2:pgv('pw-secFeat-2')
+    });
+  } else if (n===5) {
+    Object.assign(p, { pw5Subsidence:pgv('pw5-subsidence'), pw5Flood:pgv('pw5-flood'), pw5BuildingsSI:pgv('pw5-buildingsSI'), pw5ContentsSI:pgv('pw5-contentsSI'), pw5ComputerSI:pgv('pw5-computerSI') });
+  } else if (n===6) {
+    Object.assign(p, { pw6RefrigStock:pgv('pw6-refrigStock'), pw6AmbientStock:pgv('pw6-ambientStock'), pw6MoneyBusHours:pgv('pw6-moneyBus'), pw6MoneyAfterHours:pgv('pw6-moneyAfter'), pw6NumSafes:pgv('pw6-numSafes') });
+  } else if (n===7) {
+    Object.assign(p, { pw7EquipSI:pgv('pw7-equipSI'), pw7VaccineSI:pgv('pw7-vaccineSI'), pw7NumFridges:pgv('pw7-numFridges'), pw7LocumWeekly:pgv('pw7-locumWeekly'), pw7LocumNum:pgv('pw7-locumNum') });
+  }
+  if (!p.stepsComplete.includes(n)) p.stepsComplete.push(n);
+}
+
+function savePremisesAndReturn() {
+  collectPwStep(8);
+  premisesData[currentPremisesIdx].stepsComplete = [1,2,3,4,5,6,7,8];
+  savePremisesToQuote();
+  showPremisesSelector();
+}
+
+async function savePremisesToQuote() {
+  if (!editingQuoteId) return;
+  quoteData.premises = premisesData;
+  await api('PUT', '/api/quotes/'+editingQuoteId, quoteData);
+}
+
+async function finishPremises() {
+  await savePremisesToQuote();
+  await loadAll();
+  showPage('quotes');
+}
+
+// ── Premises step HTML builder ─────────────────────────────────────────────────
+const ACTIVITY_OPTS = ["None","G.P Practice/Surgery","Dental Practice/Surgery","NHS General Hospital","Private General Hospital","Other medical","Residential","Other clerical","Other retail","Café/Coffee/Tea Shop (no DFF)","Other catering/restaurant/takeaway","Other wholesale","Other manufacturing","Other","Acupuncture","Aromatherapy","Arts therapy","Audiology","Beauty therapy","Chiropody","Chiropractic","Clinical psychology","Complementary medicine","Complementary therapy","Counselling","Dental hygiene","Dental nursing","Dietician","Fitness instruction","Hairdressing","Holistic therapy","Hypnotherapy","Life coaching","Management coaching","Massage therapy","Nursing","Occupational therapy","Optician","Optometrist","Orthoptics","Osteopathy","Paramedic","Personal training","Pharmacy","Physiotherapy","Pilates instruction","Podiatry","Prosthetist","Psychology","Psychotherapy","Radiography","Reflexology","Speech and language therapy","Sports therapy","Tatooist","Veterinary","Veterinary nursing","Yoga instruction","Unoccupied PDHs","Unoccupied Clinic/Office","Unoccupied Shops","Unoccupied Modern Industrial Units"];
+const ROOF_OPTS = ["Please select","N/A","Tile","Slate","Asphalt on Concrete (flat)","Concrete (flat)","Felt on Timber","Membrane on Timber","Fibreglass on Timber","Lead (flat)","Intergrated Solar Panels","Glass","Plastic sheet","Corrugated Iron","Metal- Profiled Sheet","Asbestos Sheet","Shingle- wood &or felt","Timber &or Wood","Thatch - Fibre","Thatch - Reed","Green Roof","Stone Tile/slab (pitched)","Composite Panels – LPC approved","Composite Panels – Not LPC approved","Prefabricated Building - Combustible Materials","Prefabricated Building - Non Combustible Materials","Other"];
+const WALL_OPTS = ["N/A","Asbestos","Brick &or Block","Concrete","Flint","Stone","Cob","Composite Panels – LPC approved","Composite Panels – Not LPC approved","Metal Frame & Brick clad","Metal Frame & Metal Sheet clad","Metal Frame & Timber Clad","Corrugated Iron","Fibreglass","Glass & frame","Plastic & frame","Timber Frame & Brick Clad","Timber Frame & Slate Hung","Timber Frame & Tile Hung","Timber Frame & Timber Clad","Timber & Plaster","Wattle & Daub","Prefabricated Building - Combustible Materials","Prefabricated Building - Non Combustible Materials","Other"];
+const FLOOR_OPTS = ["N/A","Timber","Concrete Ground Floor","Concrete Upper Floor","High Alumina Cement","Stone","Metal","Mixed - Concrete And Timber/Metal","Prefabricated Building - Combustible Materials","Prefabricated Building - Non Combustible Materials"];
+
+function buildPwStepHTML() {
+  const container = document.getElementById('pw-steps');
+  if (!container) return;
+  const p = premisesData[currentPremisesIdx] || {};
+  const sv = (f,def='') => p[f] !== undefined ? p[f] : def;
+  const opts = (arr,sel) => arr.map(o=>`<option value="${esc(o)}"${o==sel?' selected':''}>${esc(o)}</option>`).join('');
+  const isel = (id,arr,sel,w='220px') => `<select id="${id}" style="width:${w};padding:9px 12px;border:1.5px solid var(--navy);border-radius:6px;font-size:.87rem;font-weight:600;color:var(--navy);background:var(--white)">${opts(arr,sel)}</select>`;
+  const inp = (id,val,ph,w='100%') => `<input id="${id}" value="${esc(val)}" placeholder="${ph}" style="width:${w};padding:9px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:.87rem">`;
+  const qrow = (label,sub,ctrl) => `<div class="quote-row"><div class="qr-label"><div>${label}</div>${sub?`<div class="qr-sub">${sub}</div>`:''}</div><div class="qr-ctrl">${ctrl}</div></div>`;
+  const navBtns = (n, prevLabel, nextLabel, nextFn='pwNext') =>
+    `<div class="quote-nav"><button class="btn btn-secondary" onclick="pwPrev(${n})">← ${prevLabel}</button><button class="btn btn-primary" onclick="${nextFn}(${n})">${nextLabel} →</button></div>`;
+
+  // Activity defaults for first premises
+  const actDefs = Array.from({length:8}, (_,i) => {
+    const saved = (sv('activities')||[])[i];
+    if (saved) return saved;
+    return {activity:'None', carriedOutBy:'You', pct: (i===0 && currentPremisesIdx===0) ? 100 : 0};
+  });
+  if (currentPremisesIdx===0 && !sv('activities')) actDefs[0].activity = quoteData.businessDescription || 'None';
+
+  // Construction row helper
+  const constrBlock = (part, label, optArr, defFirst) => {
+    const rows = sv(part+'Rows') || [{type:defFirst,pct:100},{type:'N/A',pct:0},{type:'N/A',pct:0}];
+    return `<div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
+      <div style="width:220px;padding-top:10px;flex-shrink:0;font-size:.85rem;color:var(--slate)">${label}</div>
+      <div style="flex:1">
+        <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+          ${[0,1,2].map(i=>`
+            <div style="display:flex;align-items:center;${i?'border-top:1px solid var(--border)':''}">
+              <select id="pw-${part}-type-${i}" onchange="updateConstrTotal('${part}')" style="flex:1;border:none;border-right:1px solid var(--border);padding:9px 12px;font-size:.85rem;font-weight:600;color:var(--navy);background:var(--white)">
+                ${opts(optArr, rows[i]?.type||defFirst)}
+              </select>
+              <input type="number" id="pw-${part}-pct-${i}" value="${rows[i]?.pct??( i===0?100:0)}" min="0" max="100" oninput="updateConstrTotal('${part}')" style="width:80px;border:none;padding:9px 12px;font-size:.88rem;text-align:right">
+            </div>`).join('')}
+        </div>
+      </div>
+      <div style="font-family:'Raleway',sans-serif;font-size:1.3rem;font-weight:800;padding-top:8px;white-space:nowrap" id="pw-${part}-total">100%</div>
+    </div>`;
+  };
+
+  container.innerHTML = `
+
+    <!-- STEP 1 -->
+    <div class="pw-step" id="pw-step-1" style="display:none">
+      <div class="quote-card">
+        <div class="quote-card-hdr"><h4>Premises ${currentPremisesIdx+1}: Step 1 of 8 — Premises Details</h4><p>Address and activity at this premises</p></div>
+        <div class="quote-card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px">
+            <div>
+              <div class="qsec-title">1.1 Enter Premises Address:</div>
+              <div class="form-grid cols-1" style="gap:10px">
+                <div class="form-group"><label>Trading Name</label>${inp('pw-tradingName',sv('tradingName'),'e.g. Ringo\'s Test Practice')}</div>
+                <div class="form-group"><label>Address Line 1 <span class="req">*</span></label>${inp('pw-addr1',sv('addr1'),'Street address')}</div>
+                <div class="form-group"><label>Address Line 2</label>${inp('pw-addr2',sv('addr2'),'Optional')}</div>
+                <div class="form-group"><label>Town <span class="req">*</span></label>${inp('pw-town',sv('town'),'e.g. Liverpool')}</div>
+                <div class="form-group"><label>County</label>${inp('pw-county',sv('county'),'e.g. Merseyside')}</div>
+                <div class="form-group"><label>Country</label>
+                  <select id="pw-country" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:.87rem">
+                    ${opts(['United Kingdom','England','Scotland','Wales','Northern Ireland','Channel Islands','Isle of Man'], sv('country','United Kingdom'))}
+                  </select>
+                </div>
+                <div class="form-group"><label>Postcode <span class="req">*</span></label>${inp('pw-postcode',sv('postcode'),'e.g. MK40 3JG')}</div>
+                <div class="form-group"><label>Year Established</label>${inp('pw-yearEstab',sv('yearEstab'),'e.g. 1970')}</div>
+              </div>
+            </div>
+            <div>
+              <div class="qsec-title">1.2 Activity at Premises:</div>
+              <table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+                <thead><tr style="background:var(--surface)">
+                  <th style="padding:8px 10px;font-size:.72rem;font-weight:700;color:var(--mist);text-transform:uppercase;border-bottom:1px solid var(--border);width:45%">Activity Description</th>
+                  <th style="padding:8px 10px;font-size:.72rem;font-weight:700;color:var(--mist);text-transform:uppercase;border-bottom:1px solid var(--border);width:30%">Carried Out By</th>
+                  <th style="padding:8px 10px;font-size:.72rem;font-weight:700;color:var(--mist);text-transform:uppercase;border-bottom:1px solid var(--border);width:25%">% of turnover?</th>
+                </tr></thead>
+                <tbody>
+                  ${actDefs.map((a,i)=>`<tr style="${i?'border-top:1px solid var(--border)':''}">
+                    <td style="padding:5px 6px"><select id="pw-act-${i}" onchange="updateActTotal()" style="width:100%;border:1.5px solid var(--navy);border-radius:5px;padding:5px 7px;font-size:.8rem;font-weight:600;color:var(--navy);background:var(--white)">${opts(ACTIVITY_OPTS,a.activity)}</select></td>
+                    <td style="padding:5px 6px"><select id="pw-by-${i}" style="width:100%;border:1.5px solid var(--navy);border-radius:5px;padding:5px 7px;font-size:.8rem;font-weight:600;color:var(--navy);background:var(--white)">${opts(['You','Your Tenant','Landlord/Tenant'],a.carriedOutBy)}</select></td>
+                    <td style="padding:5px 6px"><input type="number" id="pw-pct-${i}" value="${a.pct}" min="0" max="100" oninput="updateActTotal()" style="width:100%;border:1.5px solid var(--border);border-radius:5px;padding:5px 8px;font-size:.85rem;text-align:right"></td>
+                  </tr>`).join('')}
+                </tbody>
+              </table>
+              <div style="text-align:right;margin-top:8px">
+                <span style="font-family:'Raleway',sans-serif;font-size:1.3rem;font-weight:800" id="pw-act-total">100%</span>
+                <div style="font-size:.75rem;color:var(--mist)">Total must equal 100%</div>
+              </div>
+            </div>
+          </div>
+          ${navBtns(1,'Premises List','Step 2')}
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="pw-step" id="pw-step-2" style="display:none">
+      <div class="quote-card">
+        <div class="quote-card-hdr"><h4>Premises ${currentPremisesIdx+1}: Step 2 of 8 — Declarations</h4><p>Select any that apply to this premises</p></div>
+        <div class="quote-card-body">
+          <div class="qsec-title">2.1 Select any of the following that apply to the premises:</div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            ${isel('pw-none',['Yes','No'],sv('pw2None','Yes'),'100px')}
+            <span style="font-size:.88rem;font-weight:600;color:var(--slate)">None of the below</span>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            ${[
+              ['pw-d1',sv('pw2D1','No'),'Premises has a history of flooding'],
+              ['pw-d2',sv('pw2D2','No'),'Premises is in an area subject to an increased risk of flooding'],
+              ['pw-d3',sv('pw2D3','No'),'Premises is of non-standard construction'],
+              ['pw-d4',sv('pw2D4','No'),'Premises or any adjacent property has suffered from, or shows any visible signs of damage from subsidence, landslip or ground heave'],
+              ['pw-d5',sv('pw2D5','No'),'Proposer is not the sole occupant of the premises'],
+              ['pw-d6',sv('pw2D6','No'),'Business is not self contained with its own means of access'],
+              ['pw-d7',sv('pw2D7','No'),'Building has an ATM for which you are responsible']
+            ].map(([id,val,text],i)=>`
+              <div class="decl-row" style="border-top:${i?'1px solid var(--border)':'none'};background:${i%2?'var(--white)':'var(--surface)'}">
+                <select id="${id}" class="decl-sel" onchange="checkPw2Warning()"><option value="No"${val==='No'?' selected':''}>No</option><option value="Yes"${val==='Yes'?' selected':''}>Yes</option></select>
+                <span class="decl-text">${text}</span>
+              </div>`).join('')}
+          </div>
+          <div id="pw2-warn" style="display:none;margin-top:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:.83rem;color:#991b1b">
+            ⚠️ 'None of the below' is Yes but one or more declarations are set to Yes. Please review.
+          </div>
+          ${navBtns(2,'Address','Step 3')}
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="pw-step" id="pw-step-3" style="display:none">
+      <div class="quote-card">
+        <div class="quote-card-hdr"><h4>Premises ${currentPremisesIdx+1}: Step 3 of 8 — Construction</h4><p>3.1 If confirmed as non-standard construction in material facts, amend below:</p></div>
+        <div class="quote-card-body">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+            <span style="font-size:.85rem;color:var(--slate)">If flat roof, which year was the roof installed:</span>
+            ${inp('pw-flatRoofYear',sv('flatRoofYear','N/A'),'N/A','120px')}
+          </div>
+          ${constrBlock('roof','Please describe the construction of the roof:', ROOF_OPTS, 'Tile')}
+          ${constrBlock('walls','Please describe the construction of the walls:', WALL_OPTS, 'Brick &or Block')}
+          ${constrBlock('floor','Please describe the construction of the floor:', FLOOR_OPTS, 'Timber')}
+          ${navBtns(3,'Declarations','Step 4')}
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="pw-step" id="pw-step-4" style="display:none">
+      <div class="quote-card">
+        <div class="quote-card-hdr"><h4>Premises ${currentPremisesIdx+1}: Step 4 of 8 — Grading &amp; Security</h4><p>4.1 Please complete building details including security features:</p></div>
+        <div class="quote-card-body">
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            ${qrow('Are the premises a listed building? If so, what grade?','',isel('pw-listed',['Not on cover','not listed','2 / ll / C / B2','. / . / . / B1','. / . / B / .','2* / ll* / . / B+','1 / I / A / A'],sv('listedBuilding','not listed')))}
+            ${qrow('Do you have any portable heating?','',isel('pw-portableHeat',['No','Yes'],sv('portableHeating','No')))}
+            ${qrow('Do your premises meet our minimum level of security?','',isel('pw-meetsMinSec',['Yes','No'],sv('meetsMinSec','Yes')))}
+            ${qrow('Does the premises have an intruder alarm?','',isel('pw-intruderAlarm',['Yes','No'],sv('intruderAlarm','Yes')))}
+            ${qrow('Is the Alarm Monitored?','',isel('pw-alarmMonitored',['None','ABC','Audible','Central Station Dial-up Line','Central Station Direct Line','Digicom','Dualcom','High Decibel Internal Sounder','Line to Site Security Office','PAKNET','Police Direct Line','REDCARE','RedcareGSM','Visual'],sv('alarmMonitored','None')))}
+            ${qrow('What grade is the alarm system and its signalling? (as specified in EN 50131)','',isel('pw-alarmGrade',['None','Unknown','3','2','1'],sv('alarmGrade','None')))}
+            ${qrow('Is the alarm under your sole control?','',isel('pw-alarmSoleControl',['Yes','No'],sv('alarmSoleControl','Yes')))}
+            <div class="quote-row"><div class="qr-label"><div>Please give details of any additional security features</div></div>
+              <div class="qr-ctrl" style="display:flex;flex-direction:column;gap:6px">
+                ${[0,1,2].map(i=>`<select id="pw-secFeat-${i}" style="width:300px;padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:.85rem;color:var(--slate);background:var(--white)">${opts(['None','Anti Ram Raid Bollards','Shutters - Metal','Fixed External Bars/Grills: on all accessible windows','Fixed Internal Bars/Grills: on all accessible windows & doors','Hinge Bolts','Steel Lined Doors','Onsite CCTV','Other Monitored CCTV','Encasement & entrapment devices on all computer equipment','Smoke Cloak','Proposer/family members or employees residing above premises','24 Hour Site on site Security','Security Patrols visiting periodically','Guard Dog(s)'],sv('secFeature'+i,'None'))}</select>`).join('')}
+              </div>
+            </div>
+          </div>
+          ${navBtns(4,'Construction','Step 5')}
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="pw-step" id="pw-step-5" style="display:none">
+      <div class="quote-card">
+        <div class="quote-card-hdr"><h4>Premises ${currentPremisesIdx+1}: Step 5 of 8 — Cover Choices</h4></div>
+        <div class="quote-card-body">
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            ${qrow('Cover included for Subsidence?','Include as default',isel('pw5-subsidence',['Yes','No'],sv('pw5Subsidence','Yes')))}
+            ${qrow('Cover included for Flood?','Include as default',isel('pw5-flood',['Yes','No'],sv('pw5Flood','Yes')))}
+            <div class="quote-row"><div class="qr-label"><div>Buildings Sum Insured</div></div><div class="qr-ctrl"><div class="gbp-wrap"><span class="gbp-lbl">£</span><input type="text" id="pw5-buildingsSI" value="${sv('pw5BuildingsSI','0')}" class="gbp-inp" style="width:160px" oninput="this.value=this.value.replace(/[^0-9.,]/g,'')"></div></div></div>
+            <div class="quote-row"><div class="qr-label"><div>Contents Sum Insured</div></div><div class="qr-ctrl"><div class="gbp-wrap"><span class="gbp-lbl">£</span><input type="text" id="pw5-contentsSI" value="${sv('pw5ContentsSI','0')}" class="gbp-inp" style="width:160px" oninput="this.value=this.value.replace(/[^0-9.,]/g,'')"></div></div></div>
+            <div class="quote-row"><div class="qr-label"><div>Computer Equipment</div></div><div class="qr-ctrl"><div class="gbp-wrap"><span class="gbp-lbl">£</span><input type="text" id="pw5-computerSI" value="${sv('pw5ComputerSI','0')}" class="gbp-inp" style="width:160px" oninput="this.value=this.value.replace(/[^0-9.,]/g,'')"></div></div></div>
+          </div>
+          ${navBtns(5,'Security','Step 6')}
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 6 -->
+    <div class="pw-step" id="pw-step-6" style="display:none">
+      <div class="quote-card">
+        <div class="quote-card-hdr"><h4>Premises ${currentPremisesIdx+1}: Step 6 of 8 — Cover Choice Continued</h4></div>
+        <div class="quote-card-body">
+          <div class="qsec-title">6.1 Refrigeration</div>
+          <p style="font-size:.83rem;color:var(--slate);margin-bottom:12px">Our cover automatically includes the failure of refrigeration damaging Drugs and Vaccines. The maximum we will pay is £10,000 any one occurrence.</p>
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px">
+            <div class="quote-row"><div class="qr-label"><div>Refrigerated stock cover (inc. drugs)</div></div><div class="qr-ctrl"><div class="gbp-wrap"><span class="gbp-lbl">£</span><input type="text" id="pw6-refrigStock" value="${sv('pw6RefrigStock','0')}" class="gbp-inp" style="width:160px" oninput="this.value=this.value.replace(/[^0-9.,]/g,'')"></div></div></div>
+            <div class="quote-row"><div class="qr-label"><div>Ambient stock cover (inc. drugs)</div></div><div class="qr-ctrl"><div class="gbp-wrap"><span class="gbp-lbl">£</span><input type="text" id="pw6-ambientStock" value="${sv('pw6AmbientStock','0')}" class="gbp-inp" style="width:160px" oninput="this.value=this.value.replace(/[^0-9.,]/g,'')"></div></div></div>
+          </div>
+          <div class="qsec-title">6.2 Money</div>
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            <div class="quote-row"><div class="qr-label"><div>Money on premises during business hours</div><div class="qr-sub">Default cover is £10,000. Minimum cover is £2,000.</div></div><div class="qr-ctrl"><div class="gbp-wrap"><span class="gbp-lbl">£</span><input type="text" id="pw6-moneyBus" value="${sv('pw6MoneyBusHours','10,000')}" class="gbp-inp" style="width:160px" oninput="this.value=this.value.replace(/[^0-9.,]/g,'')"></div></div></div>
+            <div class="quote-row"><div class="qr-label"><div>Money on premises after hours (in safe)</div><div class="qr-sub">Minimum cover is £2,000 per safe.</div></div><div class="qr-ctrl"><div class="gbp-wrap"><span class="gbp-lbl">£</span><input type="text" id="pw6-moneyAfter" value="${sv('pw6MoneyAfterHours','10,000')}" class="gbp-inp" style="width:160px" oninput="this.value=this.value.replace(/[^0-9.,]/g,'')"></div></div></div>
+            ${qrow('How many safes do you have?','',isel('pw6-numSafes',['0','1','2','3','4','5'],sv('pw6NumSafes','1')))}
+          </div>
+          ${navBtns(6,'Cover Choices','Step 7')}
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 7 -->
+    <div class="pw-step" id="pw-step-7" style="display:none">
+      <div class="quote-card">
+        <div class="quote-card-hdr"><h4>Premises ${currentPremisesIdx+1}: Step 7 of 8 — Business Equipment &amp; Locum</h4></div>
+        <div class="quote-card-body">
+          <div class="qsec-title">Medical / Specialist Equipment</div>
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px">
+            <div class="quote-row"><div class="qr-label"><div>Equipment Sum Insured</div></div><div class="qr-ctrl"><div class="gbp-wrap"><span class="gbp-lbl">£</span><input type="text" id="pw7-equipSI" value="${sv('pw7EquipSI','0')}" class="gbp-inp" style="width:160px" oninput="this.value=this.value.replace(/[^0-9.,]/g,'')"></div></div></div>
+            <div class="quote-row"><div class="qr-label"><div>Vaccine Storage Cover</div><div class="qr-sub">Up to £30,000 per location</div></div><div class="qr-ctrl"><div class="gbp-wrap"><span class="gbp-lbl">£</span><input type="text" id="pw7-vaccineSI" value="${sv('pw7VaccineSI','0')}" class="gbp-inp" style="width:160px" oninput="this.value=this.value.replace(/[^0-9.,]/g,'')"></div></div></div>
+            ${qrow('Number of refrigeration units','',[0,1,2,3,4,5].map(String).reduce((s,o)=>`${s}<option value="${o}"${o===sv('pw7NumFridges','1')?' selected':''}>${o}</option>`,'<select id="pw7-numFridges" style="width:120px;padding:9px 12px;border:1.5px solid var(--navy);border-radius:6px;font-size:.87rem;font-weight:600;color:var(--navy);background:var(--white)">').concat('</select>'))}
+          </div>
+          <div class="qsec-title">Locum Cover</div>
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            <div class="quote-row"><div class="qr-label"><div>Weekly locum benefit</div></div><div class="qr-ctrl"><div class="gbp-wrap"><span class="gbp-lbl">£</span><input type="text" id="pw7-locumWeekly" value="${sv('pw7LocumWeekly','0')}" class="gbp-inp" style="width:160px" oninput="this.value=this.value.replace(/[^0-9.,]/g,'')"></div></div></div>
+            ${qrow('Number of practitioners','',`<input type="number" id="pw7-locumNum" value="${sv('pw7LocumNum','1')}" min="0" style="width:100px;padding:9px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:.87rem">`)}
+          </div>
+          ${navBtns(7,'Cover Contd','Step 8')}
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 8 SUMMARY -->
+    <div class="pw-step" id="pw-step-8" style="display:none">
+      <div class="quote-card">
+        <div class="quote-card-hdr"><h4>Premises ${currentPremisesIdx+1}: Step 8 of 8 — Summary</h4><p>Review details before saving</p></div>
+        <div class="quote-card-body" id="pw-summary-body">
+          <!-- populated by buildPwSummary -->
+        </div>
+      </div>
+    </div>`;
+}
+
+function buildPwSummary() {
+  const p = premisesData[currentPremisesIdx] || {};
+  const f = v => v || '—';
+  const fm = v => v ? '£'+v : '—';
+  document.getElementById('pw-summary-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:16px">
+      <div class="detail-section"><h4>Address</h4>
+        <div class="detail-row"><span class="key">Address</span><span>${f([p.addr1,p.addr2,p.town,p.county,p.postcode].filter(Boolean).join(', '))}</span></div>
+        <div class="detail-row"><span class="key">Trading Name</span><span>${f(p.tradingName)}</span></div>
+        <div class="detail-row"><span class="key">Year Estab.</span><span>${f(p.yearEstab)}</span></div>
+      </div>
+      <div class="detail-section"><h4>Cover</h4>
+        <div class="detail-row"><span class="key">Buildings SI</span><span>${fm(p.pw5BuildingsSI)}</span></div>
+        <div class="detail-row"><span class="key">Contents SI</span><span>${fm(p.pw5ContentsSI)}</span></div>
+        <div class="detail-row"><span class="key">Equipment SI</span><span>${fm(p.pw7EquipSI)}</span></div>
+        <div class="detail-row"><span class="key">Locum Weekly</span><span>${fm(p.pw7LocumWeekly)}</span></div>
+      </div>
+    </div>
+    <div class="detail-section" style="margin-bottom:16px"><h4>Security</h4>
+      <div class="detail-row"><span class="key">Listed Building</span><span>${f(p.listedBuilding)}</span></div>
+      <div class="detail-row"><span class="key">Intruder Alarm</span><span>${f(p.intruderAlarm)}</span></div>
+      <div class="detail-row"><span class="key">Alarm Monitored</span><span>${f(p.alarmMonitored)}</span></div>
+    </div>
+    <div class="quote-nav">
+      <button class="btn btn-secondary" onclick="showPremisesStep(7)">← Step 7</button>
+      <button class="btn btn-primary" onclick="savePremisesAndReturn()">Save Premises ${currentPremisesIdx+1} ✓</button>
+    </div>`;
+}
+
+function updateActTotal() {
+  let total = 0;
+  for (let i=0;i<8;i++) { const el=document.getElementById('pw-pct-'+i); if(el) total+=parseFloat(el.value)||0; }
+  const d = document.getElementById('pw-act-total');
+  if (d) { d.textContent=total+'%'; d.style.color=total===100?'#22c55e':'#dc2626'; }
+}
+
+function updateConstrTotal(part) {
+  let total = 0;
+  for (let i=0;i<3;i++) { const el=document.getElementById('pw-'+part+'-pct-'+i); if(el) total+=parseFloat(el.value)||0; }
+  const d = document.getElementById('pw-'+part+'-total');
+  if (d) { d.textContent=total+'%'; d.style.color=total===100?'#22c55e':'#dc2626'; }
+}
+
+function checkPw2Warning() {
+  const none = document.getElementById('pw-none')?.value;
+  const anyYes = [1,2,3,4,5,6,7].some(i=>document.getElementById('pw-d'+i)?.value==='Yes');
+  const w = document.getElementById('pw2-warn');
+  if (w) w.style.display = (none==='Yes' && anyYes) ? 'block' : 'none';
 }
 
 // ── Boot ───────────────────────────────────────────────────────────────────────
