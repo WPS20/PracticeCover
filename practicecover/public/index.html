@@ -1055,7 +1055,9 @@ async function quoteNext(fromStep) {
     }
   }
   collectStep(fromStep);
-  // Auto-save draft
+  // Mark this step as completed
+  if (fromStep >= quoteMaxStep) quoteMaxStep = fromStep;
+  // Auto-save draft after every step
   if (!editingQuoteId) {
     const r = await api('POST','/api/quotes', {...quoteData, status:'draft'});
     if (r && !r.error) { editingQuoteId = r.id; quoteData.id = r.id; }
@@ -1067,6 +1069,7 @@ async function quoteNext(fromStep) {
 
 async function quotePrev(fromStep) {
   collectStep(fromStep);
+  if (editingQuoteId) await api('PUT', '/api/quotes/'+editingQuoteId, quoteData);
   showQuoteStep(fromStep-1);
 }
 
