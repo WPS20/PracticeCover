@@ -103,10 +103,12 @@ tr:hover td{background:#fafbfc}
 
 /* ── Dashboard ── */
 .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
-.stat-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px 24px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px 24px;cursor:pointer;transition:all .15s;text-decoration:none;display:block}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);border-color:var(--accent)}
 .stat-card .label{font-size:.75rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
 .stat-card .value{font-family:'Raleway',sans-serif;font-size:2rem;font-weight:800;color:var(--ink)}
 .stat-card.accent{background:var(--accent)}.stat-card.accent .label,.stat-card.accent .value{color:#fff}
+.stat-card.accent:hover{background:#009688;border-color:#009688}
 
 /* ── Forms / Modals ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
@@ -258,7 +260,13 @@ tr:hover td{background:#fafbfc}
 
       <!-- DASHBOARD -->
       <div class="page active" id="page-dashboard">
-        <p id="dashboard-greeting" style="font-size:1.1rem;font-weight:600;color:var(--ink);margin-bottom:20px">Good morning.</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <p id="dashboard-greeting" style="font-size:1.1rem;font-weight:600;color:var(--ink)">Good morning.</p>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-secondary btn-sm" onclick="showPage('quotes')">📋 View Quotes</button>
+            <button class="btn btn-primary btn-sm" onclick="startNewQuote()">+ New Quote</button>
+          </div>
+        </div>
         <div class="stat-grid" id="stats-grid">
           <div class="stat-card accent"><div class="label">Practices</div><div class="value">—</div></div>
           <div class="stat-card"><div class="label">Active</div><div class="value">—</div></div>
@@ -267,7 +275,7 @@ tr:hover td{background:#fafbfc}
         </div>
         <div class="card">
           <div class="card-header">
-            <h3>Recent Practices</h3>
+            <h3 onclick="showPage('customers')" style="cursor:pointer;transition:color .15s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color=''">Recent Practices</h3>
             <button class="btn btn-secondary btn-sm" onclick="showPage('customers')">View All</button>
           </div>
           <table>
@@ -594,10 +602,22 @@ async function renderDashboard() {
   const stats = await api('GET', '/api/stats');
   if (stats && !stats.error) {
     document.getElementById('stats-grid').innerHTML = `
-      <div class="stat-card accent"><div class="label">Practices</div><div class="value">${stats.totalCustomers}</div></div>
-      <div class="stat-card"><div class="label">Active</div><div class="value">${stats.activeCustomers}</div></div>
-      <div class="stat-card"><div class="label">Prospects</div><div class="value">${stats.prospectCustomers}</div></div>
-      <div class="stat-card"><div class="label">Users</div><div class="value">${stats.totalUsers}</div></div>`;
+      <div class="stat-card accent" onclick="showPage('customers')" title="View all practices">
+        <div class="label">Practices</div><div class="value">${stats.totalCustomers}</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.65);margin-top:6px">View all →</div>
+      </div>
+      <div class="stat-card" onclick="showPage('customers')" title="View active practices">
+        <div class="label">Active</div><div class="value">${stats.activeCustomers}</div>
+        <div style="font-size:.72rem;color:var(--mist);margin-top:6px">View practices →</div>
+      </div>
+      <div class="stat-card" onclick="showPage('customers')" title="View prospect practices">
+        <div class="label">Prospects</div><div class="value">${stats.prospectCustomers}</div>
+        <div style="font-size:.72rem;color:var(--mist);margin-top:6px">View practices →</div>
+      </div>
+      <div class="stat-card" onclick="${currentUser?.role==='admin' ? 'showPage(\'users\')' : ''}" title="${currentUser?.role==='admin' ? 'Manage users' : 'Users'}" style="${currentUser?.role==='admin' ? '' : 'cursor:default'}">
+        <div class="label">Users</div><div class="value">${stats.totalUsers}</div>
+        <div style="font-size:.72rem;color:var(--mist);margin-top:6px">${currentUser?.role==='admin' ? 'Manage users →' : '&nbsp;'}</div>
+      </div>`;
   }
   const sb = s => {
     const m = {active:'#dcfce7;color:#166534',prospect:'#dbeafe;color:#1e40af',inactive:'#fee2e2;color:#991b1b'};
@@ -606,7 +626,7 @@ async function renderDashboard() {
   };
   const recent = state.customers.slice(0,5);
   document.getElementById('recent-tbody').innerHTML = recent.length
-    ? recent.map(c=>`<tr><td><strong>${esc(c.name)}</strong></td><td>${esc(c.practiceName)||'—'}</td><td>${c.type||'—'}</td><td>${sb(c.status)}</td><td>${esc(c.email)||'—'}</td></tr>`).join('')
+    ? recent.map(c=>`<tr onclick="openCustomerDetail('${c.id}')" style="cursor:pointer" title="View ${esc(c.name)}"><td><strong>${esc(c.name)}</strong></td><td>${esc(c.practiceName)||'—'}</td><td>${c.type||'—'}</td><td>${sb(c.status)}</td><td>${esc(c.email)||'—'}</td></tr>`).join('')
     : '<tr class="empty-row"><td colspan="5">No practices yet</td></tr>';
 }
 
