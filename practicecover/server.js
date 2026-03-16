@@ -199,7 +199,7 @@ app.post('/api/quotes', auth, async(req,res) => {
   try {
     const d = req.body; const ref = await nextRef();
     const vals = qVals(d, req.session.userId);
-    const placeholders = `$1,$2,$3,$4,${vals.map((_,i)=>'$'+(i+5)).join(',')}`;
+    const placeholders = `$1,$2,$3,${vals.map((_,i)=>'$'+(i+4)).join(',')}`;
     const r = await query(
       `INSERT INTO quotes (${QCOLS}) VALUES (${placeholders}) RETURNING *`,
       [uuidv4(), ref, d.status||'draft', ...vals]
