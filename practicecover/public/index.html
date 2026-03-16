@@ -2624,8 +2624,16 @@ function renderGuideCards(cat) {
   const catLabels = { practices:'Practices', quotes:'Quotes', premises:'Premises', 'policy-steps':'Policy Steps', 'premises-steps':'Premises Steps', users:'Users' };
 
   function cardHtml(g) {
+    let iconHtml;
+    if (g.cat === 'policy-steps') {
+      iconHtml = `<div style="display:flex;align-items:center;gap:6px"><span style="font-size:1.4rem">📋</span><span style="font-size:1.1rem">${g.icon}</span></div>`;
+    } else if (g.cat === 'premises-steps') {
+      iconHtml = `<div style="display:flex;align-items:center;gap:6px"><span style="font-size:1.4rem">🏢</span><span style="font-size:1.1rem">${g.icon}</span></div>`;
+    } else {
+      iconHtml = `<div class="gc-icon">${g.icon}</div>`;
+    }
     return `<div class="guide-card" onclick="openGuide('${g.id}')">
-      <div class="gc-icon">${g.icon}</div>
+      ${iconHtml}
       <div class="gc-title">${esc(g.title)}</div>
       <div class="gc-desc">${esc(g.desc)}</div>
       <div class="gc-tag">${catLabels[g.cat] || g.cat}</div>
