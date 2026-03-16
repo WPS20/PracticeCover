@@ -218,6 +218,133 @@ tr:hover td{background:#fafbfc}
 /* filter row */
 .filter-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .filter-row select{padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.83rem;color:var(--slate);background:var(--white);font-family:'Inter',sans-serif}
+
+/* ── Mobile nav ── */
+.mob-menu-btn{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0}
+.mob-menu-btn span{display:block;width:22px;height:2px;background:var(--navy);border-radius:2px;transition:all .2s}
+.mob-menu-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.mob-menu-btn.open span:nth-child(2){opacity:0}
+.mob-menu-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+#mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99}
+#mob-overlay.show{display:block}
+
+@media(max-width:768px){
+  /* ── Layout ── */
+  body{overflow:auto}
+  #app{flex-direction:column;height:auto;min-height:100vh}
+  .sidebar{
+    position:fixed;top:0;left:-220px;width:220px;height:100%;z-index:100;
+    transition:left .25s ease;box-shadow:none
+  }
+  .sidebar.open{left:0;box-shadow:4px 0 20px rgba(0,0,0,.3)}
+  .mob-menu-btn{display:flex}
+  .main{flex:1;min-height:100vh;overflow:visible}
+  .topbar{padding:0 14px;height:54px;position:sticky;top:0;z-index:50;gap:10px}
+  .topbar h1{font-size:1rem}
+  #content{padding:14px;overflow:visible}
+
+  /* ── Stats grid ── */
+  .stat-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .stat-card{padding:14px 16px}
+  .stat-card .value{font-size:1.5rem}
+
+  /* ── Tables: horizontal scroll ── */
+  .card{overflow-x:auto}
+  table{min-width:500px}
+
+  /* ── Forms ── */
+  .form-grid{grid-template-columns:1fr !important}
+  .detail-grid{grid-template-columns:1fr !important}
+
+  /* ── Modals ── */
+  .modal-overlay{align-items:flex-end}
+  .modal{
+    width:100% !important;max-width:100% !important;
+    border-radius:16px 16px 0 0;max-height:92vh
+  }
+
+  /* ── Topbar action: icon-only on very small screens ── */
+  .topbar #topbar-action .btn{padding:7px 11px;font-size:.78rem}
+
+  /* ── Quote / premises progress bar ── */
+  .quote-progress{padding:10px 12px;gap:0}
+  .qp-dot{width:22px;height:22px;font-size:.65rem}
+  .qp-label{font-size:.6rem}
+  .qp-line{width:14px}
+
+  /* ── Quote wizard ── */
+  .quote-card-body{padding:14px}
+  .quote-nav{flex-direction:column;gap:8px}
+  .quote-nav .btn{width:100%;justify-content:center}
+
+  /* ── Quote step 1: single column ── */
+  #q-step-1 .quote-card-body > div[style*="grid"]{display:block !important}
+  #q-step-1 .quote-card-body > div > div{margin-bottom:0}
+
+  /* ── Cover row controls ── */
+  .quote-row{flex-direction:column;align-items:flex-start}
+  .quote-row .qr-ctrl{padding:8px 16px 12px;width:100%}
+  .quote-row .qr-ctrl select,.quote-row .qr-ctrl input{width:100% !important}
+  .gbp-inp{width:100% !important}
+  .gbp-wrap{width:100%}
+
+  /* ── Claims table ── */
+  .claims-table{font-size:.75rem}
+  .claims-table th,.claims-table td{padding:5px 6px}
+
+  /* ── Premises wizard ── */
+  #pw-steps .quote-card-body{padding:14px}
+
+  /* ── Premises step 1: two-col activity → single col ── */
+  #pw-step-1 .quote-card-body > div[style*="grid"]{display:block !important}
+
+  /* ── Construction blocks ── */
+  #pw-step-3 > div > div[style*="flex"]{flex-direction:column}
+
+  /* ── Premises selector grid ── */
+  #page-premises-select > div > div > div[style*="grid"]{
+    grid-template-columns:1fr !important;gap:4px
+  }
+  #page-premises-select .btn{width:100%;justify-content:space-between}
+
+  /* ── Filter rows ── */
+  .filter-row{flex-direction:column;align-items:stretch}
+  .filter-row select,.filter-row .search-bar{width:100%}
+  .filter-row .search-bar input{width:100%}
+
+  /* ── Card header wrap ── */
+  .card-header{flex-wrap:wrap;gap:8px}
+
+  /* ── Guide cards ── */
+  #guides-grid{grid-template-columns:1fr !important}
+  .guides-tab{font-size:.75rem;padding:6px 10px}
+
+  /* ── Practice detail grid ── */
+  #cd-body .detail-grid{grid-template-columns:1fr}
+
+  /* ── Buttons in modal footers ── */
+  .modal-footer{flex-wrap:wrap;gap:8px}
+  .modal-footer .btn{flex:1;min-width:120px;justify-content:center}
+
+  /* ── Practice selector row in quote ── */
+  .cust-sel-row{flex-direction:column;align-items:stretch}
+  .cust-sel-row .btn{width:100%;justify-content:center}
+
+  /* ── Action columns ── */
+  .actions-col{flex-wrap:wrap}
+
+  /* ── Dashboard greeting row ── */
+  #page-dashboard > div:first-child{flex-direction:column;align-items:flex-start;gap:10px}
+  #page-dashboard > div:first-child > div{width:100%;display:flex;gap:8px}
+  #page-dashboard > div:first-child > div .btn{flex:1;justify-content:center}
+}
+
+@media(max-width:400px){
+  .stat-grid{grid-template-columns:1fr}
+  .qp-label{display:none}
+  .qp-line{width:10px}
+  #topbar-action .btn span:not(:first-child){display:none}
+}
 </style>
 </head>
 <body>
@@ -244,6 +371,7 @@ tr:hover td{background:#fafbfc}
 
 <!-- APP -->
 <div id="app">
+  <div id="mob-overlay" onclick="closeSidebar()"></div>
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="sidebar-logo">
@@ -282,6 +410,9 @@ tr:hover td{background:#fafbfc}
   <!-- Main -->
   <div class="main">
     <div class="topbar">
+      <button class="mob-menu-btn" id="mob-menu-btn" onclick="toggleSidebar()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
       <h1 id="page-title">Dashboard</h1>
       <div id="topbar-action"></div>
     </div>
@@ -635,6 +766,7 @@ async function loadAll() {
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
 function showPage(name) {
+  if (window.innerWidth <= 768) closeSidebar();
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const pg = document.getElementById('page-' + name);
   if (!pg) return;
@@ -2613,6 +2745,30 @@ function closeGuideDetail() {
   const d = document.getElementById('guide-detail');
   if (d) d.style.display = 'none';
 }
+
+
+// ── Mobile sidebar ────────────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const ov = document.getElementById('mob-overlay');
+  const btn = document.getElementById('mob-menu-btn');
+  const open = sb.classList.toggle('open');
+  ov.classList.toggle('show', open);
+  btn.classList.toggle('open', open);
+}
+function closeSidebar() {
+  document.querySelector('.sidebar')?.classList.remove('open');
+  document.getElementById('mob-overlay')?.classList.remove('show');
+  document.getElementById('mob-menu-btn')?.classList.remove('open');
+}
+// Close sidebar on nav click on mobile
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.sidebar nav a').forEach(a => {
+    a.addEventListener('click', () => {
+      if (window.innerWidth <= 768) closeSidebar();
+    });
+  });
+});
 
 // ── Boot ───────────────────────────────────────────────────────────────────────
 init();
