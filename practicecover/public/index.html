@@ -137,6 +137,8 @@ tr:hover td{background:#fafbfc}
 .qp-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--mist)}
 .qp-step.active .qp-dot{background:var(--navy);border-color:var(--navy);color:#fff}
 .qp-step.done .qp-dot{background:var(--accent);border-color:var(--accent);color:#fff}
+.qp-step[onclick]:hover .qp-dot{opacity:.8;transform:scale(1.1)}
+.qp-step[onclick]:hover .qp-label{color:var(--navy)}
 .qp-label{font-size:.68rem;color:var(--mist);white-space:nowrap}
 .qp-step.active .qp-label{color:var(--navy);font-weight:600}
 .qp-step.done .qp-label{color:var(--accent)}
@@ -490,7 +492,8 @@ let editingCustomerId = null;
 let editingUserId = null;
 let editingQuoteId = null;
 let quoteData = {};
-let linkedCustomerId = null; // set when opening quote from a practice
+let linkedCustomerId = null;
+let quoteMaxStep = 1; // highest step reached in current quote // set when opening quote from a practice
 
 const PAGE_TITLES = {
   dashboard: 'Dashboard', customers: 'Practices', quotes: 'Quotes',
@@ -883,6 +886,7 @@ function startNewQuote() {
   editingQuoteId = null;
   linkedCustomerId = null;
   quoteData = {};
+  quoteMaxStep = 1;
   buildQuoteWizard();
   showPage('quote-new');
   document.getElementById('page-title').textContent = 'New Quote';
@@ -895,6 +899,7 @@ function startNewQuoteForCustomer(custId) {
   if (!c) return;
   editingQuoteId = null;
   linkedCustomerId = custId;
+  quoteMaxStep = 1;
   quoteData = {
     customerId: custId,
     fullName: c.name||'', contactName: c.contactName||'',
@@ -930,10 +935,14 @@ function editQuote(id) {
   editingQuoteId = id;
   linkedCustomerId = qt.customerId||null;
   quoteData = { ...qt };
+  quoteMaxStep = 7; // editing existing = all steps accessible
   buildQuoteWizard();
   showPage('quote-new');
   document.getElementById('page-title').textContent = 'Edit Quote';
   document.getElementById('topbar-action').innerHTML = '';
+  // Hide practice selector — not needed when editing existing quote
+  const sr = document.getElementById('q-cust-sel-row');
+  if (sr) sr.style.display = 'none';
   populateQuoteFields();
   showQuoteStep(1);
 }
@@ -949,15 +958,27 @@ function buildQuoteWizard() {
 
 function renderQuoteProgress(step) {
   document.getElementById('q-progress').innerHTML = QUOTE_STEPS.map((s,i) => {
-    const cls = s.n < step ? 'done' : s.n === step ? 'active' : '';
-    return `<div class="qp-step ${cls}">
+    const isDone    = s.n < step;
+    const isActive  = s.n === step;
+    const isAccess  = s.n <= quoteMaxStep; // clickable if already reached
+    const cls = isDone ? 'done' : isActive ? 'active' : '';
+    const cursor = isAccess && !isActive ? 'cursor:pointer' : '';
+    const onclick = isAccess && !isActive ? `onclick="quoteNavTo(${s.n})"` : '';
+    const title = isAccess && !isActive ? `title="Go to ${s.label}"` : '';
+    return `<div class="qp-step ${cls}" ${onclick} ${title} style="${cursor}">
       ${i>0?`<div class="qp-line ${s.n<=step?'done':''}"></div>`:''}
       <div class="qp-inner">
-        <div class="qp-dot">${s.n < step ? '✓' : s.n}</div>
+        <div class="qp-dot" style="${isAccess&&!isActive?'transition:all .15s':''}">${isDone ? '✓' : s.n}</div>
         <div class="qp-label">${s.label}</div>
       </div>
     </div>`;
   }).join('');
+}
+
+function quoteNavTo(n) {
+  if (n > quoteMaxStep) return; // can't skip ahead
+  collectStep(n === 1 ? 1 : n - 1); // save current before navigating (best effort)
+  showQuoteStep(n);
 }
 
 function showQuoteStep(n) {
@@ -1065,7 +1086,9 @@ async function saveQuote() {
 function populateQuoteFields() {
   const d = quoteData;
   const sv = (id,v) => { const el=document.getElementById(id); if(el) el.value=v||''; };
-  sv('q1-renewalDate',d.renewalDate); sv('q1-quoteType',d.quoteType);
+  // date inputs need YYYY-MM-DD format
+  const rd = d.renewalDate ? (d.renewalDate.includes('T') ? d.renewalDate.split('T')[0] : d.renewalDate) : '';
+  sv('q1-renewalDate', rd); sv('q1-quoteType',d.quoteType);
   sv('q1-previousInsurer',d.previousInsurer); sv('q1-fullName',d.fullName);
   sv('q1-contactName',d.contactName); sv('q1-telephone',d.telephone);
   sv('q1-mobile',d.mobile); sv('q1-email',d.email);
