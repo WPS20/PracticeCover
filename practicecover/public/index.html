@@ -890,7 +890,7 @@ function startNewQuote() {
   buildQuoteWizard();
   showPage('quote-new');
   document.getElementById('page-title').textContent = 'New Quote';
-  document.getElementById('topbar-action').innerHTML = '';
+  document.getElementById('topbar-action').innerHTML = '<button class="btn btn-primary" onclick="finishAndSave()">Finish &amp; Save Quote</button>';
   showQuoteStep(1);
 }
 
@@ -911,7 +911,7 @@ function startNewQuoteForCustomer(custId) {
   buildQuoteWizard();
   showPage('quote-new');
   document.getElementById('page-title').textContent = 'New Quote';
-  document.getElementById('topbar-action').innerHTML = '';
+  document.getElementById('topbar-action').innerHTML = '<button class="btn btn-primary" onclick="finishAndSave()">Finish &amp; Save Quote</button>';
   showQuoteStep(1);
   // Show banner
   const b = document.getElementById('q-link-banner');
@@ -939,7 +939,7 @@ function editQuote(id) {
   buildQuoteWizard();
   showPage('quote-new');
   document.getElementById('page-title').textContent = 'Edit Quote';
-  document.getElementById('topbar-action').innerHTML = '';
+  document.getElementById('topbar-action').innerHTML = '<button class="btn btn-primary" onclick="finishAndSave()">Finish &amp; Save Quote</button>';
   // Hide practice selector — not needed when editing existing quote
   const sr = document.getElementById('q-cust-sel-row');
   if (sr) sr.style.display = 'none';
@@ -1498,7 +1498,7 @@ function openPremisesWizard(idx) {
   buildPremisesWizard();
   showPage('premises-wizard');
   document.getElementById('page-title').textContent = 'Premises ' + (idx+1) + ' — Details';
-  document.getElementById('topbar-action').innerHTML = '';
+  document.getElementById('topbar-action').innerHTML = '<button class="btn btn-primary" onclick="finishAndSave()">Finish &amp; Save Quote</button>';
   showPremisesStep(1);
 }
 
@@ -1995,6 +1995,37 @@ function restoreEndorsementSelections(endorsements) {
     if (el) el.checked = endorsements.some(sel => sel.id === e.id);
   });
   updateEndorsementsList();
+}
+
+
+async function finishAndSave() {
+  // If we're in the premises wizard, save premises then go to quotes
+  if (document.getElementById('page-premises-wizard')?.classList.contains('active')) {
+    collectPwStep(currentPremisesStep);
+    premisesData[currentPremisesIdx].stepsComplete = 
+      [...new Set([...premisesData[currentPremisesIdx].stepsComplete, currentPremisesStep])];
+    await savePremisesToQuote();
+    await loadAll();
+    showPage('quotes');
+    return;
+  }
+  // If we're in the premises selector, finish normally
+  if (document.getElementById('page-premises-select')?.classList.contains('active')) {
+    await finishPremises();
+    return;
+  }
+  // Otherwise we're in the quote wizard - save current step and go to quotes
+  const stepEls = document.querySelectorAll('.q-step');
+  let currentStep = 1;
+  stepEls.forEach((el, i) => { if (el.style.display !== 'none') currentStep = i + 1; });
+  collectStep(currentStep);
+  quoteData.status = quoteData.status || 'draft';
+  const method = editingQuoteId ? 'PUT' : 'POST';
+  const url = editingQuoteId ? '/api/quotes/' + editingQuoteId : '/api/quotes';
+  const r = await api(method, url, quoteData);
+  if (r && !r.error && !editingQuoteId) editingQuoteId = r.id;
+  await loadAll();
+  showPage('quotes');
 }
 
 // ── Boot ───────────────────────────────────────────────────────────────────────
