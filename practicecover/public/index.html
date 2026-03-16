@@ -79,6 +79,33 @@ tr:hover td{background:#fafbfc}
 .btn-ghost{background:transparent;color:var(--slate);border:1.5px solid var(--border)}.btn-ghost:hover{border-color:var(--slate)}
 .btn-danger{background:#fef2f2;color:var(--red);border:1.5px solid #fecaca}.btn-danger:hover{background:var(--red);color:#fff}
 .btn-sm{padding:6px 12px;font-size:.78rem}
+
+/* ── User Guides ── */
+.guides-tab{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);color:var(--slate);font-size:.82rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.guides-tab:hover{border-color:var(--accent);color:var(--accent)}
+.guides-tab.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.guide-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:10px}
+.guide-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.07)}
+.guide-card .gc-icon{font-size:1.8rem;line-height:1}
+.guide-card .gc-title{font-size:.92rem;font-weight:700;color:var(--ink)}
+.guide-card .gc-desc{font-size:.8rem;color:var(--mist);line-height:1.5;flex:1}
+.guide-card .gc-tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:700;background:var(--surface);color:var(--mist);text-transform:uppercase;letter-spacing:.5px;align-self:flex-start}
+.guide-step{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--surface)}
+.guide-step:last-child{border-bottom:none}
+.guide-step .step-num{width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;margin-top:2px}
+.guide-step .step-body .step-head{font-size:.87rem;font-weight:600;color:var(--ink);margin-bottom:3px}
+.guide-step .step-body .step-text{font-size:.82rem;color:var(--slate);line-height:1.6}
+.guide-tip{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;font-size:.82rem;color:#166534;margin-top:12px}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-item:last-child{border-bottom:none}
+.faq-q{padding:14px 20px;font-size:.88rem;font-weight:600;color:var(--ink);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .12s}
+.faq-q:hover{background:var(--surface)}
+.faq-q .faq-chevron{font-size:.8rem;color:var(--mist);transition:transform .2s;flex-shrink:0}
+.faq-q.open .faq-chevron{transform:rotate(180deg)}
+.faq-a{display:none;padding:0 20px 16px;font-size:.85rem;color:var(--slate);line-height:1.7}
+.faq-a.open{display:block}
+.no-guides{text-align:center;padding:48px 24px;color:var(--mist);font-size:.9rem}
+
 .actions-col{display:flex;gap:6px;justify-content:flex-end}
 
 /* ── Search ── */
@@ -346,16 +373,51 @@ tr:hover td{background:#fafbfc}
 
       <!-- GUIDES -->
       <div class="page" id="page-guides">
-        <div class="card">
-          <div class="card-header"><h3>User Guides</h3></div>
-          <div style="padding:24px;color:var(--slate);font-size:.9rem;line-height:1.7">
-            <h4 style="margin-bottom:8px">Getting Started</h4>
-            <p>Use the sidebar to navigate between Practices, Quotes and Users.</p>
-            <h4 style="margin-top:16px;margin-bottom:8px">Creating a Quote</h4>
-            <p>Click "+ New Quote" from the Quotes page, or click "+ New Quote" inside a Practice record to pre-fill the client details automatically.</p>
-            <h4 style="margin-top:16px;margin-bottom:8px">Managing Practices</h4>
-            <p>Add practices via "+ New Practice". Each practice stores contact details, correspondence address, business type, ERN number and entity type.</p>
+        <!-- Search bar -->
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px">
+          <div style="flex:1;position:relative">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:1rem">🔍</span>
+            <input id="guides-search" type="text" placeholder="Search guides… e.g. &quot;add practice&quot;, &quot;new quote&quot;, &quot;premises&quot;"
+              oninput="searchGuides()"
+              style="width:100%;padding:10px 12px 10px 38px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;font-family:inherit;outline:none;transition:border .15s"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
           </div>
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('guides-search').value='';searchGuides()">Clear</button>
+        </div>
+
+        <!-- Tabs -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="guides-tabs">
+          <button class="guides-tab active" onclick="showGuidesTab('all')" data-tab="all">All Guides</button>
+          <button class="guides-tab" onclick="showGuidesTab('practices')" data-tab="practices">🏥 Practices</button>
+          <button class="guides-tab" onclick="showGuidesTab('quotes')" data-tab="quotes">📋 Quotes</button>
+          <button class="guides-tab" onclick="showGuidesTab('premises')" data-tab="premises">🏢 Premises</button>
+          <button class="guides-tab" onclick="showGuidesTab('users')" data-tab="users">🔑 Users</button>
+          <button class="guides-tab" onclick="showGuidesTab('faq')" data-tab="faq">❓ FAQs</button>
+        </div>
+
+        <!-- Guide cards grid -->
+        <div id="guides-cards-container">
+          <div id="guides-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px"></div>
+        </div>
+
+        <!-- FAQ section -->
+        <div id="guides-faq-section" style="display:none">
+          <div class="card">
+            <div class="card-header"><h3>Frequently Asked Questions</h3></div>
+            <div id="faq-list" style="padding:8px 0"></div>
+          </div>
+        </div>
+
+        <!-- Guide detail panel -->
+        <div id="guide-detail" style="display:none;background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:16px">
+          <div style="background:var(--navy);padding:20px 24px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div id="guide-detail-title" style="font-family:'Raleway',sans-serif;font-size:1.1rem;font-weight:700;color:#fff"></div>
+              <div id="guide-detail-desc" style="font-size:.82rem;color:rgba(255,255,255,.6);margin-top:4px"></div>
+            </div>
+            <button onclick="closeGuideDetail()" style="background:rgba(255,255,255,.1);border:none;border-radius:8px;padding:8px 14px;color:#fff;cursor:pointer;font-size:.85rem;font-weight:600">✕ Close</button>
+          </div>
+          <div id="guide-detail-body" style="padding:24px"></div>
         </div>
       </div>
 
@@ -593,6 +655,7 @@ function showPage(name) {
   if (name === 'customers')  renderCustomers();
   if (name === 'quotes')     renderQuotesList();
   if (name === 'users')      renderUsers();
+  if (name === 'guides')     initUserGuides();
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -2038,6 +2101,374 @@ async function finishAndSave() {
   if (r && !r.error && !editingQuoteId) editingQuoteId = r.id;
   await loadAll();
   showPage('quotes');
+}
+
+// ── User Guides ───────────────────────────────────────────────────────────────
+const GUIDE_DATA = [
+  // ── PRACTICES ──────────────────────────────────────────────────────────────
+  {
+    id:'prac-add', cat:'practices', icon:'🏥', title:'Add a New Practice',
+    desc:'Create a new practice record with contact details, ERN number and correspondence address.',
+    tips:['Use the ERN number field to track NHS practice identifiers.','Set Status to "Prospect" for leads not yet active.'],
+    steps:[
+      {h:'Open Practices',        b:'Click "Practices" in the sidebar, then click "+ New Practice" in the top-right.'},
+      {h:'Enter Contact Details', b:'Fill in the Full Name, Telephone and Email fields — these are mandatory.'},
+      {h:'Add Practice Details',  b:'Enter the Practice Name, Business Description (e.g. GP Practice/Surgery) and Entity Type.'},
+      {h:'Set ERN & Status',      b:'Enter the ERN Number if known. Set ERN Exempt to Yes if the practice is exempt. Choose the correct Status — Active, Prospect, Inactive or Lapsed.'},
+      {h:'Correspondence Address',b:'Enter the address that correspondence should be sent to. This will auto-fill into new quotes linked to this practice.'},
+      {h:'Save',                  b:'Click "Save Practice". The practice appears immediately in the Practices list.'}
+    ]
+  },
+  {
+    id:'prac-edit', cat:'practices', icon:'✏️', title:'Edit a Practice',
+    desc:'Update any details on an existing practice record.',
+    tips:['Changes to the correspondence address do not retroactively update quotes already created.'],
+    steps:[
+      {h:'Find the Practice',  b:'Use the search bar on the Practices page to filter by name, practice name or email.'},
+      {h:'Click Edit',         b:'Click the "Edit" button on the practice row, or open the practice detail view and click "Edit Practice".'},
+      {h:'Update Fields',      b:'Make your changes across any of the tabs — contact details, practice details or correspondence address.'},
+      {h:'Save Changes',       b:'Click "Save Practice" to apply your changes.'}
+    ]
+  },
+  {
+    id:'prac-view', cat:'practices', icon:'👁️', title:'View Practice Details',
+    desc:'Open a full detail panel for any practice showing all stored information.',
+    tips:['From the detail panel you can jump directly into a new quote pre-filled with this practice\'s details.'],
+    steps:[
+      {h:'Click View',       b:'Click the "View" button on any practice row on the Practices page.'},
+      {h:'Review Details',   b:'The detail panel shows contact info, practice details, entity type, ERN number and correspondence address.'},
+      {h:'Quick Actions',    b:'Use the "Edit Practice" button to edit, or "+ New Quote" to start a quote pre-linked to this practice.'}
+    ]
+  },
+  {
+    id:'prac-newquote', cat:'practices', icon:'📋', title:'Create a Quote from a Practice',
+    desc:'Start a new quote pre-filled with a practice\'s details in one click.',
+    tips:['This is the recommended way to create quotes — it links the quote to the practice and auto-fills all client detail fields.'],
+    steps:[
+      {h:'Open the Practice', b:'Click "View" on the practice row to open the detail panel.'},
+      {h:'Click + New Quote', b:'Click the "+ New Quote" button in the detail panel footer.'},
+      {h:'Review Step 1',     b:'The quote wizard opens with Step 1 pre-filled from the practice record. A green banner confirms which practice the quote is linked to.'},
+      {h:'Complete the Wizard', b:'Work through all 7 steps, clicking "Next" on each. Your progress is saved automatically at each step.'}
+    ]
+  },
+  // ── QUOTES ─────────────────────────────────────────────────────────────────
+  {
+    id:'quote-new', cat:'quotes', icon:'📄', title:'Create a New Quote',
+    desc:'Step through the 7-step quote wizard to capture all policy information.',
+    tips:['You can click "Finish & Save Quote" at any step to save progress and return later.','Completed steps turn green — click any green step to jump back to it.'],
+    steps:[
+      {h:'Start the Quote',          b:'Click "+ New Quote" from the Quotes page or from inside a Practice record.'},
+      {h:'Step 1 — Client Details',  b:'Enter renewal date, quote type, previous insurer, contact details and correspondence address. All fields marked * are mandatory.'},
+      {h:'Step 2 — Declarations',    b:'Answer the declaration questions. Set "None of below" to Yes if none apply. Record any claims in the claims table.'},
+      {h:'Step 3 — Physical Items',  b:'Select Day One Cover percentage, excess amount and fidelity cover limit.'},
+      {h:'Step 4 — Cover Continued', b:'Enter the number of units, full-time and part-time split for Directors and Employees.'},
+      {h:'Step 5 — Business Interruption', b:'Choose Loss of Income or Increased Expenses, set the annual sum insured, cover period and book debt cover.'},
+      {h:'Step 6 — Public Liability',b:'Set the indemnity limit, number of offsite clinics, terrorism cover preference and anticipated turnover.'},
+      {h:'Step 7 — Premises Details',b:'Select the number of premises and country. Click "Update Premises →" to proceed to the premises detail wizard.'}
+    ]
+  },
+  {
+    id:'quote-edit', cat:'quotes', icon:'✏️', title:'Edit an Existing Quote',
+    desc:'Reopen any saved quote to update fields or continue where you left off.',
+    tips:['When editing, all previously completed steps show as green and are immediately clickable.','The "Apply from existing Practice" selector is hidden on edit — the practice link is already saved.'],
+    steps:[
+      {h:'Find the Quote', b:'Go to the Quotes page. Use the search bar to find by reference or client name. Filter by status or quote type using the dropdowns.'},
+      {h:'Click Edit',     b:'Click the "Edit" button on the quote row.'},
+      {h:'Navigate Steps', b:'Click any green step number at the top to jump directly to that step.'},
+      {h:'Save Changes',   b:'Click "Next" through to the last step and submit, or use "Finish & Save Quote" at any point.'}
+    ]
+  },
+  {
+    id:'quote-progress', cat:'quotes', icon:'🟢', title:'Understanding Quote Progress Indicators',
+    desc:'The numbered circles at the top of the quote wizard show which steps have been completed.',
+    tips:['Only steps you have explicitly completed by clicking Next or Finish & Save turn green.','You cannot skip ahead to a step you have not yet visited on a new quote.'],
+    steps:[
+      {h:'Dark Navy Circle',  b:'This is the step you are currently on.'},
+      {h:'Green Circle (✓)',  b:'This step has been completed. Click it to jump back and review or edit.'},
+      {h:'Grey Circle',       b:'This step has not yet been reached. Complete the preceding steps first.'},
+      {h:'Finish & Save',     b:'The "Finish & Save Quote" button in the top-right saves all progress at any point and returns you to the Quotes list.'}
+    ]
+  },
+  {
+    id:'quote-filter', cat:'quotes', icon:'🔍', title:'Filter and Search Quotes',
+    desc:'Quickly find quotes using the search and filter controls on the Quotes page.',
+    steps:[
+      {h:'Search by Reference or Name', b:'Type in the search bar to filter by quote reference (e.g. QT-0012) or client name.'},
+      {h:'Filter by Status',            b:'Use the status dropdown to show only Draft, Quoted, Bound or Declined quotes.'},
+      {h:'Filter by Type',              b:'Use the quote type dropdown to filter by Renewal, New Business or MTA.'},
+      {h:'Clear Filters',               b:'Remove text from the search bar and reset dropdowns to "All" to see all quotes.'}
+    ]
+  },
+  // ── PREMISES ───────────────────────────────────────────────────────────────
+  {
+    id:'premises-overview', cat:'premises', icon:'🏢', title:'Premises Wizard Overview',
+    desc:'After completing Step 7 of the quote you enter the 8-step premises detail wizard for each premises on the policy.',
+    tips:['Complete all 8 steps for each premises to ensure a fully detailed quote.','You can save part-way through using "Finish & Save Quote" and return later.'],
+    steps:[
+      {h:'Premises Selector',   b:'After Step 7 you land on the Premises Selector showing one row per premises. Each row shows the completion status, address and 8 progress circles.'},
+      {h:'Update Premises N',   b:'Click "Update Premises N →" to open the 8-step wizard for that premises.'},
+      {h:'Complete Each Step',  b:'Work through Address, Declarations, Construction, Security, Cover Choices, Cover Continued, Business Equipment and Endorsements.'},
+      {h:'Save Premises',       b:'On Step 8 click "Save Premises N ✓" to mark it complete and return to the selector.'},
+      {h:'Finish & Save Quote', b:'Once all premises are complete, click "Finish & Save Quote" to finalise and return to the Quotes list.'}
+    ]
+  },
+  {
+    id:'premises-address', cat:'premises', icon:'📍', title:'Premises Step 1 — Address & Activity',
+    desc:'Enter the trading address and activity breakdown for each premises.',
+    tips:['Premises 1 is auto-filled from the quote\'s Step 1 correspondence address.','Activity percentages across all 8 rows must add up to exactly 100%.'],
+    steps:[
+      {h:'Enter Address',      b:'Fill in Trading Name, Address Line 1 (mandatory), Town (mandatory) and Postcode (mandatory).'},
+      {h:'Activity Table',     b:'For each row select an Activity Description from the 62-option dropdown, who carries it out (You / Your Tenant / Landlord), and the percentage of turnover.'},
+      {h:'Check Total',        b:'The running total shows in the top-right corner of the activity table. It must reach exactly 100% before you can proceed.'}
+    ]
+  },
+  {
+    id:'premises-construction', cat:'premises', icon:'🧱', title:'Premises Step 3 — Construction',
+    desc:'Record the construction materials for the roof, walls and floor of the premises.',
+    tips:['Each of the three blocks (Roof, Walls, Floor) must independently total exactly 100%.','If a flat roof is present, record the year it was installed in the flat roof field.'],
+    steps:[
+      {h:'Roof',  b:'Select up to 3 roof types from the 27-option dropdown with a percentage split. Total must be 100%.'},
+      {h:'Walls', b:'Select up to 3 wall construction types from the 25-option dropdown. Total must be 100%.'},
+      {h:'Floor', b:'Select up to 3 floor types from the 10-option dropdown. Total must be 100%.'}
+    ]
+  },
+  {
+    id:'premises-security', cat:'premises', icon:'🔒', title:'Premises Step 4 — Security',
+    desc:'Record security features including alarm grade, monitoring and additional measures.',
+    steps:[
+      {h:'Listed Building',    b:'Select the listing grade of the building, or "not listed" if it applies.'},
+      {h:'Intruder Alarm',     b:'Confirm whether an intruder alarm is installed and whether it is monitored. Select the alarm grade under EN50131.'},
+      {h:'Additional Features',b:'Select up to 3 additional security features from the dropdown (e.g. CCTV, shutters, smoke cloak).'}
+    ]
+  },
+  {
+    id:'premises-endorsements', cat:'premises', icon:'📎', title:'Premises Step 8 — Endorsements',
+    desc:'Select endorsements to apply to this premises from the full list of Premises and Policy endorsements.',
+    tips:['Tick as many endorsements as apply. A summary of selected endorsements appears below the list as you select them.','Policy-level endorsements apply across all premises on the policy.'],
+    steps:[
+      {h:'Premises Endorsements', b:'Review the 19 premises-level endorsements and tick those that apply (e.g. Alarm Condition, Flat Roof Inspection, Heating Condition).'},
+      {h:'Policy Endorsements',   b:'Review the 2 policy-level endorsements (Material Damage Day One Cover, Minimum Security) and tick if required.'},
+      {h:'Save Premises',         b:'Click "Save Premises N ✓" to save your selections and return to the Premises Selector.'}
+    ]
+  },
+  // ── USERS ───────────────────────────────────────────────────────────────────
+  {
+    id:'users-add', cat:'users', icon:'👤', title:'Add a New User',
+    desc:'Create a new user account so a colleague can access the system.',
+    tips:['Only Admin users can create and manage user accounts.','Set Role to "admin" to grant full access including User Management.'],
+    steps:[
+      {h:'Go to User Management', b:'Click "🔑 Users" in the sidebar (admin only).'},
+      {h:'Click + New User',      b:'Click the "+ New User" button in the top-right.'},
+      {h:'Enter Details',         b:'Enter the full name, email address and choose a role (User or Admin).'},
+      {h:'Set a Password',        b:'Enter a temporary password. The user should change this on first login.'},
+      {h:'Save',                  b:'Click "Save User". The user can now sign in with their email and password.'}
+    ]
+  },
+  {
+    id:'users-edit', cat:'users', icon:'✏️', title:'Edit a User Account',
+    desc:'Update a user\'s name, email, role, active status or password.',
+    tips:['To deactivate a user without deleting them, set Active to "No".','Leave the password field blank when editing to keep the existing password unchanged.'],
+    steps:[
+      {h:'Find the User',    b:'Go to User Management and find the user in the table.'},
+      {h:'Click Edit',       b:'Click the "Edit" button on the user row.'},
+      {h:'Make Changes',     b:'Update any fields. To change the password enter a new one; leave blank to keep the current password.'},
+      {h:'Save',             b:'Click "Save User" to apply the changes immediately.'}
+    ]
+  },
+  // ── DASHBOARD ───────────────────────────────────────────────────────────────
+  {
+    id:'dashboard-nav', cat:'practices', icon:'📊', title:'Using the Dashboard',
+    desc:'The dashboard gives a quick overview of your practices and provides fast access to key actions.',
+    steps:[
+      {h:'Statistics Cards',     b:'The four cards show total practices, active practices, prospects and user count. Click any card to navigate directly to the relevant page.'},
+      {h:'Recent Practices',     b:'The table shows the five most recently added practices. Click any row to open the practice detail panel.'},
+      {h:'Quick Actions',        b:'Use the "📋 View Quotes" and "+ New Quote" buttons at the top-right of the dashboard to jump straight into quotes.'},
+      {h:'Greeting',             b:'The greeting updates to Good Morning / Afternoon / Evening based on the time of day.'}
+    ]
+  }
+];
+
+const FAQ_DATA = [
+  {
+    q:'How do I start a quote for an existing practice?',
+    a:'Open the Practice record by clicking "View" on the Practices page, then click "+ New Quote" in the detail panel footer. This links the quote to the practice and auto-fills all client details into Step 1 of the quote wizard.'
+  },
+  {
+    q:'Can I save a quote part-way through and come back later?',
+    a:'Yes. Every time you click "Next" in the quote wizard the current step is saved to the database automatically as a draft. You can also click "Finish & Save Quote" at any point from the top-right button, which saves all progress and returns you to the Quotes list. Open the quote again from the Quotes page to continue.'
+  },
+  {
+    q:'Why are some step circles grey and not clickable?',
+    a:'On a new quote, you can only navigate to steps you have already completed. A step turns green once you have clicked "Next" from it. On an existing quote being edited, all previously completed steps are green and immediately clickable.'
+  },
+  {
+    q:'What does the "None of below" field do in the Declarations step?',
+    a:'Setting "None of below" to Yes means none of the declaration conditions apply. If you then set any individual declaration to Yes, a warning banner appears to flag the conflict. You can still proceed after confirming, but both values will be saved.'
+  },
+  {
+    q:'How many premises can I add to a quote?',
+    a:'Up to 10 premises per quote. Set the number in Step 7 of the quote wizard using the "How many premises are you quoting for?" dropdown. Each premises then has its own 8-step detail wizard accessible from the Premises Selector screen.'
+  },
+  {
+    q:'The activity percentages on Premises Step 1 won\'t let me proceed — why?',
+    a:'All activity percentage values across the 8 rows must add up to exactly 100%. The running total is shown in the top-right of the activity table. Adjust the percentages until the total reaches 100%, then click Next.'
+  },
+  {
+    q:'The construction percentages on Premises Step 3 are showing an error — why?',
+    a:'Each construction block (Roof, Walls, Floor) must independently total exactly 100%. Check each block separately — a block with two materials at 60% and 60% would fail because the block total is 120%.'
+  },
+  {
+    q:'What is the difference between Premises and Policy endorsements?',
+    a:'Premises endorsements (19 options) apply specifically to the individual premises being detailed. Policy endorsements (2 options — Material Damage Day One Cover and Minimum Security) apply across the whole policy and all premises. Both types are selected on Step 8 of the premises wizard.'
+  },
+  {
+    q:'Can I link a quote to a practice after already starting the quote?',
+    a:'Yes. On Step 1 of the quote wizard use the "Apply from existing Practice record" dropdown to select a practice and click "✓ Apply Customer Details". This fills in the contact and address fields and links the quote to the practice. This selector is only visible on new quotes — when editing an existing quote the practice link is already saved.'
+  },
+  {
+    q:'How do I change the status of a quote from Draft to Quoted?',
+    a:'The quote status is updated automatically when you complete the full 7-step wizard and submit. You can also edit a quote and update the status field on Step 1. Statuses available are: Draft, Quoted, Bound and Declined.'
+  },
+  {
+    q:'What is an ERN number?',
+    a:'An Employer Registration Number (ERN), also called a PAYE reference, is used to identify an employer with HMRC. For GP practices it is sometimes required for insurance purposes. If the practice is exempt, set "ERN Exempt" to Yes on the practice record.'
+  },
+  {
+    q:'How do I deactivate a user without deleting them?',
+    a:'Go to User Management (admin only), click "Edit" on the user, and set the "Active" field to "No". The user will no longer be able to sign in but their account and history remain intact. You can reactivate them at any time by setting Active back to "Yes".'
+  }
+];
+
+let _currentGuideTab = 'all';
+let _openFaqIndex = -1;
+
+function initUserGuides() {
+  renderGuideCards('all');
+  renderFAQs();
+  // Set up search
+  const si = document.getElementById('guides-search');
+  if (si && !si._bound) { si._bound = true; }
+}
+
+function renderGuideCards(cat) {
+  const q = (document.getElementById('guides-search')?.value || '').toLowerCase();
+  const grid = document.getElementById('guides-grid');
+  if (!grid) return;
+
+  let guides = cat === 'all' ? GUIDE_DATA : GUIDE_DATA.filter(g => g.cat === cat);
+  if (q) {
+    guides = GUIDE_DATA.filter(g =>
+      g.title.toLowerCase().includes(q) ||
+      g.desc.toLowerCase().includes(q) ||
+      g.steps.some(s => s.h.toLowerCase().includes(q) || s.b.toLowerCase().includes(q))
+    );
+  }
+
+  const catLabels = { practices:'Practices', quotes:'Quotes', premises:'Premises', users:'Users' };
+  grid.innerHTML = guides.length
+    ? guides.map(g => `
+        <div class="guide-card" onclick="openGuide('${g.id}')">
+          <div class="gc-icon">${g.icon}</div>
+          <div class="gc-title">${esc(g.title)}</div>
+          <div class="gc-desc">${esc(g.desc)}</div>
+          <div class="gc-tag">${catLabels[g.cat] || g.cat}</div>
+        </div>`).join('')
+    : `<div class="no-guides">No guides found for "${esc(q)}"</div>`;
+}
+
+function renderFAQs(filter) {
+  const fl = document.getElementById('faq-list');
+  if (!fl) return;
+  const q = filter || (document.getElementById('guides-search')?.value || '').toLowerCase();
+  const faqs = q
+    ? FAQ_DATA.filter(f => f.q.toLowerCase().includes(q) || f.a.toLowerCase().includes(q))
+    : FAQ_DATA;
+
+  fl.innerHTML = faqs.length
+    ? faqs.map((f,i) => `
+        <div class="faq-item">
+          <div class="faq-q" id="faq-q-${i}" onclick="toggleFaq(${i})">
+            <span>${esc(f.q)}</span>
+            <span class="faq-chevron">▼</span>
+          </div>
+          <div class="faq-a" id="faq-a-${i}">${esc(f.a)}</div>
+        </div>`).join('')
+    : `<div style="padding:24px;text-align:center;color:var(--mist);font-size:.88rem">No FAQs match your search.</div>`;
+}
+
+function toggleFaq(i) {
+  const q = document.getElementById('faq-q-' + i);
+  const a = document.getElementById('faq-a-' + i);
+  if (!q || !a) return;
+  const isOpen = q.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.faq-q.open').forEach(el => el.classList.remove('open'));
+  document.querySelectorAll('.faq-a.open').forEach(el => el.classList.remove('open'));
+  if (!isOpen) { q.classList.add('open'); a.classList.add('open'); }
+}
+
+function showGuidesTab(tab) {
+  _currentGuideTab = tab;
+  document.querySelectorAll('.guides-tab').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.guides-tab[data-tab="${tab}"]`);
+  if (btn) btn.classList.add('active');
+  const cardsContainer = document.getElementById('guides-cards-container');
+  const faqSection = document.getElementById('guides-faq-section');
+  if (tab === 'faq') {
+    cardsContainer.style.display = 'none';
+    faqSection.style.display = 'block';
+    renderFAQs();
+  } else {
+    cardsContainer.style.display = 'block';
+    faqSection.style.display = 'none';
+    renderGuideCards(tab);
+  }
+  closeGuideDetail();
+}
+
+function searchGuides() {
+  const q = (document.getElementById('guides-search')?.value || '').toLowerCase();
+  if (q) {
+    // Show all tabs when searching
+    document.querySelectorAll('.guides-tab').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector('.guides-tab[data-tab="all"]');
+    if (btn) btn.classList.add('active');
+    document.getElementById('guides-cards-container').style.display = 'block';
+    document.getElementById('guides-faq-section').style.display = 'block';
+    renderGuideCards('all');
+    renderFAQs(q);
+  } else {
+    document.getElementById('guides-faq-section').style.display = _currentGuideTab === 'faq' ? 'block' : 'none';
+    renderGuideCards(_currentGuideTab === 'faq' ? 'all' : _currentGuideTab);
+  }
+  closeGuideDetail();
+}
+
+function openGuide(id) {
+  const g = GUIDE_DATA.find(g => g.id === id);
+  if (!g) return;
+  document.getElementById('guide-detail-title').textContent = g.icon + '  ' + g.title;
+  document.getElementById('guide-detail-desc').textContent = g.desc;
+  document.getElementById('guide-detail-body').innerHTML = `
+    <div style="margin-bottom:20px">
+      ${g.steps.map((s,i) => `
+        <div class="guide-step">
+          <div class="step-num">${i+1}</div>
+          <div class="step-body">
+            <div class="step-head">${esc(s.h)}</div>
+            <div class="step-text">${esc(s.b)}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+    ${g.tips && g.tips.length ? `<div class="guide-tip">💡 <strong>Tips:</strong><ul style="margin:6px 0 0 16px;padding:0">${g.tips.map(t=>`<li style="margin-bottom:4px">${esc(t)}</li>`).join('')}</ul></div>` : ''}`;
+  const detail = document.getElementById('guide-detail');
+  detail.style.display = 'block';
+  detail.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function closeGuideDetail() {
+  const d = document.getElementById('guide-detail');
+  if (d) d.style.display = 'none';
 }
 
 // ── Boot ───────────────────────────────────────────────────────────────────────
