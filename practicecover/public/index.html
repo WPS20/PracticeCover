@@ -1491,7 +1491,7 @@ function showPremisesStep(n) {
   if (el) el.style.display = 'block';
   renderPwProgress(n);
   document.getElementById('content').scrollTop = 0;
-  if (n === 8) buildPwSummary();
+  if (n === 8) { setTimeout(restorePw8, 50); }
 }
 
 function pwNext(from) {
@@ -1566,8 +1566,9 @@ function collectPwStep(n) {
   } else if (n===6) {
     Object.assign(p, { pw6RefrigStock:pgv('pw6-refrigStock'), pw6AmbientStock:pgv('pw6-ambientStock'), pw6MoneyBusHours:pgv('pw6-moneyBus'), pw6MoneyAfterHours:pgv('pw6-moneyAfter'), pw6NumSafes:pgv('pw6-numSafes') });
   } else if (n===7) {
-    Object.assign(p, { pw7EquipSI:pgv('pw7-equipSI'), pw7VaccineSI:pgv('pw7-vaccineSI'), pw7NumFridges:pgv('pw7-numFridges'), pw7LocumWeekly:pgv('pw7-locumWeekly'), pw7LocumNum:pgv('pw7-locumNum') });
+    Object.assign(p, { pw7EquipSI:pgv('pw7-equipSI'), pw7VaccineSI:pgv('pw7-vaccineSI'), pw7NumFridges:pgv('pw7-numFridges') });
   }
+  if (n===8) Object.assign(p, { endorsements: getSelectedEndorsements() });
   if (!p.stepsComplete.includes(n)) p.stepsComplete.push(n);
 }
 
@@ -1812,54 +1813,73 @@ function buildPwStepHTML() {
             <div class="quote-row"><div class="qr-label"><div>Vaccine Storage Cover</div><div class="qr-sub">Up to £30,000 per location</div></div><div class="qr-ctrl"><div class="gbp-wrap"><span class="gbp-lbl">£</span><input type="text" id="pw7-vaccineSI" value="${sv('pw7VaccineSI','0')}" class="gbp-inp" style="width:160px" oninput="this.value=this.value.replace(/[^0-9.,]/g,'')"></div></div></div>
             ${qrow('Number of refrigeration units','',[0,1,2,3,4,5].map(String).reduce((s,o)=>`${s}<option value="${o}"${o===sv('pw7NumFridges','1')?' selected':''}>${o}</option>`,'<select id="pw7-numFridges" style="width:120px;padding:9px 12px;border:1.5px solid var(--navy);border-radius:6px;font-size:.87rem;font-weight:600;color:var(--navy);background:var(--white)">').concat('</select>'))}
           </div>
-          <div class="qsec-title">Locum Cover</div>
-          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
-            <div class="quote-row"><div class="qr-label"><div>Weekly locum benefit</div></div><div class="qr-ctrl"><div class="gbp-wrap"><span class="gbp-lbl">£</span><input type="text" id="pw7-locumWeekly" value="${sv('pw7LocumWeekly','0')}" class="gbp-inp" style="width:160px" oninput="this.value=this.value.replace(/[^0-9.,]/g,'')"></div></div></div>
-            ${qrow('Number of practitioners','',`<input type="number" id="pw7-locumNum" value="${sv('pw7LocumNum','1')}" min="0" style="width:100px;padding:9px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:.87rem">`)}
-          </div>
+
           ${navBtns(7,'Cover Contd','Step 8')}
         </div>
       </div>
     </div>
 
-    <!-- STEP 8 SUMMARY -->
+
+    <!-- STEP 8 -->
     <div class="pw-step" id="pw-step-8" style="display:none">
       <div class="quote-card">
-        <div class="quote-card-hdr"><h4>Premises ${currentPremisesIdx+1}: Step 8 of 8 — Summary</h4><p>Review details before saving</p></div>
-        <div class="quote-card-body" id="pw-summary-body">
-          <!-- populated by buildPwSummary -->
+        <div class="quote-card-hdr"><h4>Premises ${currentPremisesIdx+1}: Step 8 of 8 — Endorsements</h4><p>Select endorsements to apply to this premises</p></div>
+        <div class="quote-card-body">
+          <div class="qsec-title">Premises Endorsements</div>
+          <p style="font-size:.83rem;color:var(--slate);margin-bottom:12px">Select any endorsements that apply to this premises. Tick to include.</p>
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px">
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)"><input type="checkbox" id="pw8-end-549c395e-c9b8-ee11-9078-6045bdc1ef70" value="549c395e-c9b8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPACom53 Deletion of Average</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">The Average Condition does not apply to this policy.</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white)"><input type="checkbox" id="pw8-end-2bc29ac9-c9b8-ee11-9078-6045bdc1ef70" value="2bc29ac9-c9b8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPAInt03 Note of Interest – First Loss Payee</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">It is noted that of have an interest in the Insurance by (the section of) Your Policy as Lender and First Loss Payee.
+
+(...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)"><input type="checkbox" id="pw8-end-bab15916-cab8-ee11-9078-6045bdc1ef70" value="bab15916-cab8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPAInt04 Note of Interest – First Loss Payee and Non Vitiation</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">It is noted that of have an interest in the Insurance by (the section of) Your Policy as Lender and First Loss Payee.
+
+T...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white)"><input type="checkbox" id="pw8-end-f0c6e863-cab8-ee11-9078-6045bdc1ef70" value="f0c6e863-cab8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPASec03 Alarm Specification</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">The minimum specification required for the alarm fitted at the insured Premises graded under EN050131-1, is Grade 2.</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)"><input type="checkbox" id="pw8-end-cf81d068-c9b8-ee11-9078-6045bdc1ef70" value="cf81d068-c9b8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPAExs03b Co-Insurance: Shared Alarm</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">You will be responsible for 50% of any Damage when a claim is made for theft with under the Contents section of Your Pol...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white)"><input type="checkbox" id="pw8-end-036f672a-cab8-ee11-9078-6045bdc1ef70" value="036f672a-cab8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPATre08 Exorcism</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">This policy excludes all cover in respect of spirit release and exorcism.
+All other terms, conditions, exclusions and li...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)"><input type="checkbox" id="pw8-end-e60c4ca8-c9b8-ee11-9078-6045bdc1ef70" value="e60c4ca8-c9b8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPASec06 Alarm Installation</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">It is a condition of Your Policy that any requirements made to install an alarm are completed to Our satisfaction within...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white)"><input type="checkbox" id="pw8-end-f5050002-c9b8-ee11-9078-6045bdc1ef70" value="f5050002-c9b8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPAPHe02 Heating Condition</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">It is a condition precedent to liability that: 
+A. The Premises are not artificially heated by any form of heating other...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)"><input type="checkbox" id="pw8-end-bea6fc6e-cab8-ee11-9078-6045bdc1ef70" value="bea6fc6e-cab8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPALia03b Exclusion of Advice and Treatment</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">We will not indemnify You under the Liability section of Your Policy for accidental Injury to any person not being an Em...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white)"><input type="checkbox" id="pw8-end-3fcea949-cab8-ee11-9078-6045bdc1ef70" value="3fcea949-cab8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPAIPha20b Animals in custody or control</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">Under Buildings & Contents - the exclusion in relation to animals on premises doesn’t not apply with the exception of: 
+...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)"><input type="checkbox" id="pw8-end-89dec691-c9b8-ee11-9078-6045bdc1ef70" value="89dec691-c9b8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPAGen03 Composite Panel Inspection</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">It is a condition precedent to the liability of the Company that: 
+any composite panels at the premises are inspected ev...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white)"><input type="checkbox" id="pw8-end-5ee7f77f-c9b8-ee11-9078-6045bdc1ef70" value="5ee7f77f-c9b8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPAGen02 Asbestos Roof Inspection</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">It is a condition precedent to the liability of the Company that: 
+the asbestos roof at the premises is inspected every ...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)"><input type="checkbox" id="pw8-end-b4ed8873-c9b8-ee11-9078-6045bdc1ef70" value="b4ed8873-c9b8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPAGen01 Flat Roof Inspection</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">It is a condition precedent to the liability of the Company that: 
+any flat roof at the premises, which you are responsi...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white)"><input type="checkbox" id="pw8-end-b871d326-c9b8-ee11-9078-6045bdc1ef70" value="b871d326-c9b8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPAExs08 Increased excess £250 Loaned/Hired Medical Equipment</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">The policy excess is increased to £250 in respect of theft of the loaned and or hired equipment by the recipient when in...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)"><input type="checkbox" id="pw8-end-d6b2f64a-c9b8-ee11-9078-6045bdc1ef70" value="d6b2f64a-c9b8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPAExs07 Increased excess £2000 ADM away</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">The policy excess is increased to £2000 in respect of the Automated Dispensing Machine located externally and insured as...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white)"><input type="checkbox" id="pw8-end-d7b2f64a-c9b8-ee11-9078-6045bdc1ef70" value="d7b2f64a-c9b8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPAExs06 Increased excess £1000 External ADM</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">The policy excess is increased to £1000 in respect of the Automated Dispensing Machine located on the forecourt of the P...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)"><input type="checkbox" id="pw8-end-ec0797bd-c9b8-ee11-9078-6045bdc1ef70" value="ec0797bd-c9b8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPAExs04 Electrical Certificate Increased Excess</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">It is a condition of Your Policy that you provide sight of the documentation providing confirmation that the fixed elect...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white)"><input type="checkbox" id="pw8-end-a1d37385-cab8-ee11-9078-6045bdc1ef70" value="a1d37385-cab8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPABIn01 Uninsured Working Expenses</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">The net cost of Stock purchased during the indemnity period.</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)"><input type="checkbox" id="pw8-end-99d8ad5a-cab8-ee11-9078-6045bdc1ef70" value="99d8ad5a-cab8-ee11-9078-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPASec01 Alarm Condition</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">You will only be covered for theft, attempted theft or arson when an alarm is installed and You comply with the Intruder...</div></div></div>
+          </div>
+          <div class="qsec-title">Policy Endorsements</div>
+          <p style="font-size:.83rem;color:var(--slate);margin-bottom:12px">Policy-level endorsements that apply across all premises.</p>
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px">
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)"><input type="checkbox" id="pw8-end-bcb4cf51-f5a0-ee11-be37-6045bdc1ef70" value="bcb4cf51-f5a0-ee11-be37-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPA-02 Material Damage; Day One Cover</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">Declared Value Your assessment of the cost of reinstatement of the premises insured at the inception of the period of in...</div></div></div>
+<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white)"><input type="checkbox" id="pw8-end-c85d3bf1-f4a0-ee11-be37-6045bdc1ef70" value="c85d3bf1-f4a0-ee11-be37-6045bdc1ef70" onchange="updateEndorsementsList()" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer"><div style="flex:1"><div style="font-size:.87rem;font-weight:600;color:var(--ink)">NPASec17M- Minimum Security</div><div style="font-size:.78rem;color:var(--mist);margin-top:3px;line-height:1.5">You will only be covered for theft, attempted theft or arson when You comply with the Minimum Security Conditions Preced...</div></div></div>
+          </div>
+          <div id="pw8-selected-summary" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px">
+            <div style="font-size:.8rem;font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Selected Endorsements</div>
+            <div id="pw8-selected-list" style="font-size:.83rem;color:var(--ink)"></div>
+          </div>
+          <div class="quote-nav">
+            <button class="btn btn-secondary" onclick="pwPrev(8)">← Business Equip</button>
+            <button class="btn btn-primary" onclick="savePremisesAndReturn()">Save Premises ${currentPremisesIdx+1} ✓</button>
+          </div>
         </div>
       </div>
     </div>`;
 }
 
-function buildPwSummary() {
+function restorePw8() {
   const p = premisesData[currentPremisesIdx] || {};
-  const f = v => v || '—';
-  const fm = v => v ? '£'+v : '—';
-  document.getElementById('pw-summary-body').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:16px">
-      <div class="detail-section"><h4>Address</h4>
-        <div class="detail-row"><span class="key">Address</span><span>${f([p.addr1,p.addr2,p.town,p.county,p.postcode].filter(Boolean).join(', '))}</span></div>
-        <div class="detail-row"><span class="key">Trading Name</span><span>${f(p.tradingName)}</span></div>
-        <div class="detail-row"><span class="key">Year Estab.</span><span>${f(p.yearEstab)}</span></div>
-      </div>
-      <div class="detail-section"><h4>Cover</h4>
-        <div class="detail-row"><span class="key">Buildings SI</span><span>${fm(p.pw5BuildingsSI)}</span></div>
-        <div class="detail-row"><span class="key">Contents SI</span><span>${fm(p.pw5ContentsSI)}</span></div>
-        <div class="detail-row"><span class="key">Equipment SI</span><span>${fm(p.pw7EquipSI)}</span></div>
-        <div class="detail-row"><span class="key">Locum Weekly</span><span>${fm(p.pw7LocumWeekly)}</span></div>
-      </div>
-    </div>
-    <div class="detail-section" style="margin-bottom:16px"><h4>Security</h4>
-      <div class="detail-row"><span class="key">Listed Building</span><span>${f(p.listedBuilding)}</span></div>
-      <div class="detail-row"><span class="key">Intruder Alarm</span><span>${f(p.intruderAlarm)}</span></div>
-      <div class="detail-row"><span class="key">Alarm Monitored</span><span>${f(p.alarmMonitored)}</span></div>
-    </div>
-    <div class="quote-nav">
-      <button class="btn btn-secondary" onclick="showPremisesStep(7)">← Step 7</button>
-      <button class="btn btn-primary" onclick="savePremisesAndReturn()">Save Premises ${currentPremisesIdx+1} ✓</button>
-    </div>`;
+  if (p.endorsements) restoreEndorsementSelections(p.endorsements);
 }
 
 function updateActTotal() {
@@ -1881,6 +1901,40 @@ function checkPw2Warning() {
   const anyYes = [1,2,3,4,5,6,7].some(i=>document.getElementById('pw-d'+i)?.value==='Yes');
   const w = document.getElementById('pw2-warn');
   if (w) w.style.display = (none==='Yes' && anyYes) ? 'block' : 'none';
+}
+
+
+const ENDORSEMENTS_DATA = [{"id": "549c395e-c9b8-ee11-9078-6045bdc1ef70", "title": "NPACom53 Deletion of Average", "type": "Premises", "text": "The Average Condition does not apply to this policy."}, {"id": "2bc29ac9-c9b8-ee11-9078-6045bdc1ef70", "title": "NPAInt03 Note of Interest \u2013 First Loss Payee", "type": "Premises", "text": "It is noted that of have an interest in the Insurance by (the section of) Your Policy as Lender and First Loss Payee.\n\n(Omit bracketed parts if required)"}, {"id": "bab15916-cab8-ee11-9078-6045bdc1ef70", "title": "NPAInt04 Note of Interest \u2013 First Loss Payee and Non Vitiation", "type": "Premises", "text": "It is noted that of have an interest in the Insurance by (the section of) Your Policy as Lender and First Loss Payee.\n\nThis insurance policy will not be cancelled for non-payment of premium without 14 days notice being given to the noted Lendor.\n\n(Omit bracketed parts if required)."}, {"id": "f0c6e863-cab8-ee11-9078-6045bdc1ef70", "title": "NPASec03 Alarm Specification", "type": "Premises", "text": "The minimum specification required for the alarm fitted at the insured Premises graded under EN050131-1, is Grade 2."}, {"id": "cf81d068-c9b8-ee11-9078-6045bdc1ef70", "title": "NPAExs03b Co-Insurance: Shared Alarm", "type": "Premises", "text": "You will be responsible for 50% of any Damage when a claim is made for theft with under the Contents section of Your Policy, and the Special Condition regarding the Intruder Alarm has not been complied with by other occupants of the Premises..\nYou will also be responsible for a minimum of \u00a35,000 for every claim made."}, {"id": "036f672a-cab8-ee11-9078-6045bdc1ef70", "title": "NPATre08 Exorcism", "type": "Premises", "text": "This policy excludes all cover in respect of spirit release and exorcism.\nAll other terms, conditions, exclusions and limitations in this policy remain unaltered."}, {"id": "e60c4ca8-c9b8-ee11-9078-6045bdc1ef70", "title": "NPASec06 Alarm Installation", "type": "Premises", "text": "It is a condition of Your Policy that any requirements made to install an alarm are completed to Our satisfaction within 60 days of Your notification. \nDuring the 60 day period between Your notification and the alarm installation the policy excess for Theft is increased to \u00a35,000. \nIf after the 60 day period the premises is not alarmed to the required specification cover for Theft is excluded."}, {"id": "f5050002-c9b8-ee11-9078-6045bdc1ef70", "title": "NPAPHe02 Heating Condition", "type": "Premises", "text": "It is a condition precedent to liability that: \nA. The Premises are not artificially heated by any form of heating other than: \ni. Fixed gas, oil or electrical heating system \nii. Portable electric fan heater \niii. Portable electric oil filled radiator \niv. Portable LPG heater \nv. Portable paraffin heater \nvi. Fixed open fire with flue \nB. Where the Premises are heated by portable LPG or portable paraffin heaters: \ni. The heater is guarded \nii. There are no combustible materials located within 1 metre of such heater \niii. The heater is not used for the last hour before the Premises is vacated \nC. Where the Premises are artificially heated by a fixed open fire with a flue: \ni. The fire is guarded \nii. There are no combustible materials located within 1 metre of the fire \niii. The fire is extinguished one hour prior to the Premises being vacated \niv. Metal receptacles with closed metal lids are used for the disposal of ashes \nv. The flue is serviced and swept under contract by a competent company or person every 12 months or at least as often as recommended by them. If at the time this Policy is incepted the flue has not been serviced or swept in the previous 12 months, it must be serviced and swept within 30 days of inception."}, {"id": "bea6fc6e-cab8-ee11-9078-6045bdc1ef70", "title": "NPALia03b Exclusion of Advice and Treatment", "type": "Premises", "text": "We will not indemnify You under the Liability section of Your Policy for accidental Injury to any person not being an Employee or accidental Damage to any property arising out of:             \na)\tthe giving of advice or treatment.       \nb)\tMedical Advice & Treatment"}, {"id": "3fcea949-cab8-ee11-9078-6045bdc1ef70", "title": "NPAIPha20b Animals in custody or control", "type": "Premises", "text": "Under Buildings & Contents - the exclusion in relation to animals on premises doesn\u2019t not apply with the exception of: \nA. Damage to livestock (excluding horses or ponies) at onsite stable.\nB. Damage arising from or as a consequence of the examination, prescription or treatment given by the Insured \nC. Damage to animals owned by the Insured \nD. The maximum sum insured of this cover is: \u00a350,000 in total for animals in the custody or control of the Insured not exceeding \u00a325,000 any one animal."}, {"id": "89dec691-c9b8-ee11-9078-6045bdc1ef70", "title": "NPAGen03 Composite Panel Inspection", "type": "Premises", "text": "It is a condition precedent to the liability of the Company that: \nany composite panels at the premises are inspected every 5 years by a competent person, and any remedial work necessary is undertaken."}, {"id": "5ee7f77f-c9b8-ee11-9078-6045bdc1ef70", "title": "NPAGen02 Asbestos Roof Inspection", "type": "Premises", "text": "It is a condition precedent to the liability of the Company that: \nthe asbestos roof at the premises is inspected every 5 years by a competent person, and any remedial work necessary is undertaken."}, {"id": "b4ed8873-c9b8-ee11-9078-6045bdc1ef70", "title": "NPAGen01 Flat Roof Inspection", "type": "Premises", "text": "It is a condition precedent to the liability of the Company that: \nany flat roof at the premises, which you are responsible to maintain, is inspected every 5 years by a competent person, and any remedial work necessary is undertaken."}, {"id": "b871d326-c9b8-ee11-9078-6045bdc1ef70", "title": "NPAExs08 Increased excess \u00a3250 Loaned/Hired Medical Equipment", "type": "Premises", "text": "The policy excess is increased to \u00a3250 in respect of theft of the loaned and or hired equipment by the recipient when insured as All Risk item."}, {"id": "d6b2f64a-c9b8-ee11-9078-6045bdc1ef70", "title": "NPAExs07 Increased excess \u00a32000 ADM away", "type": "Premises", "text": "The policy excess is increased to \u00a32000 in respect of the Automated Dispensing Machine located externally and insured as All Risk item."}, {"id": "d7b2f64a-c9b8-ee11-9078-6045bdc1ef70", "title": "NPAExs06 Increased excess \u00a31000 External ADM", "type": "Premises", "text": "The policy excess is increased to \u00a31000 in respect of the Automated Dispensing Machine located on the forecourt of the Pharmacy Premises."}, {"id": "ec0797bd-c9b8-ee11-9078-6045bdc1ef70", "title": "NPAExs04 Electrical Certificate Increased Excess", "type": "Premises", "text": "It is a condition of Your Policy that you provide sight of the documentation providing confirmation that the fixed electrical installation has been inspected and certified as safe by a competent person. To Our satisfaction within 60 days of inception of the Policy. Until the certificate is obtained an increased excess of \u00a3500 will apply for claims occurring from fire. If no confirmation is provided after 60 days then the excess will increase to \u00a35000."}, {"id": "a1d37385-cab8-ee11-9078-6045bdc1ef70", "title": "NPABIn01 Uninsured Working Expenses", "type": "Premises", "text": "The net cost of Stock purchased during the indemnity period."}, {"id": "99d8ad5a-cab8-ee11-9078-6045bdc1ef70", "title": "NPASec01 Alarm Condition", "type": "Premises", "text": "You will only be covered for theft, attempted theft or arson when an alarm is installed and You comply with the Intruder Alarm Special Condition of Your Policy."}, {"id": "bcb4cf51-f5a0-ee11-be37-6045bdc1ef70", "title": "NPA-02 Material Damage; Day One Cover", "type": "Policy", "text": "Declared Value Your assessment of the cost of reinstatement of the premises insured at the inception of the period of insurance. With due allowance for: a) additional costs of reinstatement to comply with European Union and public authority requirements; b) professional fees; c) debris removal costs."}, {"id": "c85d3bf1-f4a0-ee11-be37-6045bdc1ef70", "title": "NPASec17M- Minimum Security", "type": "Policy", "text": "You will only be covered for theft, attempted theft or arson when You comply with the Minimum Security Conditions Precedent within Your Policy."}];
+
+function updateEndorsementsList() {
+  const selected = ENDORSEMENTS_DATA.filter(e => {
+    const el = document.getElementById('pw8-end-' + e.id);
+    return el && el.checked;
+  });
+  const summary = document.getElementById('pw8-selected-summary');
+  const list = document.getElementById('pw8-selected-list');
+  if (selected.length) {
+    summary.style.display = 'block';
+    list.innerHTML = selected.map(e => `<div style="padding:4px 0;border-bottom:1px solid var(--border)">✓ ${esc(e.title)}</div>`).join('');
+  } else {
+    summary.style.display = 'none';
+  }
+}
+
+function getSelectedEndorsements() {
+  return ENDORSEMENTS_DATA.filter(e => {
+    const el = document.getElementById('pw8-end-' + e.id);
+    return el && el.checked;
+  }).map(e => ({id:e.id, title:e.title, type:e.type}));
+}
+
+function restoreEndorsementSelections(endorsements) {
+  if (!Array.isArray(endorsements)) return;
+  ENDORSEMENTS_DATA.forEach(e => {
+    const el = document.getElementById('pw8-end-' + e.id);
+    if (el) el.checked = endorsements.some(sel => sel.id === e.id);
+  });
+  updateEndorsementsList();
 }
 
 // ── Boot ───────────────────────────────────────────────────────────────────────
