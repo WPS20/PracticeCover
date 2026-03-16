@@ -1515,16 +1515,31 @@ function buildPremisesWizard() {
 function renderPwProgress(step) {
   const el = document.getElementById('pw-progress');
   if (!el) return;
+  const p = premisesData[currentPremisesIdx] || {};
+  const completed = p.stepsComplete || [];
   el.innerHTML = PREMISES_STEPS.map((s,i) => {
-    const cls = s.n < step ? 'done' : s.n === step ? 'active' : '';
-    return `<div class="qp-step ${cls}">
-      ${i>0?`<div class="qp-line ${s.n<=step?'done':''}"></div>`:''}
+    const isDone   = completed.includes(s.n) && s.n !== step;
+    const isActive = s.n === step;
+    // Clickable if step was previously completed OR is before current step
+    const canNav   = (completed.includes(s.n) || s.n < step) && !isActive;
+    const cls = isDone ? 'done' : isActive ? 'active' : '';
+    const onclick  = canNav ? `onclick="pwNavTo(${s.n})"` : '';
+    const cursor   = canNav ? 'cursor:pointer' : '';
+    const title    = canNav ? `title="Go to ${s.label}"` : '';
+    return `<div class="qp-step ${cls}" ${onclick} ${title} style="${cursor}">
+      ${i>0?`<div class="qp-line ${isDone||s.n<step?'done':''}"></div>`:''}
       <div class="qp-inner">
-        <div class="qp-dot">${s.n < step ? '✓' : s.n}</div>
+        <div class="qp-dot">${isDone ? '✓' : s.n}</div>
         <div class="qp-label">${s.label}</div>
       </div>
     </div>`;
   }).join('');
+}
+
+function pwNavTo(n) {
+  // Save current step data before navigating
+  collectPwStep(currentPremisesStep);
+  showPremisesStep(n);
 }
 
 function showPremisesStep(n) {
