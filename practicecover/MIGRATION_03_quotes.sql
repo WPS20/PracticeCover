@@ -71,7 +71,8 @@ CREATE TABLE IF NOT EXISTS quotes (
   -- Step 7: Premises Details
   num_premises          INTEGER DEFAULT 1,
   country               TEXT DEFAULT 'UK',             -- Not on Cover / UK / Channel Islands / Isle of Man
-  premises              JSONB DEFAULT '[]',             -- array of per-premises detail objects
+  premises              JSONB DEFAULT '[]',
+  steps_completed       JSONB DEFAULT '[]'   -- array of step numbers completed,             -- array of per-premises detail objects
 
   -- Final pricing
   premium               NUMERIC(10,2),

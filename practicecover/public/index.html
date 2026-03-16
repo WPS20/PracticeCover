@@ -493,7 +493,7 @@ let editingUserId = null;
 let editingQuoteId = null;
 let quoteData = {};
 let linkedCustomerId = null;
-let quoteMaxStep = 1; // highest step reached in current quote // set when opening quote from a practice
+let quoteCompletedSteps = new Set(); // steps explicitly completed by clicking Next or Finish
 
 const PAGE_TITLES = {
   dashboard: 'Dashboard', customers: 'Practices', quotes: 'Quotes',
@@ -886,7 +886,7 @@ function startNewQuote() {
   editingQuoteId = null;
   linkedCustomerId = null;
   quoteData = {};
-  quoteMaxStep = 1;
+  quoteCompletedSteps = new Set();
   buildQuoteWizard();
   showPage('quote-new');
   document.getElementById('page-title').textContent = 'New Quote';
@@ -899,7 +899,7 @@ function startNewQuoteForCustomer(custId) {
   if (!c) return;
   editingQuoteId = null;
   linkedCustomerId = custId;
-  quoteMaxStep = 1;
+  quoteCompletedSteps = new Set();
   quoteData = {
     customerId: custId,
     fullName: c.name||'', contactName: c.contactName||'',
@@ -935,7 +935,8 @@ function editQuote(id) {
   editingQuoteId = id;
   linkedCustomerId = qt.customerId||null;
   quoteData = { ...qt };
-  quoteMaxStep = 7; // editing existing = all steps accessible
+  // Restore only steps that were actually completed (saved in quoteData.stepsCompleted)
+  quoteCompletedSteps = new Set(Array.isArray(qt.stepsCompleted) ? qt.stepsCompleted : []);
   buildQuoteWizard();
   showPage('quote-new');
   document.getElementById('page-title').textContent = 'Edit Quote';
@@ -959,14 +960,15 @@ function buildQuoteWizard() {
 function renderQuoteProgress(step) {
   document.getElementById('q-progress').innerHTML = QUOTE_STEPS.map((s,i) => {
     const isActive = s.n === step;
-    const isDone   = !isActive && s.n <= quoteMaxStep;
-    const isAccess = !isActive && s.n <= quoteMaxStep;
+    const isDone   = !isActive && quoteCompletedSteps.has(s.n);
+    const isAccess = !isActive && (quoteCompletedSteps.has(s.n) || quoteCompletedSteps.has(s.n - 1) || s.n === 1);
     const cls = isDone ? 'done' : isActive ? 'active' : '';
     const cursor  = isAccess ? 'cursor:pointer' : '';
     const onclick = isAccess ? 'onclick="quoteNavTo('+s.n+')"' : '';
     const title   = isAccess ? 'title="Go to '+s.label+'"' : '';
+    const lineOn  = isDone || quoteCompletedSteps.has(s.n - 1);
     return '<div class="qp-step '+cls+'" '+onclick+' '+title+' style="'+cursor+'">'
-      + (i>0 ? '<div class="qp-line '+(s.n<=quoteMaxStep?'done':'')+'"></div>' : '')
+      + (i>0 ? '<div class="qp-line '+(lineOn?'done':'')+'"></div>' : '')
       + '<div class="qp-inner">'
       + '<div class="qp-dot" style="'+(isAccess?'transition:all .15s':'')+'">'+(isDone?'&#10003;':s.n)+'</div>'
       + '<div class="qp-label">'+s.label+'</div>'
@@ -975,8 +977,11 @@ function renderQuoteProgress(step) {
 }
 
 function quoteNavTo(n) {
-  if (n > quoteMaxStep) return; // can't skip ahead
-  collectStep(n === 1 ? 1 : n - 1); // save current before navigating (best effort)
+  // Only allow navigation to completed steps or directly adjacent
+  if (!quoteCompletedSteps.has(n) && n !== 1 && !quoteCompletedSteps.has(n-1)) return;
+  // Save current step data before navigating
+  const activeStep = [...document.querySelectorAll('.q-step')].findIndex(el=>el.style.display!=='none')+1;
+  if (activeStep > 0) collectStep(activeStep);
   showQuoteStep(n);
 }
 
@@ -1055,8 +1060,9 @@ async function quoteNext(fromStep) {
     }
   }
   collectStep(fromStep);
-  // Mark this step as completed
-  if (fromStep >= quoteMaxStep) quoteMaxStep = fromStep;
+  // Mark this step as explicitly completed
+  quoteCompletedSteps.add(fromStep);
+  quoteData.stepsCompleted = Array.from(quoteCompletedSteps);
   // Auto-save draft after every step
   if (!editingQuoteId) {
     const r = await api('POST','/api/quotes', {...quoteData, status:'draft'});
@@ -1999,6 +2005,12 @@ function restoreEndorsementSelections(endorsements) {
 
 
 async function finishAndSave() {
+  // Mark current quote step as completed when finishing
+  if (document.getElementById('page-quote-new')?.classList.contains('active')) {
+    const stepEls = document.querySelectorAll('.q-step');
+    stepEls.forEach((el, i) => { if (el.style.display !== 'none') quoteCompletedSteps.add(i+1); });
+    quoteData.stepsCompleted = Array.from(quoteCompletedSteps);
+  }
   // If we're in the premises wizard, save premises then go to quotes
   if (document.getElementById('page-premises-wizard')?.classList.contains('active')) {
     collectPwStep(currentPremisesStep);

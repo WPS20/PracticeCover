@@ -68,7 +68,8 @@ function normQuote(r) {
     nonSelectionRule:r.non_selection_rule||null, terrorismPostcode:r.terrorism_postcode||null,
     anticipatedTurnover:r.anticipated_turnover||0,
     numPremises:r.num_premises||1, country:r.country||'UK', premises:r.premises||[],
-    premium:r.premium||null, validUntil:r.valid_until||null, createdAt:r.created_at
+    premium:r.premium||null, validUntil:r.valid_until||null,
+    stepsCompleted:r.steps_completed||[], createdAt:r.created_at
   };
 }
 
@@ -171,7 +172,7 @@ async function nextRef() {
   return 'QT-' + String(last+1).padStart(4,'0');
 }
 
-const QCOLS = `id,quote_ref,status,customer_id,renewal_date,quote_type,previous_insurer,full_name,contact_name,telephone,mobile,email,addr_name,addr_line1,addr_line2,addr_town,addr_county,addr_country,addr_postcode,none_of_below,decl1,decl2,decl3,decl4,decl5,decl6,years_since_last_claim,claims,day_one_cover,excess,fidelity,dir_units,dir_fulltime,dir_parttime,emp_units,emp_fulltime,emp_parttime,bi_cover_type,bi_annual_sum_insured,bi_cover_period,bi_book_debt_cover,indemnity_limit,offsite_clinics,terrorism_cover,material_damage,non_selection_rule,terrorism_postcode,anticipated_turnover,num_premises,country,premises,premium,valid_until,created_by`;
+const QCOLS = `id,quote_ref,status,customer_id,renewal_date,quote_type,previous_insurer,full_name,contact_name,telephone,mobile,email,addr_name,addr_line1,addr_line2,addr_town,addr_county,addr_country,addr_postcode,none_of_below,decl1,decl2,decl3,decl4,decl5,decl6,years_since_last_claim,claims,day_one_cover,excess,fidelity,dir_units,dir_fulltime,dir_parttime,emp_units,emp_fulltime,emp_parttime,bi_cover_type,bi_annual_sum_insured,bi_cover_period,bi_book_debt_cover,indemnity_limit,offsite_clinics,terrorism_cover,material_damage,non_selection_rule,terrorism_postcode,anticipated_turnover,num_premises,country,premises,premium,valid_until,steps_completed,created_by`;
 
 function toNum(v) { return parseFloat(String(v||0).replace(/[^0-9.]/g,''))||0; }
 function qVals(d, userId) {
@@ -187,7 +188,7 @@ function qVals(d, userId) {
     d.indemnityLimit||'£5000000', d.offsiteClinics||0,
     d.terrorismCover||'No', d.materialDamage||null, d.nonSelectionRule||null, d.terrorismPostcode||null, toNum(d.anticipatedTurnover),
     toNum(d.numPremises)||1, d.country||'UK', JSON.stringify(d.premises||[]),
-    d.premium||null, d.validUntil||null, userId
+    d.premium||null, d.validUntil||null, JSON.stringify(d.stepsCompleted||[]), userId
   ];
 }
 
@@ -213,9 +214,9 @@ app.put('/api/quotes/:id', auth, async(req,res) => {
   try {
     const d = req.body;
     const cols = QCOLS.split(',').slice(3); // skip id, quote_ref, customer_id... start from status
-    const setCols = ['status=$1','customer_id=$2','renewal_date=$3','quote_type=$4','previous_insurer=$5','full_name=$6','contact_name=$7','telephone=$8','mobile=$9','email=$10','addr_name=$11','addr_line1=$12','addr_line2=$13','addr_town=$14','addr_county=$15','addr_country=$16','addr_postcode=$17','none_of_below=$18','decl1=$19','decl2=$20','decl3=$21','decl4=$22','decl5=$23','decl6=$24','years_since_last_claim=$25','claims=$26','day_one_cover=$27','excess=$28','fidelity=$29','dir_units=$30','dir_fulltime=$31','dir_parttime=$32','emp_units=$33','emp_fulltime=$34','emp_parttime=$35','bi_cover_type=$36','bi_annual_sum_insured=$37','bi_cover_period=$38','bi_book_debt_cover=$39','indemnity_limit=$40','offsite_clinics=$41','terrorism_cover=$42','material_damage=$43','non_selection_rule=$44','terrorism_postcode=$45','anticipated_turnover=$46','num_premises=$47','country=$48','premises=$49','premium=$50','valid_until=$51','updated_at=NOW()'];
+    const setCols = ['status=$1','customer_id=$2','renewal_date=$3','quote_type=$4','previous_insurer=$5','full_name=$6','contact_name=$7','telephone=$8','mobile=$9','email=$10','addr_name=$11','addr_line1=$12','addr_line2=$13','addr_town=$14','addr_county=$15','addr_country=$16','addr_postcode=$17','none_of_below=$18','decl1=$19','decl2=$20','decl3=$21','decl4=$22','decl5=$23','decl6=$24','years_since_last_claim=$25','claims=$26','day_one_cover=$27','excess=$28','fidelity=$29','dir_units=$30','dir_fulltime=$31','dir_parttime=$32','emp_units=$33','emp_fulltime=$34','emp_parttime=$35','bi_cover_type=$36','bi_annual_sum_insured=$37','bi_cover_period=$38','bi_book_debt_cover=$39','indemnity_limit=$40','offsite_clinics=$41','terrorism_cover=$42','material_damage=$43','non_selection_rule=$44','terrorism_postcode=$45','anticipated_turnover=$46','num_premises=$47','country=$48','premises=$49','premium=$50','valid_until=$51','steps_completed=$52','updated_at=NOW()'];
     const vals = [d.status||'draft',...qVals(d,null).slice(0,-1), req.params.id]; // drop created_by, add id
-    const r = await query(`UPDATE quotes SET ${setCols.join(',')} WHERE id=$52 RETURNING *`, vals);
+    const r = await query(`UPDATE quotes SET ${setCols.join(',')} WHERE id=$53 RETURNING *`, vals);
     if (!r.rows.length) return res.status(404).json({ error:'Not found' });
     res.json(normQuote(r.rows[0]));
   } catch(e) { res.status(500).json({ error:e.message }); }
