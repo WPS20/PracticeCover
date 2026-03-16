@@ -958,20 +958,19 @@ function buildQuoteWizard() {
 
 function renderQuoteProgress(step) {
   document.getElementById('q-progress').innerHTML = QUOTE_STEPS.map((s,i) => {
-    const isDone    = s.n < step;
-    const isActive  = s.n === step;
-    const isAccess  = s.n <= quoteMaxStep; // clickable if already reached
+    const isActive = s.n === step;
+    const isDone   = !isActive && s.n <= quoteMaxStep;
+    const isAccess = !isActive && s.n <= quoteMaxStep;
     const cls = isDone ? 'done' : isActive ? 'active' : '';
-    const cursor = isAccess && !isActive ? 'cursor:pointer' : '';
-    const onclick = isAccess && !isActive ? `onclick="quoteNavTo(${s.n})"` : '';
-    const title = isAccess && !isActive ? `title="Go to ${s.label}"` : '';
-    return `<div class="qp-step ${cls}" ${onclick} ${title} style="${cursor}">
-      ${i>0?`<div class="qp-line ${s.n<=step?'done':''}"></div>`:''}
-      <div class="qp-inner">
-        <div class="qp-dot" style="${isAccess&&!isActive?'transition:all .15s':''}">${isDone ? '✓' : s.n}</div>
-        <div class="qp-label">${s.label}</div>
-      </div>
-    </div>`;
+    const cursor  = isAccess ? 'cursor:pointer' : '';
+    const onclick = isAccess ? 'onclick="quoteNavTo('+s.n+')"' : '';
+    const title   = isAccess ? 'title="Go to '+s.label+'"' : '';
+    return '<div class="qp-step '+cls+'" '+onclick+' '+title+' style="'+cursor+'">'
+      + (i>0 ? '<div class="qp-line '+(s.n<=quoteMaxStep?'done':'')+'"></div>' : '')
+      + '<div class="qp-inner">'
+      + '<div class="qp-dot" style="'+(isAccess?'transition:all .15s':'')+'">'+(isDone?'&#10003;':s.n)+'</div>'
+      + '<div class="qp-label">'+s.label+'</div>'
+      + '</div></div>';
   }).join('');
 }
 
