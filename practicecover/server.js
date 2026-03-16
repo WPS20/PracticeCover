@@ -173,6 +173,7 @@ async function nextRef() {
 
 const QCOLS = `id,quote_ref,status,customer_id,renewal_date,quote_type,previous_insurer,full_name,contact_name,telephone,mobile,email,addr_name,addr_line1,addr_line2,addr_town,addr_county,addr_country,addr_postcode,none_of_below,decl1,decl2,decl3,decl4,decl5,decl6,years_since_last_claim,claims,day_one_cover,excess,fidelity,dir_units,dir_fulltime,dir_parttime,emp_units,emp_fulltime,emp_parttime,bi_cover_type,bi_annual_sum_insured,bi_cover_period,bi_book_debt_cover,indemnity_limit,offsite_clinics,terrorism_cover,material_damage,non_selection_rule,terrorism_postcode,anticipated_turnover,num_premises,country,premises,premium,valid_until,created_by`;
 
+function toNum(v) { return parseFloat(String(v||0).replace(/[^0-9.]/g,''))||0; }
 function qVals(d, userId) {
   return [
     d.customerId||null, d.renewalDate||null, d.quoteType||null, d.previousInsurer||null,
@@ -182,10 +183,10 @@ function qVals(d, userId) {
     d.yearsSinceLastClaim||'0', JSON.stringify(d.claims||[]),
     d.dayOneCover||'0', d.excess||'£200', d.fidelity||'£25000',
     d.dirUnits||0, d.dirFulltime||0, d.dirParttime||0, d.empUnits||0, d.empFulltime||0, d.empParttime||0,
-    d.biCoverType||null, d.biAnnualSumInsured||0, d.biCoverPeriod||'24', d.biBookDebtCover||10000,
+    d.biCoverType||null, toNum(d.biAnnualSumInsured), d.biCoverPeriod||'24', toNum(d.biBookDebtCover)||10000,
     d.indemnityLimit||'£5000000', d.offsiteClinics||0,
-    d.terrorismCover||'No', d.materialDamage||null, d.nonSelectionRule||null, d.terrorismPostcode||null, d.anticipatedTurnover||0,
-    d.numPremises||1, d.country||'UK', JSON.stringify(d.premises||[]),
+    d.terrorismCover||'No', d.materialDamage||null, d.nonSelectionRule||null, d.terrorismPostcode||null, toNum(d.anticipatedTurnover),
+    toNum(d.numPremises)||1, d.country||'UK', JSON.stringify(d.premises||[]),
     d.premium||null, d.validUntil||null, userId
   ];
 }
