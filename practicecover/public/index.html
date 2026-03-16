@@ -391,6 +391,8 @@ tr:hover td{background:#fafbfc}
           <button class="guides-tab" onclick="showGuidesTab('practices')" data-tab="practices">🏥 Practices</button>
           <button class="guides-tab" onclick="showGuidesTab('quotes')" data-tab="quotes">📋 Quotes</button>
           <button class="guides-tab" onclick="showGuidesTab('premises')" data-tab="premises">🏢 Premises</button>
+          <button class="guides-tab" onclick="showGuidesTab('policy-steps')" data-tab="policy-steps">📋 Policy Steps</button>
+          <button class="guides-tab" onclick="showGuidesTab('premises-steps')" data-tab="premises-steps">🏢 Premises Steps</button>
           <button class="guides-tab" onclick="showGuidesTab('users')" data-tab="users">🔑 Users</button>
           <button class="guides-tab" onclick="showGuidesTab('faq')" data-tab="faq">❓ FAQs</button>
         </div>
@@ -2154,17 +2156,13 @@ const GUIDE_DATA = [
   // ── QUOTES ─────────────────────────────────────────────────────────────────
   {
     id:'quote-new', cat:'quotes', icon:'📄', title:'Create a New Quote',
-    desc:'Step through the 7-step quote wizard to capture all policy information.',
+    desc:'Step through the 7-step quote wizard to capture all policy information. See the Policy Steps tab for a detailed guide to each individual step.',
     tips:['You can click "Finish & Save Quote" at any step to save progress and return later.','Completed steps turn green — click any green step to jump back to it.'],
     steps:[
-      {h:'Start the Quote',          b:'Click "+ New Quote" from the Quotes page or from inside a Practice record.'},
-      {h:'Step 1 — Client Details',  b:'Enter renewal date, quote type, previous insurer, contact details and correspondence address. All fields marked * are mandatory.'},
-      {h:'Step 2 — Declarations',    b:'Answer the declaration questions. Set "None of below" to Yes if none apply. Record any claims in the claims table.'},
-      {h:'Step 3 — Physical Items',  b:'Select Day One Cover percentage, excess amount and fidelity cover limit.'},
-      {h:'Step 4 — Cover Continued', b:'Enter the number of units, full-time and part-time split for Directors and Employees.'},
-      {h:'Step 5 — Business Interruption', b:'Choose Loss of Income or Increased Expenses, set the annual sum insured, cover period and book debt cover.'},
-      {h:'Step 6 — Public Liability',b:'Set the indemnity limit, number of offsite clinics, terrorism cover preference and anticipated turnover.'},
-      {h:'Step 7 — Premises Details',b:'Select the number of premises and country. Click "Update Premises →" to proceed to the premises detail wizard.'}
+      {h:'Start the Quote', b:'Click "+ New Quote" from the Quotes page or from inside a Practice record. If starting from a Practice, client details are pre-filled automatically.'},
+      {h:'Work Through All 7 Steps', b:'Complete each step in order — Client Details, Declarations, Physical Items, Cover Continued, Business Interruption, Public Liability, then Premises Details. See the Policy Steps tab for a full breakdown of each step.'},
+      {h:'Progress is Auto-Saved', b:'Each time you click "Next" your data is saved. Use "Finish & Save Quote" at any point to save and return to the Quotes list.'},
+      {h:'Complete Premises Detail', b:'After Step 7 you are taken to the Premises Selector to complete the 8-step premises wizard for each premises on the policy.'}
     ]
   },
   {
@@ -2202,53 +2200,198 @@ const GUIDE_DATA = [
   // ── PREMISES ───────────────────────────────────────────────────────────────
   {
     id:'premises-overview', cat:'premises', icon:'🏢', title:'Premises Wizard Overview',
-    desc:'After completing Step 7 of the quote you enter the 8-step premises detail wizard for each premises on the policy.',
+    desc:'After completing Step 7 of the quote you enter the 8-step premises detail wizard for each premises on the policy. See the Premises Steps tab for a detailed guide to each individual step.',
     tips:['Complete all 8 steps for each premises to ensure a fully detailed quote.','You can save part-way through using "Finish & Save Quote" and return later.'],
     steps:[
       {h:'Premises Selector',   b:'After Step 7 you land on the Premises Selector showing one row per premises. Each row shows the completion status, address and 8 progress circles.'},
-      {h:'Update Premises N',   b:'Click "Update Premises N →" to open the 8-step wizard for that premises.'},
-      {h:'Complete Each Step',  b:'Work through Address, Declarations, Construction, Security, Cover Choices, Cover Continued, Business Equipment and Endorsements.'},
+      {h:'Open a Premises',     b:'Click "Update Premises N →" to open the 8-step wizard for that individual premises. See the Premises Steps tab for a full breakdown of each step.'},
       {h:'Save Premises',       b:'On Step 8 click "Save Premises N ✓" to mark it complete and return to the selector.'},
       {h:'Finish & Save Quote', b:'Once all premises are complete, click "Finish & Save Quote" to finalise and return to the Quotes list.'}
     ]
   },
+
+
+
+
+
+  // ── POLICY STEPS (7 quote wizard steps, one tile each) ────────────────────
   {
-    id:'premises-address', cat:'premises', icon:'📍', title:'Premises Step 1 — Address & Activity',
-    desc:'Enter the trading address and activity breakdown for each premises.',
-    tips:['Premises 1 is auto-filled from the quote\'s Step 1 correspondence address.','Activity percentages across all 8 rows must add up to exactly 100%.'],
+    id:'qs-1', cat:'policy-steps', icon:'1️⃣', title:'Step 1 — Client Details & Correspondence Address',
+    desc:'Enter the policy information, contact details and correspondence address for the quote.',
+    tips:['If creating the quote from a Practice record, these fields auto-fill from the practice.','Use the "Apply from existing Practice record" dropdown to link a practice and auto-fill fields on a standalone new quote.'],
     steps:[
-      {h:'Enter Address',      b:'Fill in Trading Name, Address Line 1 (mandatory), Town (mandatory) and Postcode (mandatory).'},
-      {h:'Activity Table',     b:'For each row select an Activity Description from the 62-option dropdown, who carries it out (You / Your Tenant / Landlord), and the percentage of turnover.'},
-      {h:'Check Total',        b:'The running total shows in the top-right corner of the activity table. It must reach exactly 100% before you can proceed.'}
+      {h:'Policy Information',       b:'Select the Renewal Date (mandatory), Quote Type — Renewal, New Business, MTA or Cancellation — and the Previous Insurer.'},
+      {h:'Contact Details',          b:'Enter the Full Name (mandatory), Name of Contact, Telephone Number (mandatory), Mobile Number and Email Address (mandatory).'},
+      {h:'Correspondence Address',   b:'Enter Address Name/Number, First Line (mandatory), Second Line, Town (mandatory), County, Country and Postcode (mandatory).'},
+      {h:'Link to a Practice',       b:'Use the "Apply from existing Practice record" dropdown and click "✓ Apply Customer Details" to auto-fill fields and link the quote to a practice. This selector is hidden when editing an existing quote.'},
+      {h:'Proceed',                  b:'All mandatory fields (*) must be completed. Click "Next: Declarations →" to save and continue.'}
     ]
   },
   {
-    id:'premises-construction', cat:'premises', icon:'🧱', title:'Premises Step 3 — Construction',
-    desc:'Record the construction materials for the roof, walls and floor of the premises.',
-    tips:['Each of the three blocks (Roof, Walls, Floor) must independently total exactly 100%.','If a flat roof is present, record the year it was installed in the flat roof field.'],
+    id:'qs-2', cat:'policy-steps', icon:'2️⃣', title:'Step 2 — Declarations',
+    desc:'Record declaration answers and any claims history for the policy.',
+    tips:['"None of below" defaults to Yes — only change individual declarations to Yes if they genuinely apply.','A warning banner appears if "None of below" is Yes but any individual declaration is also set to Yes.'],
     steps:[
-      {h:'Roof',  b:'Select up to 3 roof types from the 27-option dropdown with a percentage split. Total must be 100%.'},
-      {h:'Walls', b:'Select up to 3 wall construction types from the 25-option dropdown. Total must be 100%.'},
-      {h:'Floor', b:'Select up to 3 floor types from the 10-option dropdown. Total must be 100%.'}
+      {h:'None of Below',        b:'Set to Yes if none of the listed conditions apply to any proposer, director, partner or person with a financial interest in the business. This is the default.'},
+      {h:'Individual Declarations', b:'Six Yes/No declarations covering: criminal convictions, bankruptcy/insolvency, CCJ or voluntary arrangement, insurance refusal or special terms, losses in the last 5 years, and known circumstances that could give rise to a claim.'},
+      {h:'Years Since Last Claim', b:'Select 0, 1-2, 3, or 4 & above from the dropdown.'},
+      {h:'Claims Table',         b:'Complete up to 3 claim rows. For each claim select the Claim Type, Date, whether a Claim was Made, a Description, whether it is Settled, and the Total value.'},
+      {h:'Proceed',              b:'Click "Next: Physical Items →" to save and continue.'}
     ]
   },
   {
-    id:'premises-security', cat:'premises', icon:'🔒', title:'Premises Step 4 — Security',
-    desc:'Record security features including alarm grade, monitoring and additional measures.',
+    id:'qs-3', cat:'policy-steps', icon:'3️⃣', title:'Step 3 — Cover Choice: Physical Items',
+    desc:'Select Day One Cover, excess level and fidelity cover for the policy.',
+    tips:['Day One Cover adds protection against inflation beyond the policy year.','Fidelity cover protects against theft of money and stock by employees — the default is £25,000.'],
     steps:[
-      {h:'Listed Building',    b:'Select the listing grade of the building, or "not listed" if it applies.'},
-      {h:'Intruder Alarm',     b:'Confirm whether an intruder alarm is installed and whether it is monitored. Select the alarm grade under EN50131.'},
-      {h:'Additional Features',b:'Select up to 3 additional security features from the dropdown (e.g. CCTV, shutters, smoke cloak).'}
+      {h:'Day One Cover',  b:'Select the Day One Cover percentage to apply across all premises: 0%, 20% or 30%.'},
+      {h:'Excess',         b:'Select the excess that applies to physical items and business interruption cover: £200, £500 or £1,000.'},
+      {h:'Fidelity',       b:'Select the fidelity cover limit: £0 (no cover), £10,000, £15,000, £20,000, £25,000 or £50,000. The default is £25,000.'},
+      {h:'Proceed',        b:'Click "Next: Cover Continued →" to save and continue.'}
     ]
   },
   {
-    id:'premises-endorsements', cat:'premises', icon:'📎', title:'Premises Step 8 — Endorsements',
-    desc:'Select endorsements to apply to this premises from the full list of Premises and Policy endorsements.',
-    tips:['Tick as many endorsements as apply. A summary of selected endorsements appears below the list as you select them.','Policy-level endorsements apply across all premises on the policy.'],
+    id:'qs-4', cat:'policy-steps', icon:'4️⃣', title:'Step 4 — Cover Continued: Employee Personal Accident',
+    desc:'Record the number of units and full-time/part-time split for Directors and Employees under the Personal Accident section.',
+    tips:['Each unit provides £5,000 of cover.','Enter 0 for all fields if Personal Accident cover is not required.'],
     steps:[
-      {h:'Premises Endorsements', b:'Review the 19 premises-level endorsements and tick those that apply (e.g. Alarm Condition, Flat Roof Inspection, Heating Condition).'},
-      {h:'Policy Endorsements',   b:'Review the 2 policy-level endorsements (Material Damage Day One Cover, Minimum Security) and tick if required.'},
-      {h:'Save Premises',         b:'Click "Save Premises N ✓" to save your selections and return to the Premises Selector.'}
+      {h:'Directors — Units',     b:'Enter the number of Personal Accident units required for Directors.'},
+      {h:'Directors — FT/PT',     b:'Enter the number of full-time and part-time Directors separately.'},
+      {h:'Employees — Units',     b:'Enter the number of Personal Accident units required for Employees.'},
+      {h:'Employees — FT/PT',     b:'Enter the number of full-time and part-time Employees separately.'},
+      {h:'Proceed',               b:'Click "Next: Business Interruption →" to save and continue.'}
+    ]
+  },
+  {
+    id:'qs-5', cat:'policy-steps', icon:'5️⃣', title:'Step 5 — Business Interruption',
+    desc:'Set the Business Interruption cover type, sum insured, cover period and book debt cover for the policy.',
+    tips:['Loss of Income replaces money lost from not being able to operate.','Increased Expenses provides money to pay for preventive measures so you do not lose income.','The minimum Book Debt cover is £10,000.'],
+    steps:[
+      {h:'Cover Type',           b:'Select either Loss of Income (default) or Increased Expenses.'},
+      {h:'Annual Sum Insured',   b:'Enter the total Annual Sum Insured across all premises on the policy. This cover floats across all addresses.'},
+      {h:'Cover Period',         b:'Select the indemnity period in months: 12, 18, 24 (default), 30, 36, 48 or 60 months.'},
+      {h:'Book Debt Cover',      b:'Enter the cover required for Outstanding Book Debt Balances. Minimum is £10,000 (default).'},
+      {h:'Proceed',              b:'Click "Next: Public Liability →" to save and continue.'}
+    ]
+  },
+  {
+    id:'qs-6', cat:'policy-steps', icon:'6️⃣', title:'Step 6 — Public & Products Liability',
+    desc:'Set the liability indemnity limit, offsite clinics, terrorism cover and anticipated turnover for the policy.',
+    tips:['The standard industry indemnity limit is £5,000,000 — some authorities may require £10,000,000.','If terrorism cover is selected, two additional questions about Material Damage Declared Value and the Non Selection Rule become required.'],
+    steps:[
+      {h:'Indemnity Limit',       b:'Select the limit of indemnity: £1,000,000, £2,000,000, £5,000,000 (default) or £10,000,000.'},
+      {h:'Offsite Clinics',       b:'Select the number of offsite clinics operated (not individual patient visits): 0–10.'},
+      {h:'Terrorism Cover',       b:'Select Yes or No. If Yes, complete the Material Damage Declared Value question and confirm the Non Selection Rule applies.'},
+      {h:'Anticipated Turnover',  b:'Enter the expected total turnover for the next 12 months across all premises.'},
+      {h:'Proceed',               b:'Click "Next: Premises Details →" to save and continue.'}
+    ]
+  },
+  {
+    id:'qs-7', cat:'policy-steps', icon:'7️⃣', title:'Step 7 — Premises Details',
+    desc:'Set the number of premises and the country they are located in, then proceed to the Premises Detail wizard.',
+    tips:['Up to 10 premises can be added per quote.','Selecting "Update Premises →" saves this step and opens the Premises Selector for per-premises detail entry.'],
+    steps:[
+      {h:'Number of Premises', b:'Select how many premises are to be covered under this policy: 1–10. This determines how many premises appear in the Premises Selector.'},
+      {h:'Country',            b:'Select the country all premises are located in: UK, Channel Islands, Isle of Man, or Not on Cover.'},
+      {h:'Update Premises',    b:'Click "Update Premises →" to save Step 7 and proceed to the Premises Selector where each premises can be detailed individually across 8 steps.'}
+    ]
+  },
+  // ── PREMISES STEPS (8 premises wizard steps, one tile each) ───────────────
+  {
+    id:'ps-1', cat:'premises-steps', icon:'1️⃣', title:'Premises Step 1 — Address & Activity',
+    desc:'Enter the trading address and activity breakdown for this premises.',
+    tips:['For Premises 1, the address is auto-filled from the quote Step 1 correspondence address.','Activity percentages across all 8 rows must total exactly 100% before you can proceed.'],
+    steps:[
+      {h:'Trading Name',    b:'Enter the trading name of the business at this premises.'},
+      {h:'Address',         b:'Enter Address Line 1 (mandatory), Address Line 2 (optional), Town (mandatory), County, Country and Postcode (mandatory).'},
+      {h:'Year Established', b:'Enter the year the practice was established at this premises.'},
+      {h:'Activity Table',  b:'For each of the 8 rows: select an Activity Description from the 62-option dropdown, select who carries it out (You / Your Tenant / Landlord/Tenant), and enter the percentage of turnover. Rows not in use should be set to "None" at 0%.'},
+      {h:'Total Check',     b:'The running percentage total is shown to the right of the activity table. It must reach exactly 100% before you can proceed to Step 2.'}
+    ]
+  },
+  {
+    id:'ps-2', cat:'premises-steps', icon:'2️⃣', title:'Premises Step 2 — Declarations',
+    desc:'Answer 7 Yes/No premises-specific declaration questions.',
+    tips:['"None of the below" defaults to Yes. A warning appears if this is Yes but any individual declaration is also Yes.'],
+    steps:[
+      {h:'None of Below',     b:'Set to Yes if none of the listed conditions apply to this premises. This is the default.'},
+      {h:'7 Declarations',    b:'Answer Yes or No to: flooding history, increased flood risk area, non-standard construction, subsidence/landslip/ground heave history or visible signs, not sole occupant, business not self-contained with own access, and ATM for which the proposer is responsible.'},
+      {h:'Warning Banner',    b:'If "None of below" is Yes but any individual declaration is also Yes, a warning banner appears. Review and confirm before proceeding.'},
+      {h:'Proceed',           b:'Click "Step 3 →" to save and continue to Construction.'}
+    ]
+  },
+  {
+    id:'ps-3', cat:'premises-steps', icon:'3️⃣', title:'Premises Step 3 — Construction',
+    desc:'Record the construction materials for the roof, walls and floor. Each block must total 100%.',
+    tips:['Each of the three construction blocks independently must total 100%.','If the premises has a flat roof, record the year it was installed in the "Flat roof year" field.'],
+    steps:[
+      {h:'Flat Roof Year',  b:'If applicable, enter the year the flat roof was installed. Enter N/A if there is no flat roof.'},
+      {h:'Roof',            b:'Select up to 3 roof types from the 27-option dropdown. Enter a percentage for each. Total must equal 100%.'},
+      {h:'Walls',           b:'Select up to 3 wall construction types from the 25-option dropdown. Enter a percentage for each. Total must equal 100%.'},
+      {h:'Floor',           b:'Select up to 3 floor types from the 10-option dropdown. Enter a percentage for each. Total must equal 100%.'},
+      {h:'Proceed',         b:'All three blocks must independently show 100% before you can proceed. Click "Step 4 →" to continue.'}
+    ]
+  },
+  {
+    id:'ps-4', cat:'premises-steps', icon:'4️⃣', title:'Premises Step 4 — Grading & Security',
+    desc:'Record the security features, alarm details and any additional security measures at this premises.',
+    steps:[
+      {h:'Listed Building',      b:'Select the listed building grade: Not on cover, Not listed, Grade 2/ll/C/B2, Grade 1/I/A/A, or other intermediate grades.'},
+      {h:'Portable Heating',     b:'Confirm whether any portable heating is used at the premises.'},
+      {h:'Minimum Security',     b:'Confirm whether the premises meets the minimum security level required by the policy.'},
+      {h:'Intruder Alarm',       b:'Confirm whether an intruder alarm is installed.'},
+      {h:'Alarm Monitoring',     b:'If an alarm is installed, select how it is monitored from 14 options including None, Central Station, REDCARE, Dualcom and others.'},
+      {h:'Alarm Grade (EN50131)', b:'Select the alarm grade as specified under EN50131: None, Unknown, Grade 1, 2 or 3.'},
+      {h:'Sole Control',         b:'Confirm whether the alarm is under the sole control of the proposer.'},
+      {h:'Additional Features',  b:'Select up to 3 additional security features from 16 options including CCTV, shutters, bars, smoke cloak, security patrols and others. Default is None.'},
+      {h:'Proceed',              b:'Click "Step 5 →" to save and continue to Cover Choices.'}
+    ]
+  },
+  {
+    id:'ps-5', cat:'premises-steps', icon:'5️⃣', title:'Premises Step 5 — Cover Choices',
+    desc:'Set the buildings, contents and computer equipment sum insured for this premises, and confirm flood and subsidence cover.',
+    steps:[
+      {h:'Subsidence Cover',    b:'Select Yes (default) or No to include cover for subsidence at this premises.'},
+      {h:'Flood Cover',         b:'Select Yes (default) or No to include cover for flood at this premises.'},
+      {h:'Buildings Sum Insured', b:'Enter the total rebuilding cost for the buildings at this premises.'},
+      {h:'Contents Sum Insured',  b:'Enter the total reinstatement value of the contents at this premises.'},
+      {h:'Computer Equipment',    b:'Enter the total value of computer equipment to be insured at this premises.'},
+      {h:'Proceed',               b:'Click "Step 6 →" to save and continue to Cover Choice Continued.'}
+    ]
+  },
+  {
+    id:'ps-6', cat:'premises-steps', icon:'6️⃣', title:'Premises Step 6 — Cover Choice Continued',
+    desc:'Record refrigeration stock cover and money cover details for this premises.',
+    tips:['Refrigeration cover automatically includes drugs and vaccines up to £10,000 per occurrence.','Money during business hours defaults to £10,000. The minimum for both money fields is £2,000.'],
+    steps:[
+      {h:'Refrigerated Stock',       b:'Enter the cover required for refrigerated stock including drugs. Standard cover is up to £10,000 per occurrence.'},
+      {h:'Ambient Stock',            b:'Enter the cover required for ambient (non-refrigerated) stock including drugs.'},
+      {h:'Money — Business Hours',   b:'Enter the money cover required while the premises is open during business hours. Default is £10,000, minimum is £2,000.'},
+      {h:'Money — After Hours',      b:'Enter the money cover required for cash held in a safe after business hours. Minimum is £2,000 per safe.'},
+      {h:'Number of Safes',          b:'Select the number of safes on the premises: 0–5.'},
+      {h:'Proceed',                  b:'Click "Step 7 →" to save and continue to Business Equipment.'}
+    ]
+  },
+  {
+    id:'ps-7', cat:'premises-steps', icon:'7️⃣', title:'Premises Step 7 — Business Equipment',
+    desc:'Record medical and specialist equipment sum insured, vaccine storage cover and number of refrigeration units.',
+    tips:['Vaccine storage cover is available up to £30,000 per location.'],
+    steps:[
+      {h:'Equipment Sum Insured',  b:'Enter the total value of medical and specialist equipment to be insured at this premises.'},
+      {h:'Vaccine Storage Cover',  b:'Enter the cover required for vaccine storage. Maximum is £30,000 per location.'},
+      {h:'Refrigeration Units',    b:'Select the number of refrigeration units at this premises: 0–5.'},
+      {h:'Proceed',                b:'Click "Step 8 →" to save and continue to Endorsements.'}
+    ]
+  },
+  {
+    id:'ps-8', cat:'premises-steps', icon:'8️⃣', title:'Premises Step 8 — Endorsements',
+    desc:'Select any endorsements to apply to this premises from the full list of Premises and Policy endorsements.',
+    tips:['A summary of all selected endorsements appears dynamically below the list as you tick them.','Policy-level endorsements apply across the whole policy, not just this individual premises.','You can return to this step at any time by clicking the green Step 8 circle in the premises wizard progress bar.'],
+    steps:[
+      {h:'Premises Endorsements', b:'Review and tick any of the 19 premises-level endorsements that apply, including: Deletion of Average, Note of Interest, Alarm Specification, Alarm Condition, Alarm Installation, Co-Insurance Shared Alarm, Heating Condition, Exorcism, Exclusion of Advice and Treatment, Animals in Custody, Composite Panel Inspection, Asbestos Roof Inspection, Flat Roof Inspection, Increased Excess variants, Electrical Certificate, and Uninsured Working Expenses.'},
+      {h:'Policy Endorsements',   b:'Review and tick either or both policy-level endorsements if they apply: NPA-02 Material Damage Day One Cover, and NPASec17M Minimum Security.'},
+      {h:'Selected Summary',      b:'As you tick endorsements a summary list appears below confirming your selections.'},
+      {h:'Save Premises',         b:'Click "Save Premises N ✓" to save all 8 steps for this premises and return to the Premises Selector.'}
     ]
   },
   // ── USERS ───────────────────────────────────────────────────────────────────
@@ -2364,7 +2507,7 @@ function renderGuideCards(cat) {
     );
   }
 
-  const catLabels = { practices:'Practices', quotes:'Quotes', premises:'Premises', users:'Users' };
+  const catLabels = { practices:'Practices', quotes:'Quotes', premises:'Premises', 'policy-steps':'Policy Steps', 'premises-steps':'Premises Steps', users:'Users' };
   grid.innerHTML = guides.length
     ? guides.map(g => `
         <div class="guide-card" onclick="openGuide('${g.id}')">
